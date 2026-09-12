@@ -5,6 +5,9 @@ import { prisma } from "@/lib/prisma";
 import { authService } from "@/services/auth.service";
 import { BookingWizard } from "@/components/booking/BookingWizard";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function BookingPage({
   params,
   searchParams,

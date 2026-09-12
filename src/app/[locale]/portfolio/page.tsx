@@ -5,6 +5,9 @@ import { prisma } from "@/lib/prisma";
 import { PortfolioGallery } from "@/components/portfolio/PortfolioGallery";
 import { Sparkles } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function PortfolioPage({
   params,
 }: {

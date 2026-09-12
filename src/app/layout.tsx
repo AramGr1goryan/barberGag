@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata: Metadata = {
   title: "Gagik Ghambaryan | Luxury Men's Barbershop Yerevan",
   description: "Exclusive gentlemen's barbershop in Yerevan. Precision haircuts, royal beard sculpting, and bespoke grooming by master barber Gagik Ghambaryan.",

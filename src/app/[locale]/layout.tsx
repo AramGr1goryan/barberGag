@@ -8,6 +8,9 @@ import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { authService } from "@/services/auth.service";
 import { fontService } from "@/services/font.service";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function LocaleLayout({
   children,
   params,
