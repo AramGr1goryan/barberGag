@@ -1,0 +1,261 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum SlotStatus {
+  AVAILABLE
+  HELD
+  BOOKED
+  BLOCKED
+  CANCELLED
+}
+
+enum BookingStatus {
+  PENDING_VERIFICATION
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+}
+
+enum CallbackStatus {
+  NEW
+  CONTACTED
+  COMPLETED
+  CANCELLED
+}
+
+model User {
+  id           String     @id @default(uuid())
+  email        String?    @unique
+  phone        String     @unique
+  name         String
+  passwordHash String
+  role         Role       @default(USER)
+  profile      Profile?
+  bookings     Booking[]
+  auditLogs    AuditLog[]
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([phone])
+  @@index([email])
+}
+
+model Profile {
+  id               String   @id @default(uuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  photoUrl         String?
+  preferredHaircut String?
+  hairColor        String?
+  preferences      String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model Service {
+  id              String        @id @default(uuid())
+  nameHy          String
+  nameRu          String
+  nameEn          String
+  descriptionHy   String
+  descriptionRu   String
+  descriptionEn   String
+  durationMinutes Int
+  priceMinorUnits Int
+  active          Boolean       @default(true)
+  sortOrder       Int           @default(0)
+  bookingItems    BookingItem[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model Addon {
+  id              String        @id @default(uuid())
+  nameHy          String
+  nameRu          String
+  nameEn          String
+  durationMinutes Int
+  priceMinorUnits Int
+  active          Boolean       @default(true)
+  sortOrder       Int           @default(0)
+  bookingItems    BookingItem[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model AvailabilityDay {
+  id        String             @id @default(uuid())
+  date      String             @unique // YYYY-MM-DD
+  isOpen    Boolean            @default(false) // CLOSED BY DEFAULT
+  notes     String?
+  slots     AvailabilitySlot[]
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  @@index([date])
+}
+
+model AvailabilitySlot {
+  id                String          @id @default(uuid())
+  availabilityDayId String
+  availabilityDay   AvailabilityDay @relation(fields: [availabilityDayId], references: [id], onDelete: Cascade)
+  startTime         String          // e.g. "10:00"
+  endTime           String          // e.g. "11:00"
+  status            SlotStatus      @default(AVAILABLE)
+  version           Int             @default(0)
+  booking           Booking?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@unique([availabilityDayId, startTime])
+  @@index([availabilityDayId, status])
+}
+
+model Booking {
+  id                   String            @id @default(uuid())
+  bookingNumber        String            @unique
+  userId               String?
+  user                 User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+  guestName            String
+  guestPhone           String
+  sessionTokenHash     String?
+  date                 String            // YYYY-MM-DD
+  startTime            String            // HH:mm
+  endTime              String            // HH:mm
+  totalDurationMinutes Int
+  totalPriceMinorUnits Int
+  status               BookingStatus     @default(PENDING_VERIFICATION)
+  cancellationReason   String?
+  slotId               String?           @unique
+  slot                 AvailabilitySlot? @relation(fields: [slotId], references: [id], onDelete: SetNull)
+  items                BookingItem[]
+  verification         SmsVerification?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+
+  @@index([guestPhone])
+  @@index([date, startTime])
+  @@index([sessionTokenHash])
+  @@index([status, date])
+  @@index([date])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model BookingItem {
+  id                  String   @id @default(uuid())
+  bookingId           String
+  booking             Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  itemType            String   // "SERVICE" or "ADDON"
+  serviceId           String?
+  service             Service? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  addonId             String?
+  addon               Addon?   @relation(fields: [addonId], references: [id], onDelete: SetNull)
+  nameSnapshot        String
+  priceSnapshotMinor  Int
+  durationSnapshotMin Int
+  createdAt           DateTime @default(now())
+}
+
+model SmsVerification {
+  id                String    @id @default(uuid())
+  bookingId         String    @unique
+  booking           Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  phone             String
+  codeHash          String
+  salt              String
+  expiresAt         DateTime
+  attempts          Int       @default(0)
+  maxAttempts       Int       @default(3)
+  resendAvailableAt DateTime
+  verifiedAt        DateTime?
+  createdAt         DateTime  @default(now())
+}
+
+model CallbackRequest {
+  id            String         @id @default(uuid())
+  name          String
+  phone         String
+  preferredTime String?
+  message       String?
+  status        CallbackStatus @default(NEW)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([status])
+}
+
+model PortfolioImage {
+  id         String   @id @default(uuid())
+  url        String
+  titleHy    String
+  titleRu    String
+  titleEn    String
+  altHy      String
+  altRu      String
+  altEn      String
+  category   String   @default("haircut")
+  sortOrder  Int      @default(0)
+  active     Boolean  @default(true)
+  isFeatured Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([sortOrder])
+}
+
+model SiteContent {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  valueHy   String   @db.Text
+  valueRu   String   @db.Text
+  valueEn   String   @db.Text
+  section   String
+  updatedAt DateTime @updatedAt
+
+  @@index([key])
+}
+
+model ThemeSettings {
+  id               String   @id @default("default")
+  background       String   @default("#0d0d0f")
+  foreground       String   @default("#f4f4f6")
+  surface          String   @default("#16161a")
+  surfaceElevated  String   @default("#1f1f24")
+  border           String   @default("#2a2a32")
+  muted            String   @default("#8e8e9c")
+  accent           String   @default("#c5a880")
+  accentForeground String   @default("#000000")
+  buttonStyle      String   @default("sharp") // "sharp" | "subtle" | "pill"
+  hoverEffect      String   @default("glow")  // "glow" | "lift" | "shimmer"
+  updatedAt        DateTime @updatedAt
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  actorId    String?
+  actor      User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  actorEmail String?
+  action     String
+  entity     String
+  entityId   String?
+  metadata   Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  @@index([entity, entityId])
+  @@index([createdAt])
+}
