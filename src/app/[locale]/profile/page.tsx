@@ -19,15 +19,22 @@ export default async function ProfilePage({
     redirect(`/${locale}/login`);
   }
 
-  const [user, bookings, services, dict] = await Promise.all([
-    profileService.getUserProfile(session.userId),
-    profileService.getUserBookings(session.userId),
-    prisma.service.findMany({
-      where: { active: true },
-      orderBy: { sortOrder: "asc" },
-    }),
-    getDictionary(locale),
-  ]);
+  let user = null;
+  let bookings: Awaited<ReturnType<typeof profileService.getUserBookings>> = [];
+  let services: Awaited<ReturnType<typeof prisma.service.findMany>> = [];
+  try {
+    [user, bookings, services] = await Promise.all([
+      profileService.getUserProfile(session.userId),
+      profileService.getUserBookings(session.userId),
+      prisma.service.findMany({
+        where: { active: true },
+        orderBy: { sortOrder: "asc" },
+      }),
+    ]);
+  } catch (err) {
+    console.error("Error fetching profile data:", err);
+  }
+  const dict = await getDictionary(locale);
 
   if (!user) {
     redirect(`/${locale}/login`);

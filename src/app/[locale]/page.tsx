@@ -13,13 +13,18 @@ export default async function HomePage({
   const dict = await getDictionary(locale);
 
   // Fetch admin barber photo
-  const adminUser = await prisma.user.findFirst({
-    where: { role: "ADMIN" },
-    include: { profile: true },
-  });
-  const barberPhotoUrl =
-    adminUser?.profile?.photoUrl ||
-    "/images/gagik-barber.jpg";
+  let barberPhotoUrl = "/images/gagik-barber.jpg";
+  try {
+    const adminUser = await prisma.user.findFirst({
+      where: { role: "ADMIN" },
+      include: { profile: true },
+    });
+    if (adminUser?.profile?.photoUrl) {
+      barberPhotoUrl = adminUser.profile.photoUrl;
+    }
+  } catch (err) {
+    console.error("Error fetching admin user photo:", err);
+  }
 
   return (
     <div className="flex flex-col">

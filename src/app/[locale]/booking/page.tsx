@@ -17,16 +17,22 @@ export default async function BookingPage({
   const dict = await getDictionary(locale);
 
   // Fetch active services and addons from PostgreSQL
-  const [services, addons] = await Promise.all([
-    prisma.service.findMany({
-      where: { active: true },
-      orderBy: { sortOrder: "asc" },
-    }),
-    prisma.addon.findMany({
-      where: { active: true },
-      orderBy: { sortOrder: "asc" },
-    }),
-  ]);
+  let services: Awaited<ReturnType<typeof prisma.service.findMany>> = [];
+  let addons: Awaited<ReturnType<typeof prisma.addon.findMany>> = [];
+  try {
+    [services, addons] = await Promise.all([
+      prisma.service.findMany({
+        where: { active: true },
+        orderBy: { sortOrder: "asc" },
+      }),
+      prisma.addon.findMany({
+        where: { active: true },
+        orderBy: { sortOrder: "asc" },
+      }),
+    ]);
+  } catch (err) {
+    console.error("Error fetching services/addons:", err);
+  }
 
   // Check if user is logged in for Fast Booking and preferred service auto-selection
   const session = await authService.getSession();
@@ -36,20 +42,24 @@ export default async function BookingPage({
 
   let userPreferredServiceId: string | undefined = undefined;
   if (session?.userId) {
-    const userProfile = await prisma.profile.findUnique({
-      where: { userId: session.userId },
-    });
-    if (userProfile?.preferredHaircut) {
-      const matched = services.find(
-        (s) =>
-          s.id === userProfile.preferredHaircut ||
-          s.nameHy === userProfile.preferredHaircut ||
-          s.nameRu === userProfile.preferredHaircut ||
-          s.nameEn === userProfile.preferredHaircut
-      );
-      if (matched) {
-        userPreferredServiceId = matched.id;
+    try {
+      const userProfile = await prisma.profile.findUnique({
+        where: { userId: session.userId },
+      });
+      if (userProfile?.preferredHaircut) {
+        const matched = services.find(
+          (s) =>
+            s.id === userProfile.preferredHaircut ||
+            s.nameHy === userProfile.preferredHaircut ||
+            s.nameRu === userProfile.preferredHaircut ||
+            s.nameEn === userProfile.preferredHaircut
+        );
+        if (matched) {
+          userPreferredServiceId = matched.id;
+        }
       }
+    } catch (err) {
+      console.error("Error fetching user profile:", err);
     }
   }
 

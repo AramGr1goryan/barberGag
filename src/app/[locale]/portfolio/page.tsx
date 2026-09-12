@@ -13,10 +13,15 @@ export default async function PortfolioPage({
   const { locale } = await params;
   const dict = await getDictionary(locale);
 
-  const items = await prisma.portfolioImage.findMany({
-    where: { active: true },
-    orderBy: { sortOrder: "asc" },
-  });
+  let items: Awaited<ReturnType<typeof prisma.portfolioImage.findMany>> = [];
+  try {
+    items = await prisma.portfolioImage.findMany({
+      where: { active: true },
+      orderBy: { sortOrder: "asc" },
+    });
+  } catch (err) {
+    console.error("Error fetching portfolio items:", err);
+  }
 
   return (
     <div className="py-16 sm:py-24 bg-background min-h-screen relative overflow-hidden">

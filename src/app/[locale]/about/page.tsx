@@ -25,10 +25,16 @@ export default async function AboutPage({
   const dict = await getDictionary(locale);
 
   // Fetch bio and barber name from database
-  const [bioContent, nameContent] = await Promise.all([
-    prisma.siteContent.findUnique({ where: { key: "barber_bio" } }),
-    prisma.siteContent.findUnique({ where: { key: "barber_name" } }),
-  ]);
+  let bioContent = null;
+  let nameContent = null;
+  try {
+    [bioContent, nameContent] = await Promise.all([
+      prisma.siteContent.findUnique({ where: { key: "barber_bio" } }),
+      prisma.siteContent.findUnique({ where: { key: "barber_name" } }),
+    ]);
+  } catch (err) {
+    console.error("Error fetching about page content:", err);
+  }
 
   const barberName =
     locale === "ru"

@@ -21,11 +21,18 @@ export default async function LocaleLayout({
     notFound();
   }
 
-  const [dict, session, fontSettings] = await Promise.all([
-    getDictionary(locale),
-    authService.getSession(),
-    fontService.getFontSettings(),
-  ]);
+  let dict = await getDictionary(locale);
+  let session = null;
+  let fontSettings = fontService.getDefaultFontSettings();
+
+  try {
+    [session, fontSettings] = await Promise.all([
+      authService.getSession(),
+      fontService.getFontSettings(),
+    ]);
+  } catch (err) {
+    console.error("Error fetching session/fonts:", err);
+  }
 
   const currentUser = session ? { name: session.name, role: session.role } : null;
 

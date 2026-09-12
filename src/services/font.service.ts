@@ -18,6 +18,13 @@ export const DEFAULT_FONT_SETTINGS: FontSettings = {
 
 export class FontService {
   /**
+   * Returns default font settings (no DB call).
+   */
+  getDefaultFontSettings(): FontSettings {
+    return { ...DEFAULT_FONT_SETTINGS };
+  }
+
+  /**
    * Retrieves active site-wide font configuration for all languages.
    */
   async getFontSettings(): Promise<FontSettings> {
