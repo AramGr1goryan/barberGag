@@ -4,7 +4,6 @@ import { isValidLocale, Locale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 import { I18nProvider } from "@/i18n/context";
 import { Navbar } from "@/components/layout/Navbar";
-import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { authService } from "@/services/auth.service";
 import { fontService } from "@/services/font.service";
 
@@ -63,8 +62,7 @@ export default async function LocaleLayout({
         dict={dict.nav}
         user={currentUser}
       />
-      <main className="flex-grow pt-20 pb-24 md:pb-0">{children}</main>
-      <MobileBottomNav locale={locale as Locale} user={currentUser} />
+      <main className="flex-grow pt-20 pb-0">{children}</main>
     </I18nProvider>
   );
 }

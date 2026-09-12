@@ -69,7 +69,7 @@ export default async function BookingPage({
   const effectiveInitialServiceId = serviceId || userPreferredServiceId;
 
   return (
-    <div className="py-12 sm:py-20 bg-background min-h-screen pb-28 md:pb-20">
+    <div className="py-12 sm:py-20 bg-background min-h-screen pb-12 sm:pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-12 space-y-3">
