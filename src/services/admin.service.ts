@@ -5,67 +5,64 @@ import { Prisma } from "@prisma/client";
 import { unstable_cache, revalidateTag } from "next/cache";
 
 export class AdminService {
-  /**
-   * Executive Dashboard KPIs and Summary Metrics
-   */
   getDashboardMetrics = unstable_cache(
     async () => {
       const todayStr = getCurrentYerevanDateString();
 
-    const [
-      todayBookings,
-      upcomingBookings,
-      confirmedCount,
-      pendingCount,
-      cancelledCount,
-      availableSlotsCount,
-      newCallbacksCount,
-      totalCustomersCount,
-    ] = await Promise.all([
-      prisma.booking.count({
-        where: {
-          date: todayStr,
-          status: { in: [BookingStatus.CONFIRMED, BookingStatus.PENDING_VERIFICATION] },
-        },
-      }),
-      prisma.booking.count({
-        where: {
-          date: { gte: todayStr },
-          status: BookingStatus.CONFIRMED,
-        },
-      }),
-      prisma.booking.count({ where: { status: BookingStatus.CONFIRMED } }),
-      prisma.booking.count({ where: { status: BookingStatus.PENDING_VERIFICATION } }),
-      prisma.booking.count({ where: { status: BookingStatus.CANCELLED } }),
-      prisma.availabilitySlot.count({
-        where: {
-          status: SlotStatus.AVAILABLE,
-          availabilityDay: { isOpen: true, date: { gte: todayStr } },
-        },
-      }),
-      prisma.callbackRequest.count({ where: { status: CallbackStatus.NEW } }),
-      prisma.user.count({ where: { role: "USER" } }),
-    ]);
+      const [
+        todayBookings,
+        upcomingBookings,
+        confirmedCount,
+        pendingCount,
+        cancelledCount,
+        availableSlotsCount,
+        newCallbacksCount,
+        totalCustomersCount,
+      ] = await Promise.all([
+        prisma.booking.count({
+          where: {
+            date: todayStr,
+            status: { in: [BookingStatus.CONFIRMED, BookingStatus.PENDING_VERIFICATION] },
+          },
+        }),
+        prisma.booking.count({
+          where: {
+            date: { gte: todayStr },
+            status: BookingStatus.CONFIRMED,
+          },
+        }),
+        prisma.booking.count({ where: { status: BookingStatus.CONFIRMED } }),
+        prisma.booking.count({ where: { status: BookingStatus.PENDING_VERIFICATION } }),
+        prisma.booking.count({ where: { status: BookingStatus.CANCELLED } }),
+        prisma.availabilitySlot.count({
+          where: {
+            status: SlotStatus.AVAILABLE,
+            availabilityDay: { isOpen: true, date: { gte: todayStr } },
+          },
+        }),
+        prisma.callbackRequest.count({ where: { status: CallbackStatus.NEW } }),
+        prisma.user.count({ where: { role: "USER" } }),
+      ]);
 
-    const recentBookings = await prisma.booking.findMany({
-      take: 8,
-      orderBy: { createdAt: "desc" },
-      include: {
-        items: true,
-      },
-    });
+      const recentBookings = await prisma.booking.findMany({
+        take: 8,
+        orderBy: { createdAt: "desc" },
+        include: {
+          items: true,
+        },
+      });
 
-    return {
-      todayBookings,
-      upcomingBookings,
-      confirmedCount,
-      pendingCount,
-      cancelledCount,
-      availableSlotsCount,
-      newCallbacksCount,
-      totalCustomersCount,
-      recentBookings,
-    };
+      return {
+        todayBookings,
+        upcomingBookings,
+        confirmedCount,
+        pendingCount,
+        cancelledCount,
+        availableSlotsCount,
+        newCallbacksCount,
+        totalCustomersCount,
+        recentBookings,
+      };
     },
     ["admin-dashboard-metrics"],
     { revalidate: 60 } // Cache for 60 seconds
@@ -135,7 +132,7 @@ export class AdminService {
       update: data,
       create: { id: "default", ...data },
     });
-    
+
     revalidateTag("theme-settings");
     return updated;
   }
