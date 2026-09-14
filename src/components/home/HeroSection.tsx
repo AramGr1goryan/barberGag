@@ -105,12 +105,12 @@ export function HeroSection({
         style={{ y: contentScrollY, opacity: contentOpacity }}
         className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-24"
       >
-        {/* Luxury Badge */}
+        {/* Luxury Badge - Hidden on mobile, visible on sm and up */}
         <motion.div
           initial={{ opacity: 0, y: -20, scale: 0.9 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-          className="inline-flex items-center space-x-2 border border-accent/40 bg-background/80 backdrop-blur-md px-4 py-1.5 mb-6 rounded-full shadow-[0_0_20px_rgba(197,168,128,0.15)]"
+          className="hidden sm:inline-flex items-center space-x-2 border border-accent/40 bg-background/80 backdrop-blur-md px-4 py-1.5 mb-6 rounded-full shadow-[0_0_20px_rgba(197,168,128,0.15)]"
         >
           <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
           <span className="text-[11px] font-mono tracking-[0.25em] text-accent uppercase font-semibold">
@@ -130,26 +130,26 @@ export function HeroSection({
             delay: 0.75,
             ease: [0.16, 1, 0.3, 1],
           }}
-          className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6"
+          className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4"
         >
-          <Link href={`/${locale}/booking`} className="w-full sm:w-auto">
+          <Link href={`/${locale}/booking`} className="w-full max-w-xs sm:max-w-none sm:w-auto">
             <Button
-              size="lg"
+              size="md"
               variant="primary"
-              className="w-full sm:w-auto py-4 px-10 gap-3 shadow-[0_0_35px_rgba(197,168,128,0.35)] hover:shadow-[0_0_55px_rgba(197,168,128,0.6)] transition-all duration-300 transform hover:-translate-y-0.5"
+              className="w-full sm:w-auto py-2.5 px-6 sm:py-3 sm:px-7 text-xs tracking-wider gap-2 sm:gap-2.5 shadow-[0_0_25px_rgba(197,168,128,0.3)] hover:shadow-[0_0_45px_rgba(197,168,128,0.55)] transition-all duration-300 transform hover:-translate-y-0.5"
             >
-              <Calendar className="w-4 h-4" />
+              <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               <span>{dict.bookNow}</span>
             </Button>
           </Link>
 
           <Button
-            size="lg"
+            size="md"
             variant="secondary"
             onClick={() => setIsCallbackOpen(true)}
-            className="w-full sm:w-auto py-4 px-9 gap-3 bg-surface/90 backdrop-blur-md border border-accent/40 shadow-[0_10px_30px_rgba(0,0,0,0.5)] hover:border-accent hover:shadow-[0_0_30px_rgba(197,168,128,0.25)] transition-all duration-300 transform hover:-translate-y-0.5"
+            className="w-full max-w-xs sm:max-w-none sm:w-auto py-2.5 px-6 sm:py-3 sm:px-7 text-xs tracking-wider gap-2 sm:gap-2.5 bg-surface/90 backdrop-blur-md border border-accent/40 shadow-[0_6px_20px_rgba(0,0,0,0.4)] hover:border-accent hover:shadow-[0_0_25px_rgba(197,168,128,0.25)] transition-all duration-300 transform hover:-translate-y-0.5"
           >
-            <PhoneCall className="w-4 h-4 text-accent" />
+            <PhoneCall className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-accent" />
             <span>{dict.requestCallback}</span>
           </Button>
         </motion.div>
