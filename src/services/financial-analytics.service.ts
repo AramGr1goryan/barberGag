@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { BookingStatus, SlotStatus } from "@prisma/client";
 import { BUSINESS_TIMEZONE } from "@/lib/timezone";
+import { unstable_cache } from "next/cache";
 import {
   DateRangeType,
   FullFinancialAnalyticsResponse,
@@ -77,130 +78,132 @@ export class FinancialAnalyticsService {
   /**
    * Main entry point to gather complete financial intelligence
    */
-  async getFullAnalytics(options?: {
-    rangeType?: DateRangeType;
-    startDate?: string;
-    endDate?: string;
-    locale?: string;
-  }): Promise<FullFinancialAnalyticsResponse> {
-    const today = getTodayYerevan();
-    const yesterday = shiftDateString(today, -1);
-    const rangeType = options?.rangeType || "30days";
+  getFullAnalytics = unstable_cache(
+    async (options?: {
+      rangeType?: DateRangeType;
+      startDate?: string;
+      endDate?: string;
+      locale?: string;
+    }): Promise<FullFinancialAnalyticsResponse> => {
+      const today = getTodayYerevan();
+      const yesterday = shiftDateString(today, -1);
+      const rangeType = options?.rangeType || "30days";
 
-    // 1. Resolve start and end dates for selected range
-    const { startDate, endDate, previousStartDate, previousEndDate } = this.resolveDateRanges(
-      rangeType,
-      today,
-      options?.startDate,
-      options?.endDate
-    );
+      // 1. Resolve start and end dates for selected range
+      const { startDate, endDate, previousStartDate, previousEndDate } = this.resolveDateRanges(
+        rangeType,
+        today,
+        options?.startDate,
+        options?.endDate
+      );
 
-    // 2. Fetch all bookings up to 14 days in future for accurate forecasts
-    const allRelevantBookings = await prisma.booking.findMany({
-      where: {
-        OR: [
-          { date: { gte: shiftDateString(startDate, -90) } }, // 90 days historical baseline
-          { status: BookingStatus.COMPLETED },
-        ],
-      },
-      include: {
-        items: true,
-        slot: true,
-      },
-      orderBy: { date: "asc" },
-    });
+      // 2. Fetch only bookings needed for this calculation (no unbounded queries)
+      const historicalBaselineDate = shiftDateString(startDate, -90);
+      const allRelevantBookings = await prisma.booking.findMany({
+        where: {
+          date: { gte: historicalBaselineDate }, // Cap at 90 days before startDate for comparisons
+        },
+        include: {
+          items: true,
+          slot: true,
+        },
+        orderBy: { date: "asc" },
+      });
 
-    // 3. Count total historical completed records for data sufficiency assessment
-    const totalCompletedRecords = allRelevantBookings.filter((b) => b.status === BookingStatus.COMPLETED).length;
-    const totalCancelledRecords = allRelevantBookings.filter((b) => b.status === BookingStatus.CANCELLED).length;
-    const totalEvaluatedRecords = totalCompletedRecords + totalCancelledRecords;
+      // 3. Count total historical completed records for data sufficiency assessment
+      const totalCompletedRecords = allRelevantBookings.filter((b) => b.status === BookingStatus.COMPLETED).length;
+      const totalCancelledRecords = allRelevantBookings.filter((b) => b.status === BookingStatus.CANCELLED).length;
+      const totalEvaluatedRecords = totalCompletedRecords + totalCancelledRecords;
 
-    const dataSufficiency: "LIMITED" | "BASIC" | "MODERATE" | "STRONG" =
-      totalEvaluatedRecords < 10
-        ? "LIMITED"
-        : totalEvaluatedRecords < 30
-        ? "BASIC"
-        : totalEvaluatedRecords < 75
-        ? "MODERATE"
-        : "STRONG";
+      const dataSufficiency: "LIMITED" | "BASIC" | "MODERATE" | "STRONG" =
+        totalEvaluatedRecords < 10
+          ? "LIMITED"
+          : totalEvaluatedRecords < 30
+          ? "BASIC"
+          : totalEvaluatedRecords < 75
+          ? "MODERATE"
+          : "STRONG";
 
-    // 4. Calculate Summary KPIs
-    const kpis = await this.calculateSummaryKPIs(allRelevantBookings, today, yesterday);
+      // 4. Calculate Summary KPIs
+      const kpis = await this.calculateSummaryKPIs(allRelevantBookings, today, yesterday);
 
-    // 5. Calculate Daily Trend & Comparison
-    const trend = this.calculateTrend(
-      allRelevantBookings,
-      startDate,
-      endDate,
-      previousStartDate,
-      previousEndDate,
-      rangeType
-    );
+      // 5. Calculate Daily Trend & Comparison
+      const trend = this.calculateTrend(
+        allRelevantBookings,
+        startDate,
+        endDate,
+        previousStartDate,
+        previousEndDate,
+        rangeType
+      );
 
-    // 6. Calculate Tomorrow Forecast (Statistical Engine)
-    const tomorrowStr = shiftDateString(today, 1);
-    const tomorrowForecast = await this.calculateTomorrowForecast(
-      allRelevantBookings,
-      tomorrowStr,
-      dataSufficiency
-    );
+      // 6. Calculate Tomorrow Forecast (Statistical Engine)
+      const tomorrowStr = shiftDateString(today, 1);
+      const tomorrowForecast = await this.calculateTomorrowForecast(
+        allRelevantBookings,
+        tomorrowStr,
+        dataSufficiency
+      );
 
-    // 7. Calculate 7-Day Forecast
-    const sevenDayForecast = await this.calculate7DayForecast(allRelevantBookings, today, dataSufficiency);
+      // 7. Calculate 7-Day Forecast
+      const sevenDayForecast = await this.calculate7DayForecast(allRelevantBookings, today, dataSufficiency);
 
-    // 8. Calculate Month-End Forecast
-    const monthEndForecast = this.calculateMonthEndForecast(allRelevantBookings, today);
+      // 8. Calculate Month-End Forecast
+      const monthEndForecast = this.calculateMonthEndForecast(allRelevantBookings, today);
 
-    // 9. Calculate Cancellation Analytics
-    const cancellations = this.calculateCancellationBreakdown(allRelevantBookings, startDate, endDate);
+      // 9. Calculate Cancellation Analytics
+      const cancellations = this.calculateCancellationBreakdown(allRelevantBookings, startDate, endDate);
 
-    // 10. Calculate Service Performance
-    const services = await this.calculateServicePerformance(allRelevantBookings, startDate, endDate);
+      // 10. Calculate Service Performance
+      const services = await this.calculateServicePerformance(allRelevantBookings, startDate, endDate);
 
-    // 11. Calculate Customer Intelligence
-    const customers = this.calculateCustomerAnalytics(allRelevantBookings);
+      // 11. Calculate Customer Intelligence
+      const customers = this.calculateCustomerAnalytics(allRelevantBookings);
 
-    // 12. Calculate Weekday and Time of Day Performance
-    const { weekdayPerformance, timeSlotPerformance } = this.calculateWeekdayAndTimeAnalytics(
-      allRelevantBookings,
-      startDate,
-      endDate
-    );
+      // 12. Calculate Weekday and Time of Day Performance
+      const { weekdayPerformance, timeSlotPerformance } = this.calculateWeekdayAndTimeAnalytics(
+        allRelevantBookings,
+        startDate,
+        endDate
+      );
 
-    // 13. Calculate Schedule Capacity & Utilization
-    const utilization = await this.calculateUtilization(startDate, endDate, tomorrowStr);
+      // 13. Calculate Schedule Capacity & Utilization
+      const utilization = await this.calculateUtilization(startDate, endDate, tomorrowStr);
 
-    // 14. Synthesize Deterministic Business Insights and Anomaly Detection
-    const insights = this.generateBusinessInsights({
-      kpis,
-      trend,
-      tomorrowForecast,
-      cancellations,
-      services,
-      weekdayPerformance,
-      utilization,
-      dataSufficiency,
-    });
+      // 14. Synthesize Deterministic Business Insights and Anomaly Detection
+      const insights = this.generateBusinessInsights({
+        kpis,
+        trend,
+        tomorrowForecast,
+        cancellations,
+        services,
+        weekdayPerformance,
+        utilization,
+        dataSufficiency,
+      });
 
-    return {
-      currency: "AMD",
-      timezone: BUSINESS_TIMEZONE,
-      dataSufficiency,
-      totalCompletedRecordsInDatabase: totalCompletedRecords,
-      kpis,
-      trend,
-      tomorrowForecast,
-      sevenDayForecast,
-      monthEndForecast,
-      cancellations,
-      services,
-      customers,
-      weekdayPerformance,
-      timeSlotPerformance,
-      utilization,
-      insights,
-    };
-  }
+      return {
+        currency: "AMD",
+        timezone: BUSINESS_TIMEZONE,
+        dataSufficiency,
+        totalCompletedRecordsInDatabase: totalCompletedRecords,
+        kpis,
+        trend,
+        tomorrowForecast,
+        sevenDayForecast,
+        monthEndForecast,
+        cancellations,
+        services,
+        customers,
+        weekdayPerformance,
+        timeSlotPerformance,
+        utilization,
+        insights,
+      };
+    },
+    ["financial-analytics"],
+    { revalidate: 900 } // Cache for 15 minutes
+  );
 
   /**
    * Resolves date boundaries for current and previous equivalent period

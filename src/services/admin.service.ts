@@ -2,13 +2,15 @@ import { prisma } from "@/lib/prisma";
 import { BookingStatus, CallbackStatus, SlotStatus } from "@prisma/client";
 import { getCurrentYerevanDateString } from "@/lib/timezone";
 import { Prisma } from "@prisma/client";
+import { unstable_cache, revalidateTag } from "next/cache";
 
 export class AdminService {
   /**
    * Executive Dashboard KPIs and Summary Metrics
    */
-  async getDashboardMetrics() {
-    const todayStr = getCurrentYerevanDateString();
+  getDashboardMetrics = unstable_cache(
+    async () => {
+      const todayStr = getCurrentYerevanDateString();
 
     const [
       todayBookings,
@@ -64,7 +66,10 @@ export class AdminService {
       totalCustomersCount,
       recentBookings,
     };
-  }
+    },
+    ["admin-dashboard-metrics"],
+    { revalidate: 60 } // Cache for 60 seconds
+  );
 
   /**
    * Log administrative audit action
@@ -92,19 +97,23 @@ export class AdminService {
   /**
    * Get active theme settings (or create default)
    */
-  async getThemeSettings() {
-    let theme = await prisma.themeSettings.findUnique({
-      where: { id: "default" },
-    });
-
-    if (!theme) {
-      theme = await prisma.themeSettings.create({
-        data: { id: "default" },
+  getThemeSettings = unstable_cache(
+    async () => {
+      let theme = await prisma.themeSettings.findUnique({
+        where: { id: "default" },
       });
-    }
 
-    return theme;
-  }
+      if (!theme) {
+        theme = await prisma.themeSettings.create({
+          data: { id: "default" },
+        });
+      }
+
+      return theme;
+    },
+    ["theme-settings"],
+    { tags: ["theme-settings"], revalidate: 3600 } // Cache for 1 hour, revalidated on update
+  );
 
   /**
    * Update theme settings with sanitization
@@ -121,11 +130,14 @@ export class AdminService {
     buttonStyle: string;
     hoverEffect: string;
   }) {
-    return prisma.themeSettings.upsert({
+    const updated = await prisma.themeSettings.upsert({
       where: { id: "default" },
       update: data,
       create: { id: "default", ...data },
     });
+    
+    revalidateTag("theme-settings");
+    return updated;
   }
 
   /**

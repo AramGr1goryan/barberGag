@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { prisma } from "@/lib/prisma";
+import { adminService } from "@/services/admin.service";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -25,7 +25,7 @@ export default async function RootLayout({
   // Fetch dynamic theme settings from database for live admin theme control
   let theme;
   try {
-    theme = await prisma.themeSettings.findUnique({ where: { id: "default" } });
+    theme = await adminService.getThemeSettings();
   } catch {
     // Fallback if db during build
   }

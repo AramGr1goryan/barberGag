@@ -75,6 +75,7 @@ export function AdminSidebar() {
               <Link
                 key={link.href}
                 href={link.href}
+                prefetch={true}
                 className={`flex items-center space-x-3 px-3.5 py-2.5 text-xs font-medium tracking-wider uppercase transition-all duration-200 rounded-2xl ${
                   isActive
                     ? "text-accent bg-accent/15 border border-accent/30 shadow-[0_0_25px_rgba(197,168,128,0.18)] font-semibold"

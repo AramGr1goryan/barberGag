@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { unstable_cache, revalidateTag } from "next/cache";
 
 export interface FontSettings {
   fontHy: string;
@@ -27,28 +28,32 @@ export class FontService {
   /**
    * Retrieves active site-wide font configuration for all languages.
    */
-  async getFontSettings(): Promise<FontSettings> {
-    try {
-      const record = await prisma.siteContent.findUnique({
-        where: { key: "site_fonts" },
-      });
+  getFontSettings = unstable_cache(
+    async (): Promise<FontSettings> => {
+      try {
+        const record = await prisma.siteContent.findUnique({
+          where: { key: "site_fonts" },
+        });
 
-      if (!record || !record.valueEn) {
+        if (!record || !record.valueEn) {
+          return DEFAULT_FONT_SETTINGS;
+        }
+
+        const parsed = JSON.parse(record.valueEn);
+        return {
+          fontHy: parsed.fontHy || DEFAULT_FONT_SETTINGS.fontHy,
+          fontRu: parsed.fontRu || DEFAULT_FONT_SETTINGS.fontRu,
+          fontEn: parsed.fontEn || DEFAULT_FONT_SETTINGS.fontEn,
+          customFontName: parsed.customFontName || "",
+          customFontUrl: parsed.customFontUrl || "",
+        };
+      } catch {
         return DEFAULT_FONT_SETTINGS;
       }
-
-      const parsed = JSON.parse(record.valueEn);
-      return {
-        fontHy: parsed.fontHy || DEFAULT_FONT_SETTINGS.fontHy,
-        fontRu: parsed.fontRu || DEFAULT_FONT_SETTINGS.fontRu,
-        fontEn: parsed.fontEn || DEFAULT_FONT_SETTINGS.fontEn,
-        customFontName: parsed.customFontName || "",
-        customFontUrl: parsed.customFontUrl || "",
-      };
-    } catch {
-      return DEFAULT_FONT_SETTINGS;
-    }
-  }
+    },
+    ["font-settings"],
+    { tags: ["font-settings"], revalidate: 3600 }
+  );
 
   /**
    * Updates font configuration for all languages and custom font settings.
@@ -79,6 +84,7 @@ export class FontService {
       },
     });
 
+    revalidateTag("font-settings");
     return updated;
   }
 }
