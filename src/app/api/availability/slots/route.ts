@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { availabilityService } from "@/services/availability.service";
 
+export const revalidate = 15;
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);

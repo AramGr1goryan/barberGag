@@ -3,6 +3,7 @@ import { getDictionary } from "@/i18n/get-dictionary";
 import { Locale } from "@/i18n/config";
 import { prisma } from "@/lib/prisma";
 import { authService } from "@/services/auth.service";
+import { unstable_cache } from "next/cache";
 import { BookingWizard } from "@/components/booking/BookingWizard";
 
 export const dynamic = "force-dynamic";
@@ -19,20 +20,23 @@ export default async function BookingPage({
   const { serviceId } = await searchParams;
   const dict = await getDictionary(locale);
 
-  // Fetch active services and addons from PostgreSQL
+  // Fetch active services and addons from PostgreSQL with cache
+  const getCachedServices = unstable_cache(
+    async () => prisma.service.findMany({ where: { active: true }, orderBy: { sortOrder: "asc" } }),
+    ["active-services"],
+    { revalidate: 60 }
+  );
+
+  const getCachedAddons = unstable_cache(
+    async () => prisma.addon.findMany({ where: { active: true }, orderBy: { sortOrder: "asc" } }),
+    ["active-addons"],
+    { revalidate: 60 }
+  );
+
   let services: Awaited<ReturnType<typeof prisma.service.findMany>> = [];
   let addons: Awaited<ReturnType<typeof prisma.addon.findMany>> = [];
   try {
-    [services, addons] = await Promise.all([
-      prisma.service.findMany({
-        where: { active: true },
-        orderBy: { sortOrder: "asc" },
-      }),
-      prisma.addon.findMany({
-        where: { active: true },
-        orderBy: { sortOrder: "asc" },
-      }),
-    ]);
+    [services, addons] = await Promise.all([getCachedServices(), getCachedAddons()]);
   } catch (err) {
     console.error("Error fetching services/addons:", err);
   }
