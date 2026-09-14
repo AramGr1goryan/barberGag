@@ -29,7 +29,7 @@ export default async function ContactPage({
       statusOpen: "Բաց է այցելությունների համար",
       parkingTitle: "Կայանատեղի և Ընդունելություն",
       parkingText:
-        "Մեր սրահի հյուրերի համար գործում է ստորգետնյա կայանատեղի Հյուսիսային պողոտայում: Այցելությունները կազմակերպվում են բացառապես նախնական գրանցմամբ՝ ապահովելով ձեր անձնական ժամանակն ու հարմարավետությունը:",
+        "Մեր սրահի հյուրերի համար գործում է ավտոկայանատեղի Բագրատունյաց պողոտայում: Այցելությունները կազմակերպվում են բացառապես նախնական գրանցմամբ՝ ապահովելով ձեր անձնական ժամանակն ու հարմարավետությունը:",
       getDirections: "Բացել Քարտեզում",
     },
     ru: {
@@ -37,15 +37,15 @@ export default async function ContactPage({
       statusOpen: "Открыто по предварительной записи",
       parkingTitle: "Парковка и Приватный Прием",
       parkingText:
-        "Для гостей нашего барбершопа доступен подземный паркинг на Северном проспекте. Прием ведется строго по предварительной записи для сохранения приватности и безупречного комфорта.",
+        "Для гостей нашего барбершопа доступна парковка на проспекте Багратуняц. Прием ведется строго по предварительной записи для сохранения приватности и безупречного комфорта.",
       getDirections: "Открыть в Картах",
     },
     en: {
       cardTitle: "Studio Contacts",
       statusOpen: "Open strictly by appointment",
-      parkingTitle: "Private Reception & Valet",
+      parkingTitle: "Private Reception & Parking",
       parkingText:
-        "Complimentary underground parking on Northern Avenue is available for all studio guests. All appointments are strictly scheduled in advance to guarantee absolute privacy and dedicated artisan attention.",
+        "Complimentary parking on Bagratunyats Avenue is available for all studio guests. All appointments are strictly scheduled in advance to guarantee absolute privacy and dedicated artisan attention.",
       getDirections: "Open Navigation",
     },
   };
@@ -190,7 +190,7 @@ export default async function ContactPage({
               <div className="relative aspect-[16/10] w-full rounded-2xl overflow-hidden bg-black/50 border border-white/5">
                 <iframe
                   title="Barbershop Location"
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.2435478663884!2d44.51268157648356!3d40.18137337147822!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x406abcf87b282719%3A0x60b73dfad08f8832!2sNorthern%20Ave%2C%20Yerevan!5e0!3m2!1sen!2sam!4v1700000000000!5m2!1sen!2sam"
+                  src="https://www.google.com/maps?q=19+Bagratunyats+St,+Yerevan&output=embed"
                   width="100%"
                   height="100%"
                   style={{ border: 0, filter: "invert(90%) hue-rotate(180deg) contrast(1.2)" }}
@@ -202,7 +202,7 @@ export default async function ContactPage({
                 {/* Floating Directions Action */}
                 <div className="absolute bottom-4 right-4 z-10">
                   <a
-                    href="https://maps.google.com/?q=Northern+Avenue+Yerevan"
+                    href="https://maps.google.com/?q=19+Bagratunyats+St,+Yerevan"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black/75 hover:bg-accent hover:text-accent-foreground border border-white/20 text-xs font-mono font-semibold text-white backdrop-blur-xl shadow-xl transition-all duration-300"

@@ -69,7 +69,7 @@ export default async function BookingPage({
   const effectiveInitialServiceId = serviceId || userPreferredServiceId;
 
   return (
-    <div className="-mt-20 lg:mt-0 lg:pt-24 min-h-screen bg-[#0e0f13] text-foreground relative overflow-x-hidden selection:bg-accent selection:text-black">
+    <div className="-mt-20 min-h-screen bg-[#0e0f13] text-foreground relative overflow-x-clip selection:bg-accent selection:text-black">
       {/* Background ambient lighting */}
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-accent/5 rounded-full blur-[160px] pointer-events-none -z-10" />
       <div className="fixed bottom-0 right-0 w-[500px] h-[500px] bg-indigo-950/20 rounded-full blur-[180px] pointer-events-none -z-10" />

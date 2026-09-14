@@ -109,6 +109,27 @@ export function BookingWizard({
   // 5: Confirmation
   const [currentStep, setCurrentStep] = useState<number>(1);
 
+  // Floating panel state for mobile
+  const [isPanelLowered, setIsPanelLowered] = useState<boolean>(false);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.targetTouches[0].clientY);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStart === null) return;
+    const touchEnd = e.changedTouches[0].clientY;
+    const diff = touchEnd - touchStart;
+
+    if (diff > 40) {
+      setIsPanelLowered(true);
+    } else if (diff < -40) {
+      setIsPanelLowered(false);
+    }
+    setTouchStart(null);
+  };
+
   // Selection state
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [openDates, setOpenDates] = useState<string[]>([]);
@@ -506,7 +527,7 @@ export function BookingWizard({
       "BEGIN:VEVENT",
       `SUMMARY:Appointment with Master Barber Gagik Ghambaryan`,
       `DESCRIPTION:${getServiceName(selectedService)} (Ref: ${createdBookingNumber})`,
-      `LOCATION:10 Northern Avenue, Yerevan`,
+      `LOCATION:19 Bagratunyats St, Yerevan`,
       `DTSTART:${selectedDate.replace(/-/g, "")}T${startHour.replace(/:/g, "")}00`,
       `DTEND:${selectedDate.replace(/-/g, "")}T${endHour.replace(/:/g, "")}00`,
       "STATUS:CONFIRMED",
@@ -561,13 +582,16 @@ export function BookingWizard({
   }
 
   return (
-    <div className="w-full mx-auto min-h-screen lg:min-h-[calc(100vh-96px)] flex flex-col lg:flex-row relative bg-[#14151a] overflow-hidden">
+    <div className="w-full mx-auto min-h-screen lg:min-h-[calc(100vh-96px)] flex flex-col lg:flex-row relative bg-[#14151a] overflow-x-clip">
       {/* 
         TOP CINEMATIC HERO SECTION
         Barbershop interior background image + Golden brand logo + Back chevron
       */}
       {/* TOP CINEMATIC HERO SECTION — full width on mobile, left half on desktop */}
-      <div className="sticky top-0 h-[45vh] sm:h-[50vh] lg:h-auto lg:relative lg:w-[45%] w-full shrink-0 lg:shrink lg:min-h-[700px] overflow-hidden select-none z-0 lg:z-auto">
+      <div 
+        className="sticky top-0 h-[75vh] sm:h-[80vh] lg:h-full lg:sticky lg:top-0 lg:w-[45%] w-full shrink-0 overflow-hidden select-none z-0"
+        onClick={() => setIsPanelLowered(false)}
+      >
         <Image
           src="/images/gagik-barber.jpg"
           alt="Gagik Ghambaryan Portrait"
@@ -582,7 +606,7 @@ export function BookingWizard({
         <div className="absolute inset-0 bg-gradient-to-t from-[#14151a] via-[#14151a]/60 to-transparent lg:bg-gradient-to-r lg:from-transparent lg:via-transparent lg:to-[#14151a] pointer-events-none" />
 
         {/* Top Header Bar */}
-        <div className="absolute top-0 left-0 right-0 z-30 pt-7 px-5 flex items-center justify-between">
+        <div className="absolute top-0 left-0 right-0 z-30 pt-24 px-5 flex items-start justify-between">
           {/* Back Chevron */}
           {currentStep === 1 ? (
             <Link
@@ -602,19 +626,6 @@ export function BookingWizard({
               <ChevronLeft className="w-5 h-5 -ml-0.5" />
             </button>
           )}
-
-          {/* Golden Bulgakov-Style Brand Title */}
-          <div className="flex flex-col items-center">
-            <span className="font-serif tracking-[0.25em] text-xs sm:text-sm lg:text-base font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#e5d4bb] via-[#f7ecd9] to-[#c5a880] uppercase drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
-              GAGIK GHAMBARYAN
-            </span>
-            <span className="text-[8px] lg:text-[10px] font-mono tracking-[0.35em] text-[#c5a880]/80 uppercase mt-0.5 font-medium">
-              BARBERSHOP
-            </span>
-          </div>
-
-          {/* Spacer for symmetrical centering */}
-          <div className="w-10 h-10" />
         </div>
 
         {/* Desktop: centered branding at bottom */}
@@ -631,9 +642,22 @@ export function BookingWizard({
         Rounded top corners overlapping the photo with exact Bulgakov UI styling
       */}
       {/* FLOATING BOTTOM SHEET — full width on mobile, right 55% on desktop */}
-      <div className="relative z-20 min-h-[90vh] lg:min-h-0 -mt-12 sm:-mt-16 lg:mt-0 rounded-t-[40px] lg:rounded-none bg-[#14151a] border-t lg:border-t-0 lg:border-l border-white/[0.08] shadow-[0_-25px_60px_rgba(0,0,0,0.95)] lg:shadow-none px-5 sm:px-6 lg:px-10 pt-8 lg:pt-10 pb-10 flex-1 flex flex-col justify-between lg:w-[55%] lg:overflow-y-auto">
+      <div 
+        className={`relative z-20 min-h-[90vh] lg:min-h-0 rounded-t-[40px] lg:rounded-none bg-[#14151a] border-t lg:border-t-0 lg:border-l border-white/[0.08] shadow-[0_-25px_60px_rgba(0,0,0,0.95)] lg:shadow-none px-5 sm:px-6 lg:px-10 pt-8 lg:pt-10 pb-10 flex-1 flex flex-col justify-between lg:w-[55%] lg:overflow-y-auto transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${
+          isPanelLowered 
+            ? "mt-[-5vh] sm:mt-[-10vh] lg:mt-0" 
+            : "mt-[calc(-30vh-3rem)] sm:mt-[calc(-30vh-4rem)] lg:mt-0"
+        }`}
+      >
         {/* Mobile Drag Handle */}
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-white/20 rounded-full lg:hidden" />
+        <div 
+          className="absolute top-0 left-0 right-0 h-14 flex justify-center items-center lg:hidden cursor-pointer z-30"
+          onClick={() => setIsPanelLowered(!isPanelLowered)}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+          <div className="w-12 h-1.5 bg-white/20 rounded-full transition-colors hover:bg-white/40 active:bg-white/50" />
+        </div>
         {/* ================= STEP 1: DATE & TIME ================= */}
         {currentStep === 1 && (
           <div className="flex-1 flex flex-col justify-between">
@@ -1195,7 +1219,7 @@ export function BookingWizard({
                   </span>
                 </div>
                 <div className="pt-2 text-[10px] text-neutral-500 text-center">
-                  📍 ք. Երևան, Հյուսիսային պողոտա 10 (Northern Avenue 10, Yerevan)
+                  📍 ք. Երևան, Բագրատունյաց 19 (19 Bagratunyats St, Yerevan)
                 </div>
               </div>
             </div>
