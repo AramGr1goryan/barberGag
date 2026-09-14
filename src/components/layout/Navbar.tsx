@@ -38,6 +38,8 @@ export function Navbar({ locale, dict, user }: NavbarProps) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const isBooking = pathname?.includes("/booking");
+
   const navLinks = [
     { href: `/${locale}/booking`, label: dict.booking },
     { href: `/${locale}/about`, label: dict.about },
@@ -47,7 +49,7 @@ export function Navbar({ locale, dict, user }: NavbarProps) {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${isBooking ? "hidden lg:block" : ""} ${
         isScrolled
           ? "bg-background/90 backdrop-blur-md border-b border-border/80 py-3.5 shadow-2xl"
           : "bg-gradient-to-b from-background/90 via-background/40 to-transparent py-5"

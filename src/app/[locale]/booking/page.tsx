@@ -69,33 +69,19 @@ export default async function BookingPage({
   const effectiveInitialServiceId = serviceId || userPreferredServiceId;
 
   return (
-    <div className="py-12 sm:py-20 bg-background min-h-screen pb-12 sm:pb-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center max-w-2xl mx-auto mb-12 space-y-3">
-          <div className="inline-flex items-center space-x-2 border-b border-accent/60 pb-1">
-            <span className="text-[11px] font-mono tracking-[0.25em] text-accent uppercase font-semibold">
-              Online Reservation
-            </span>
-          </div>
-          <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-foreground uppercase">
-            {dict.booking.title}
-          </h1>
-          <p className="text-xs sm:text-sm text-muted">
-            {dict.booking.subtitle}
-          </p>
-        </div>
+    <div className="-mt-20 lg:mt-0 lg:pt-24 min-h-screen bg-[#0e0f13] text-foreground relative overflow-x-hidden selection:bg-accent selection:text-black">
+      {/* Background ambient lighting */}
+      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-accent/5 rounded-full blur-[160px] pointer-events-none -z-10" />
+      <div className="fixed bottom-0 right-0 w-[500px] h-[500px] bg-indigo-950/20 rounded-full blur-[180px] pointer-events-none -z-10" />
 
-        {/* Wizard */}
-        <BookingWizard
-          locale={locale as Locale}
-          services={services}
-          addons={addons}
-          initialServiceId={effectiveInitialServiceId}
-          dict={dict.booking}
-          currentUser={currentUser}
-        />
-      </div>
+      <BookingWizard
+        locale={locale as Locale}
+        services={services}
+        addons={addons}
+        initialServiceId={effectiveInitialServiceId}
+        dict={dict.booking}
+        currentUser={currentUser}
+      />
     </div>
   );
 }
