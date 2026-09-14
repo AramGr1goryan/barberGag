@@ -111,18 +111,27 @@ export function BookingWizard({
 
   // Floating panel state for mobile
   const [isPanelLowered, setIsPanelLowered] = useState<boolean>(false);
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchOffset, setTouchOffset] = useState<number>(0);
+  const panelRef = useRef<HTMLDivElement>(null);
+  
+  // Ref for touch state (no re-renders!)
+  const touchState = useRef({
+    start: null as number | null,
+    offset: 0
+  });
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStart(e.targetTouches[0].clientY);
-    setTouchOffset(0);
+    touchState.current.start = e.targetTouches[0].clientY;
+    touchState.current.offset = 0;
+    if (panelRef.current) {
+      // Disable transition while dragging for instant response
+      panelRef.current.style.transition = "none";
+    }
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (touchStart === null) return;
+    if (touchState.current.start === null) return;
     const currentY = e.targetTouches[0].clientY;
-    let diff = currentY - touchStart;
+    let diff = currentY - touchState.current.start;
 
     // Add some resistance if dragging out of bounds
     if (!isPanelLowered && diff < 0) {
@@ -131,13 +140,24 @@ export function BookingWizard({
       diff = diff * 0.2; // Resistance when dragging down from bottom
     }
 
-    setTouchOffset(diff);
+    touchState.current.offset = diff;
+    
+    // Apply transform directly to DOM (0 re-renders!)
+    if (panelRef.current) {
+      panelRef.current.style.transform = `translateY(${diff}px)`;
+    }
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStart === null) return;
+    if (touchState.current.start === null) return;
     const touchEnd = e.changedTouches[0].clientY;
-    const diff = touchEnd - touchStart;
+    const diff = touchEnd - touchState.current.start;
+
+    if (panelRef.current) {
+      // Restore transition for smooth snapping
+      panelRef.current.style.transition = "all 0.5s cubic-bezier(0.32,0.72,0,1)";
+      panelRef.current.style.transform = "translateY(0)";
+    }
 
     if (!isPanelLowered && diff > 60) {
       setIsPanelLowered(true);
@@ -145,8 +165,8 @@ export function BookingWizard({
       setIsPanelLowered(false);
     }
     
-    setTouchStart(null);
-    setTouchOffset(0);
+    touchState.current.start = null;
+    touchState.current.offset = 0;
   };
 
   // Selection state
@@ -662,16 +682,12 @@ export function BookingWizard({
       */}
       {/* FLOATING BOTTOM SHEET — full width on mobile, right 55% on desktop */}
       <div 
-        className={`relative z-20 min-h-[90vh] lg:min-h-0 rounded-t-[40px] lg:rounded-none bg-[#14151a] border-t lg:border-t-0 lg:border-l border-white/[0.08] shadow-[0_-25px_60px_rgba(0,0,0,0.95)] lg:shadow-none px-5 sm:px-6 lg:px-10 pt-8 lg:pt-10 pb-10 flex-1 flex flex-col justify-between lg:w-[55%] lg:overflow-y-auto ${
-          touchStart !== null ? "" : "transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]"
-        } ${
+        ref={panelRef}
+        className={`relative z-20 min-h-[90vh] lg:min-h-0 rounded-t-[40px] lg:rounded-none bg-[#14151a] border-t lg:border-t-0 lg:border-l border-white/[0.08] shadow-[0_-25px_60px_rgba(0,0,0,0.95)] lg:shadow-none px-5 sm:px-6 lg:px-10 pt-8 lg:pt-10 pb-10 flex-1 flex flex-col justify-between lg:w-[55%] lg:overflow-y-auto transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${
           isPanelLowered 
             ? "mt-[-5vh] sm:mt-[-10vh] lg:mt-0" 
             : "mt-[calc(-30vh-3rem)] sm:mt-[calc(-30vh-4rem)] lg:mt-0"
         }`}
-        style={{
-          transform: touchStart !== null ? `translateY(${touchOffset}px)` : "translateY(0)"
-        }}
       >
         {/* Mobile Drag Handle */}
         <div 
@@ -799,7 +815,7 @@ export function BookingWizard({
                           key={slot.id}
                           type="button"
                           onClick={() => setSelectedSlotId(slot.id)}
-                          className={`w-full py-3 rounded-xl text-xs sm:text-sm font-bold tracking-wider transition-all duration-200 select-none cursor-pointer flex items-center justify-center ${
+                          className={`w-full py-3 rounded-xl text-xs sm:text-sm font-bold tracking-wider transition-all duration-200 select-none cursor-pointer flex items-center justify-center touch-manipulation ${
                             isSelected
                               ? "bg-white text-black shadow-[0_8px_25px_rgba(255,255,255,0.22)] scale-[1.03] z-10"
                               : "bg-[#20222a] text-white hover:bg-[#282a34] border border-white/[0.04]"
@@ -821,7 +837,7 @@ export function BookingWizard({
                 type="button"
                 disabled={!selectedDate || !selectedSlotId}
                 onClick={() => setCurrentStep(2)}
-                className="w-full py-4 px-6 rounded-full bg-white text-black font-serif font-bold text-base hover:bg-neutral-200 active:scale-[0.98] transition-all duration-200 shadow-[0_12px_35px_rgba(0,0,0,0.6)] disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-4 px-6 rounded-full bg-white text-black font-serif font-bold text-base hover:bg-neutral-200 active:scale-[0.98] transition-all duration-200 shadow-[0_12px_35px_rgba(0,0,0,0.6)] disabled:opacity-40 flex items-center justify-center gap-2 cursor-pointer touch-manipulation"
               >
                 <span>
                   {locale === "ru"
