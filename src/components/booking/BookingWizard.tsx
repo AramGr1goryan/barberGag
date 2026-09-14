@@ -121,30 +121,10 @@ export function BookingWizard({
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchState.current.start = e.targetTouches[0].clientY;
-    touchState.current.offset = 0;
-    if (panelRef.current) {
-      panelRef.current.style.transition = "none";
-    }
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (touchState.current.start === null) return;
-    const currentY = e.targetTouches[0].clientY;
-    let diff = currentY - touchState.current.start;
-
-    // Add some resistance if dragging out of bounds
-    if (!isPanelLowered && diff < 0) {
-      diff = diff * 0.2; // Resistance when dragging up from top
-    } else if (isPanelLowered && diff > 0) {
-      diff = diff * 0.2; // Resistance when dragging down from bottom
-    }
-
-    touchState.current.offset = diff;
-
-    // Apply transform directly to DOM (0 re-renders!)
-    if (panelRef.current) {
-      panelRef.current.style.transform = `translateY(${diff}px)`;
-    }
+    // No real-time tracking to prevent lag
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
@@ -152,20 +132,15 @@ export function BookingWizard({
     const touchEnd = e.changedTouches[0].clientY;
     const diff = touchEnd - touchState.current.start;
 
-    if (panelRef.current) {
-      // Restore transition for smooth snapping
-      panelRef.current.style.transition = "all 0.5s cubic-bezier(0.32,0.72,0,1)";
-      panelRef.current.style.transform = "translateY(0)";
-    }
-
-    if (!isPanelLowered && diff > 60) {
+    if (diff > 50) {
+      // Swipe down
       setIsPanelLowered(true);
-    } else if (isPanelLowered && diff < -60) {
+    } else if (diff < -50) {
+      // Swipe up
       setIsPanelLowered(false);
     }
 
     touchState.current.start = null;
-    touchState.current.offset = 0;
   };
 
   // Selection state
