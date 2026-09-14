@@ -112,7 +112,7 @@ export function BookingWizard({
   // Floating panel state for mobile
   const [isPanelLowered, setIsPanelLowered] = useState<boolean>(false);
   const panelRef = useRef<HTMLDivElement>(null);
-  
+
   // Ref for touch state (no re-renders!)
   const touchState = useRef({
     start: null as number | null,
@@ -123,7 +123,6 @@ export function BookingWizard({
     touchState.current.start = e.targetTouches[0].clientY;
     touchState.current.offset = 0;
     if (panelRef.current) {
-      // Disable transition while dragging for instant response
       panelRef.current.style.transition = "none";
     }
   };
@@ -141,7 +140,7 @@ export function BookingWizard({
     }
 
     touchState.current.offset = diff;
-    
+
     // Apply transform directly to DOM (0 re-renders!)
     if (panelRef.current) {
       panelRef.current.style.transform = `translateY(${diff}px)`;
@@ -164,7 +163,7 @@ export function BookingWizard({
     } else if (isPanelLowered && diff < -60) {
       setIsPanelLowered(false);
     }
-    
+
     touchState.current.start = null;
     touchState.current.offset = 0;
   };
@@ -436,8 +435,8 @@ export function BookingWizard({
         locale === "ru"
           ? "Пожалуйста, заполните все обязательные поля."
           : locale === "hy"
-          ? "Խնդրում ենք լրացնել բոլոր պարտադիր դաշտերը:"
-          : "Please fill all required fields."
+            ? "Խնդրում ենք լրացնել բոլոր պարտադիր դաշտերը:"
+            : "Please fill all required fields."
       );
       return;
     }
@@ -514,8 +513,8 @@ export function BookingWizard({
             locale === "ru"
               ? "3 раза введен неверный код. Запись отменена. Перенаправление..."
               : locale === "hy"
-              ? "3 անգամ սխալ կոդ եք մուտքագրել: Գրանցումը չեղարկված է:"
-              : "3 incorrect attempts. Booking cancelled. Redirecting..."
+                ? "3 անգամ սխալ կոդ եք մուտքագրել: Գրանցումը չեղարկված է:"
+                : "3 incorrect attempts. Booking cancelled. Redirecting..."
           );
           setTimeout(() => {
             window.location.href = `/${locale}`;
@@ -627,7 +626,7 @@ export function BookingWizard({
         Barbershop interior background image + Golden brand logo + Back chevron
       */}
       {/* TOP CINEMATIC HERO SECTION — full width on mobile, left half on desktop */}
-      <div 
+      <div
         className="sticky top-0 h-[75vh] sm:h-[80vh] lg:h-full lg:sticky lg:top-0 lg:w-[45%] w-full shrink-0 overflow-hidden select-none z-0"
         onClick={() => setIsPanelLowered(false)}
       >
@@ -681,16 +680,15 @@ export function BookingWizard({
         Rounded top corners overlapping the photo with exact Bulgakov UI styling
       */}
       {/* FLOATING BOTTOM SHEET — full width on mobile, right 55% on desktop */}
-      <div 
+      <div
         ref={panelRef}
-        className={`will-change-transform transform-gpu relative z-20 min-h-[90vh] lg:min-h-0 rounded-t-[40px] lg:rounded-none bg-[#14151a] border-t lg:border-t-0 lg:border-l border-white/[0.08] shadow-[0_-25px_60px_rgba(0,0,0,0.95)] lg:shadow-none px-5 sm:px-6 lg:px-10 pt-8 lg:pt-10 pb-10 flex-1 flex flex-col justify-between lg:w-[55%] lg:overflow-y-auto transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${
-          isPanelLowered 
-            ? "mt-[-5vh] sm:mt-[-10vh] lg:mt-0" 
+        className={`will-change-transform transform-gpu relative z-20 min-h-[90vh] lg:min-h-0 rounded-t-[40px] lg:rounded-none bg-[#14151a] border-t lg:border-t-0 lg:border-l border-white/[0.08] shadow-[0_-25px_60px_rgba(0,0,0,0.95)] lg:shadow-none px-5 sm:px-6 lg:px-10 pt-8 lg:pt-10 pb-10 flex-1 flex flex-col justify-between lg:w-[55%] lg:overflow-y-auto transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${isPanelLowered
+            ? "mt-[-5vh] sm:mt-[-10vh] lg:mt-0"
             : "mt-[calc(-30vh-3rem)] sm:mt-[calc(-30vh-4rem)] lg:mt-0"
-        }`}
+          }`}
       >
         {/* Mobile Drag Handle */}
-        <div 
+        <div
           className="absolute top-0 left-0 right-0 h-14 flex justify-center items-center lg:hidden cursor-pointer z-30 touch-none"
           onClick={() => setIsPanelLowered(!isPanelLowered)}
           onTouchStart={handleTouchStart}
@@ -729,11 +727,10 @@ export function BookingWizard({
                           setMonthOffset(m.offset);
                           setShowMonthPicker(false);
                         }}
-                        className={`w-full px-4 py-2.5 text-left text-sm font-medium transition-all cursor-pointer ${
-                          monthOffset === m.offset
+                        className={`w-full px-4 py-2.5 text-left text-sm font-medium transition-all cursor-pointer ${monthOffset === m.offset
                             ? "bg-white/10 text-white font-bold"
                             : "text-neutral-300 hover:bg-white/[0.05] hover:text-white"
-                        }`}
+                          }`}
                       >
                         {m.label}
                       </button>
@@ -755,23 +752,20 @@ export function BookingWizard({
                         key={item.dateStr}
                         type="button"
                         onClick={() => setSelectedDate(item.dateStr)}
-                        className={`min-w-[62px] h-[72px] lg:min-w-[68px] lg:h-[78px] rounded-2xl flex flex-col items-center justify-center transition-all duration-200 shrink-0 lg:shrink select-none cursor-pointer ${
-                          isSelected
+                        className={`min-w-[62px] h-[72px] lg:min-w-[68px] lg:h-[78px] rounded-2xl flex flex-col items-center justify-center transition-all duration-200 shrink-0 lg:shrink select-none cursor-pointer ${isSelected
                             ? "bg-white text-black shadow-[0_8px_25px_rgba(255,255,255,0.25)] scale-[1.03]"
                             : "bg-[#20222a] text-white hover:bg-[#282a34] border border-white/[0.04]"
-                        }`}
+                          }`}
                       >
                         <span
-                          className={`text-xl lg:text-2xl font-bold font-sans tracking-tight leading-none ${
-                            isSelected ? "text-black" : "text-white"
-                          }`}
+                          className={`text-xl lg:text-2xl font-bold font-sans tracking-tight leading-none ${isSelected ? "text-black" : "text-white"
+                            }`}
                         >
                           {item.dayNum}
                         </span>
                         <span
-                          className={`text-[10px] font-bold tracking-wider uppercase mt-1.5 ${
-                            isSelected ? "text-neutral-800" : "text-neutral-400"
-                          }`}
+                          className={`text-[10px] font-bold tracking-wider uppercase mt-1.5 ${isSelected ? "text-neutral-800" : "text-neutral-400"
+                            }`}
                         >
                           {item.dayName}
                         </span>
@@ -802,8 +796,8 @@ export function BookingWizard({
                       {locale === "ru"
                         ? "На выбранную дату нет свободных часов. Выберите другой день."
                         : locale === "hy"
-                        ? "Նշված օրվա համար ազատ ժամեր չկան: Խնդրում ենք ընտրել այլ օր:"
-                        : "No available slots for this date. Please pick another day."}
+                          ? "Նշված օրվա համար ազատ ժամեր չկան: Խնդրում ենք ընտրել այլ օր:"
+                          : "No available slots for this date. Please pick another day."}
                     </p>
                   </div>
                 ) : (
@@ -815,11 +809,10 @@ export function BookingWizard({
                           key={slot.id}
                           type="button"
                           onClick={() => setSelectedSlotId(slot.id)}
-                          className={`w-full py-3 rounded-xl text-xs sm:text-sm font-bold tracking-wider transition-all duration-200 select-none cursor-pointer flex items-center justify-center touch-manipulation ${
-                            isSelected
+                          className={`w-full py-3 rounded-xl text-xs sm:text-sm font-bold tracking-wider transition-all duration-200 select-none cursor-pointer flex items-center justify-center touch-manipulation ${isSelected
                               ? "bg-white text-black shadow-[0_8px_25px_rgba(255,255,255,0.22)] scale-[1.03] z-10"
                               : "bg-[#20222a] text-white hover:bg-[#282a34] border border-white/[0.04]"
-                          }`}
+                            }`}
                         >
                           {slot.startTime}
                         </button>
@@ -843,8 +836,8 @@ export function BookingWizard({
                   {locale === "ru"
                     ? "Выбрать услугу"
                     : locale === "hy"
-                    ? "Ընտրել ծառայությունը"
-                    : "Choose a service"}
+                      ? "Ընտրել ծառայությունը"
+                      : "Choose a service"}
                 </span>
                 <ArrowRight className="w-4 h-4" />
               </button>
@@ -872,8 +865,8 @@ export function BookingWizard({
                   {locale === "ru"
                     ? "ОСНОВНАЯ УСЛУГА"
                     : locale === "hy"
-                    ? "ՀԻՄՆԱԿԱՆ ԾԱՌԱՅՈՒԹՅՈՒՆ"
-                    : "PRIMARY SERVICE"}
+                      ? "ՀԻՄՆԱԿԱՆ ԾԱՌԱՅՈՒԹՅՈՒՆ"
+                      : "PRIMARY SERVICE"}
                 </div>
                 <div className="space-y-2.5">
                   {services.map((s) => {
@@ -882,25 +875,22 @@ export function BookingWizard({
                       <div
                         key={s.id}
                         onClick={() => setSelectedServiceId(s.id)}
-                        className={`p-4 rounded-2xl transition-all duration-200 cursor-pointer flex flex-col justify-between select-none ${
-                          isSelected
+                        className={`p-4 rounded-2xl transition-all duration-200 cursor-pointer flex flex-col justify-between select-none ${isSelected
                             ? "bg-white text-black shadow-[0_10px_30px_rgba(255,255,255,0.2)] ring-2 ring-white"
                             : "bg-[#20222a] text-white hover:bg-[#282a34] border border-white/[0.04]"
-                        }`}
+                          }`}
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div>
                             <h4
-                              className={`font-serif font-bold text-sm sm:text-base ${
-                                isSelected ? "text-black" : "text-white"
-                              }`}
+                              className={`font-serif font-bold text-sm sm:text-base ${isSelected ? "text-black" : "text-white"
+                                }`}
                             >
                               {getServiceName(s)}
                             </h4>
                             <p
-                              className={`text-xs mt-1 leading-relaxed ${
-                                isSelected ? "text-neutral-700" : "text-neutral-400"
-                              }`}
+                              className={`text-xs mt-1 leading-relaxed ${isSelected ? "text-neutral-700" : "text-neutral-400"
+                                }`}
                             >
                               {getServiceDesc(s)}
                             </p>
@@ -917,9 +907,8 @@ export function BookingWizard({
                             {s.durationMinutes} {locale === "hy" ? "րոպե" : "мин"}
                           </span>
                           <span
-                            className={`font-bold ${
-                              isSelected ? "text-black text-sm" : "text-[#c5a880] text-sm"
-                            }`}
+                            className={`font-bold ${isSelected ? "text-black text-sm" : "text-[#c5a880] text-sm"
+                              }`}
                           >
                             {formatCurrency(s.priceMinorUnits, locale)}
                           </span>
@@ -937,8 +926,8 @@ export function BookingWizard({
                     {locale === "ru"
                       ? "ДОПОЛНИТЕЛЬНЫЙ УХОД"
                       : locale === "hy"
-                      ? "ԼՐԱՑՈՒՑԻՉ ԽՆԱՄՔ"
-                      : "ADD-ONS & TREATMENTS"}
+                        ? "ԼՐԱՑՈՒՑԻՉ ԽՆԱՄՔ"
+                        : "ADD-ONS & TREATMENTS"}
                   </div>
                   <div className="space-y-2">
                     {addons.map((a) => {
@@ -947,28 +936,25 @@ export function BookingWizard({
                         <div
                           key={a.id}
                           onClick={() => toggleAddon(a.id)}
-                          className={`p-3.5 rounded-2xl border cursor-pointer transition-all flex items-center justify-between text-xs select-none ${
-                            isSelected
+                          className={`p-3.5 rounded-2xl border cursor-pointer transition-all flex items-center justify-between text-xs select-none ${isSelected
                               ? "bg-white text-black border-white shadow-md font-medium"
                               : "bg-[#20222a] text-white border-white/[0.04] hover:bg-[#282a34]"
-                          }`}
+                            }`}
                         >
                           <div className="flex items-center space-x-3">
                             <div
-                              className={`w-5 h-5 rounded-lg border flex items-center justify-center transition-all ${
-                                isSelected
+                              className={`w-5 h-5 rounded-lg border flex items-center justify-center transition-all ${isSelected
                                   ? "bg-black border-black text-white"
                                   : "border-white/20 bg-white/[0.03]"
-                              }`}
+                                }`}
                             >
                               {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
                             </div>
                             <span>{getAddonName(a)}</span>
                           </div>
                           <span
-                            className={`font-mono font-bold ${
-                              isSelected ? "text-black" : "text-[#c5a880]"
-                            }`}
+                            className={`font-mono font-bold ${isSelected ? "text-black" : "text-[#c5a880]"
+                              }`}
                           >
                             +{formatCurrency(a.priceMinorUnits, locale)}
                           </span>
@@ -1001,8 +987,8 @@ export function BookingWizard({
                   {locale === "ru"
                     ? "Продолжить к данным"
                     : locale === "hy"
-                    ? "Լրացնել տվյալները"
-                    : "Continue to Details"}
+                      ? "Լրացնել տվյալները"
+                      : "Continue to Details"}
                 </span>
                 <ArrowRight className="w-4 h-4" />
               </button>
@@ -1092,8 +1078,8 @@ export function BookingWizard({
                       {locale === "ru"
                         ? "Код подтверждения будет отправлен по SMS на этот номер"
                         : locale === "hy"
-                        ? "Հաստատման կոդն ուղարկվելու է նշված համարին (SMS)"
-                        : "Verification code will be sent via SMS to this number"}
+                          ? "Հաստատման կոդն ուղարկվելու է նշված համարին (SMS)"
+                          : "Verification code will be sent via SMS to this number"}
                     </span>
                   </p>
                 </div>
@@ -1143,8 +1129,8 @@ export function BookingWizard({
                   {locale === "ru"
                     ? `Введите 6-значный проверочный код, отправленный на номер ${guestPhone}`
                     : locale === "hy"
-                    ? `Մուտքագրեք 6-նիշ հաստատման կոդը, որն ուղարկվել է ${guestPhone} համարին`
-                    : `Enter the 6-digit code sent to ${guestPhone}`}
+                      ? `Մուտքագրեք 6-նիշ հաստատման կոդը, որն ուղարկվել է ${guestPhone} համարին`
+                      : `Enter the 6-digit code sent to ${guestPhone}`}
                 </p>
               </div>
 
