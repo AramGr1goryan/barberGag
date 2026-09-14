@@ -474,24 +474,52 @@ export class SmsService {
     }
 
     // Code matches! Atomic transaction to confirm booking and mark slot BOOKED
-    await prisma.$transaction(async (tx) => {
-      await tx.smsVerification.update({
-        where: { id: record.id },
-        data: { verifiedAt: now },
-      });
-
-      await tx.booking.update({
-        where: { id: bookingId },
-        data: { status: BookingStatus.CONFIRMED },
-      });
-
-      if (record.booking.slotId) {
-        await tx.availabilitySlot.update({
-          where: { id: record.booking.slotId },
-          data: { status: SlotStatus.BOOKED },
+    try {
+      await prisma.$transaction(async (tx) => {
+        // Find the slot based on the booking's requested date and time
+        const slot = await tx.availabilitySlot.findFirst({
+          where: {
+            availabilityDay: { date: record.booking.date },
+            startTime: record.booking.startTime,
+            status: SlotStatus.AVAILABLE,
+          },
         });
+
+        if (!slot) {
+          throw new Error("SLOT_TAKEN");
+        }
+
+        await tx.smsVerification.update({
+          where: { id: record.id },
+          data: { verifiedAt: now },
+        });
+
+        await tx.booking.update({
+          where: { id: bookingId },
+          data: { 
+            status: BookingStatus.CONFIRMED,
+            slotId: slot.id 
+          },
+        });
+
+        await tx.availabilitySlot.update({
+          where: { id: slot.id },
+          data: { 
+            status: SlotStatus.BOOKED,
+            version: { increment: 1 },
+          },
+        });
+      });
+    } catch (e) {
+      if (e instanceof Error && e.message === "SLOT_TAKEN") {
+        return { 
+          success: false, 
+          status: "NOT_FOUND", // Re-using an existing error code mapped in route.ts, but let's use a standard response
+          message: "Извините, это время уже было занято кем-то другим пока вы вводили код." 
+        };
       }
-    });
+      throw e;
+    }
 
     // Send Telegram notification with full client details asynchronously
     const { telegramService } = await import("./telegram.service");

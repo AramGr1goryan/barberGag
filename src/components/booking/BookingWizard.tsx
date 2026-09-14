@@ -112,9 +112,26 @@ export function BookingWizard({
   // Floating panel state for mobile
   const [isPanelLowered, setIsPanelLowered] = useState<boolean>(false);
   const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchOffset, setTouchOffset] = useState<number>(0);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStart(e.targetTouches[0].clientY);
+    setTouchOffset(0);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (touchStart === null) return;
+    const currentY = e.targetTouches[0].clientY;
+    let diff = currentY - touchStart;
+
+    // Add some resistance if dragging out of bounds
+    if (!isPanelLowered && diff < 0) {
+      diff = diff * 0.2; // Resistance when dragging up from top
+    } else if (isPanelLowered && diff > 0) {
+      diff = diff * 0.2; // Resistance when dragging down from bottom
+    }
+
+    setTouchOffset(diff);
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
@@ -122,12 +139,14 @@ export function BookingWizard({
     const touchEnd = e.changedTouches[0].clientY;
     const diff = touchEnd - touchStart;
 
-    if (diff > 40) {
+    if (!isPanelLowered && diff > 60) {
       setIsPanelLowered(true);
-    } else if (diff < -40) {
+    } else if (isPanelLowered && diff < -60) {
       setIsPanelLowered(false);
     }
+    
     setTouchStart(null);
+    setTouchOffset(0);
   };
 
   // Selection state
@@ -643,17 +662,23 @@ export function BookingWizard({
       */}
       {/* FLOATING BOTTOM SHEET — full width on mobile, right 55% on desktop */}
       <div 
-        className={`relative z-20 min-h-[90vh] lg:min-h-0 rounded-t-[40px] lg:rounded-none bg-[#14151a] border-t lg:border-t-0 lg:border-l border-white/[0.08] shadow-[0_-25px_60px_rgba(0,0,0,0.95)] lg:shadow-none px-5 sm:px-6 lg:px-10 pt-8 lg:pt-10 pb-10 flex-1 flex flex-col justify-between lg:w-[55%] lg:overflow-y-auto transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${
+        className={`relative z-20 min-h-[90vh] lg:min-h-0 rounded-t-[40px] lg:rounded-none bg-[#14151a] border-t lg:border-t-0 lg:border-l border-white/[0.08] shadow-[0_-25px_60px_rgba(0,0,0,0.95)] lg:shadow-none px-5 sm:px-6 lg:px-10 pt-8 lg:pt-10 pb-10 flex-1 flex flex-col justify-between lg:w-[55%] lg:overflow-y-auto ${
+          touchStart !== null ? "" : "transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]"
+        } ${
           isPanelLowered 
             ? "mt-[-5vh] sm:mt-[-10vh] lg:mt-0" 
             : "mt-[calc(-30vh-3rem)] sm:mt-[calc(-30vh-4rem)] lg:mt-0"
         }`}
+        style={{
+          transform: touchStart !== null ? `translateY(${touchOffset}px)` : "translateY(0)"
+        }}
       >
         {/* Mobile Drag Handle */}
         <div 
-          className="absolute top-0 left-0 right-0 h-14 flex justify-center items-center lg:hidden cursor-pointer z-30"
+          className="absolute top-0 left-0 right-0 h-14 flex justify-center items-center lg:hidden cursor-pointer z-30 touch-none"
           onClick={() => setIsPanelLowered(!isPanelLowered)}
           onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
           <div className="w-12 h-1.5 bg-white/20 rounded-full transition-colors hover:bg-white/40 active:bg-white/50" />
@@ -747,11 +772,11 @@ export function BookingWizard({
                 </div>
 
                 {isLoadingSlots ? (
-                  <div className="flex gap-2.5 py-2 overflow-hidden">
-                    {[1, 2, 3, 4, 5].map((i) => (
+                  <div className="grid grid-cols-4 gap-2 sm:gap-2.5 py-2 overflow-hidden">
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
                       <div
                         key={i}
-                        className="h-11 w-20 rounded-2xl bg-white/[0.05] animate-pulse shrink-0"
+                        className="h-11 w-full rounded-2xl bg-white/[0.05] animate-pulse"
                       />
                     ))}
                   </div>
@@ -766,7 +791,7 @@ export function BookingWizard({
                     </p>
                   </div>
                 ) : (
-                  <div className="flex gap-2.5 overflow-x-auto lg:flex-wrap pb-2 pt-1 scrollbar-none select-none -mx-1 px-1">
+                  <div className="grid grid-cols-4 gap-2 sm:gap-2.5 max-h-[30vh] sm:max-h-[35vh] lg:max-h-[40vh] overflow-y-auto overflow-x-hidden pb-2 pt-1 scrollbar-none select-none -mx-1 px-1">
                     {availableSlots.map((slot) => {
                       const isSelected = selectedSlotId === slot.id;
                       return (
@@ -774,9 +799,9 @@ export function BookingWizard({
                           key={slot.id}
                           type="button"
                           onClick={() => setSelectedSlotId(slot.id)}
-                          className={`px-5 lg:px-6 py-3 rounded-2xl text-xs lg:text-sm font-bold tracking-wider transition-all duration-200 shrink-0 lg:shrink select-none cursor-pointer ${
+                          className={`w-full py-3 rounded-xl text-xs sm:text-sm font-bold tracking-wider transition-all duration-200 select-none cursor-pointer flex items-center justify-center ${
                             isSelected
-                              ? "bg-white text-black shadow-[0_8px_25px_rgba(255,255,255,0.22)] scale-[1.03]"
+                              ? "bg-white text-black shadow-[0_8px_25px_rgba(255,255,255,0.22)] scale-[1.03] z-10"
                               : "bg-[#20222a] text-white hover:bg-[#282a34] border border-white/[0.04]"
                           }`}
                         >

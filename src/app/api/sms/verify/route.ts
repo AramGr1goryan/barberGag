@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
           status: result.status,
           attemptsLeft: result.attemptsLeft,
           redirectToHome: Boolean(result.redirectToHome),
-          error: errorMessages[result.status] || "Ошибка верификации.",
+          error: result.message || errorMessages[result.status] || "Ошибка верификации.",
         },
         { status: 400 }
       );

@@ -142,22 +142,10 @@ export class BookingService {
         throw new Error("SLOT_ALREADY_RESERVED");
       }
 
-      // Mark slot as HELD pending verification
-      await tx.availabilitySlot.update({
-        where: { id: slotId },
-        data: {
-          status: SlotStatus.HELD,
-          version: { increment: 1 },
-        },
-      });
+      // DO NOT mark slot as HELD pending verification
+      // The slot will only be reserved and linked when the user enters the correct OTP
 
-      // Free up any previous cancelled/unverified booking holding this slotId (prevents unique constraint error)
-      await tx.booking.updateMany({
-        where: { slotId: currentSlot.id },
-        data: { slotId: null },
-      });
-
-      // Create Booking record
+      // Create Booking record without locking the slotId yet
       const createdBooking = await tx.booking.create({
         data: {
           bookingNumber,
@@ -171,7 +159,7 @@ export class BookingService {
           totalDurationMinutes: totalDuration,
           totalPriceMinorUnits: totalPrice,
           status: BookingStatus.PENDING_VERIFICATION,
-          slotId: currentSlot.id,
+          slotId: null, // Will be linked upon successful OTP verification
           items: {
             create: [
               {
