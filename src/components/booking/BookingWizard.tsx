@@ -116,11 +116,19 @@ export function BookingWizard({
   // Ref for touch state (no re-renders!)
   const touchState = useRef({
     start: null as number | null,
+    scrollY: 0,
     offset: 0
   });
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    if (typeof window !== "undefined" && window.innerWidth >= 1024) return;
+    // Don't capture touch if it's on a horizontal scrolling element (like the time slots container)
+    const target = e.target as HTMLElement;
+    if (target.closest('.overflow-x-auto') || target.closest('[data-horizontal-scroll="true"]')) {
+      return;
+    }
     touchState.current.start = e.targetTouches[0].clientY;
+    touchState.current.scrollY = window.scrollY;
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
@@ -129,14 +137,21 @@ export function BookingWizard({
 
   const handleTouchEnd = (e: React.TouchEvent) => {
     if (touchState.current.start === null) return;
+    if (typeof window !== "undefined" && window.innerWidth >= 1024) return;
+
     const touchEnd = e.changedTouches[0].clientY;
     const diff = touchEnd - touchState.current.start;
 
-    if (diff > 50) {
-      // Swipe down
-      setIsPanelLowered(true);
-    } else if (diff < -50) {
-      // Swipe up
+    // Swipe down
+    if (diff > 60) {
+      // Only lower the panel if we were at the top of the scroll when the swipe started
+      // This prevents the panel from closing while the user is simply scrolling up the content
+      if (touchState.current.scrollY <= 10) {
+        setIsPanelLowered(true);
+      }
+    } 
+    // Swipe up
+    else if (diff < -60) {
       setIsPanelLowered(false);
     }
 
@@ -657,6 +672,9 @@ export function BookingWizard({
       {/* FLOATING BOTTOM SHEET — full width on mobile, right 55% on desktop */}
       <div
         ref={panelRef}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
         className={`will-change-transform transform-gpu relative z-20 min-h-[90vh] lg:min-h-0 rounded-t-[40px] lg:rounded-none bg-[#14151a] border-t lg:border-t-0 lg:border-l border-white/[0.08] shadow-[0_-25px_60px_rgba(0,0,0,0.95)] lg:shadow-none px-5 sm:px-6 lg:px-10 pt-8 lg:pt-10 pb-10 flex-1 flex flex-col justify-between lg:w-[55%] lg:overflow-y-auto transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${isPanelLowered
             ? "mt-[-5vh] sm:mt-[-10vh] lg:mt-0"
             : "mt-[calc(-30vh-3rem)] sm:mt-[calc(-30vh-4rem)] lg:mt-0"
@@ -666,9 +684,6 @@ export function BookingWizard({
         <div
           className="absolute top-0 left-0 right-0 h-14 flex justify-center items-center lg:hidden cursor-pointer z-30 touch-none"
           onClick={() => setIsPanelLowered(!isPanelLowered)}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
         >
           <div className="w-12 h-1.5 bg-white/20 rounded-full transition-colors hover:bg-white/40 active:bg-white/50" />
         </div>
