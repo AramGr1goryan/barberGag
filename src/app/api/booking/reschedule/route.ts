@@ -31,11 +31,11 @@ export async function POST(req: NextRequest) {
 
     // Send Telegram reschedule notification
     const { telegramService } = await import("@/services/telegram.service");
-    telegramService
-      .notifyBookingRescheduled(validated.bookingId, current?.date, current?.startTime)
-      .catch((err) => {
-        console.error("Failed to send telegram reschedule notification:", err);
-      });
+    try {
+      await telegramService.notifyBookingRescheduled(validated.bookingId, current?.date, current?.startTime);
+    } catch (err) {
+      console.error("Failed to send telegram reschedule notification:", err);
+    }
 
     return NextResponse.json({ success: true, booking: updated });
   } catch (error: unknown) {

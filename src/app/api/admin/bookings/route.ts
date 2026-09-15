@@ -90,9 +90,11 @@ export async function PUT(req: NextRequest) {
 
     if (status === BookingStatus.CANCELLED) {
       const { telegramService } = await import("@/services/telegram.service");
-      telegramService.notifyBookingCancelled(bookingId, reason).catch((err) => {
+      try {
+        await telegramService.notifyBookingCancelled(bookingId, reason);
+      } catch (err) {
         console.error("Failed to send telegram cancellation notification:", err);
-      });
+      }
     }
 
     return NextResponse.json({ success: true, booking: updated });

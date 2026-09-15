@@ -28,9 +28,11 @@ export async function POST(req: NextRequest) {
 
     // Send Telegram notification for callback request
     const { telegramService } = await import("@/services/telegram.service");
-    telegramService.notifyCallbackRequest(request.id).catch((err) => {
+    try {
+      await telegramService.notifyCallbackRequest(request.id);
+    } catch (err) {
       console.error("Failed to send telegram callback notification:", err);
-    });
+    }
 
     return NextResponse.json({ success: true, id: request.id });
   } catch (error: unknown) {

@@ -279,9 +279,11 @@ export async function POST(req: NextRequest) {
 
       // 5. Send Telegram notification
       const { telegramService } = await import("@/services/telegram.service");
-      telegramService.notifyNewBooking(booking.id).catch((err) => {
+      try {
+        await telegramService.notifyNewBooking(booking.id);
+      } catch (err) {
         console.error("Failed to send telegram notification for manual booking:", err);
-      });
+      }
 
       await adminService.logAudit({
         actorId: session.userId,

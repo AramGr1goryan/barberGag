@@ -45,7 +45,7 @@ export class NikitaSmsProvider implements SmsProvider {
       });
 
       const endpoint = `https://smspro.nikita.am/api/send?${params.toString()}`;
-      const response = await fetch(endpoint, { method: "GET" });
+      const response = await fetch(endpoint, { method: "GET", cache: "no-store" });
       const text = await response.text();
       console.log(`[Nikita SMS] Sent to ${cleanPhone}, response:`, text);
       return response.ok && !text.toLowerCase().includes("error");
@@ -79,7 +79,7 @@ export class SmsRuProvider implements SmsProvider {
       });
       if (this.from) params.append("from", this.from);
 
-      const response = await fetch(`https://sms.ru/sms/send?${params.toString()}`);
+      const response = await fetch(`https://sms.ru/sms/send?${params.toString()}`, { cache: "no-store" });
       const data = await response.json();
       console.log(`[SMS.ru] Sent to ${cleanPhone}, response:`, data);
       return data?.status === "OK";
@@ -111,6 +111,7 @@ export class MobipaceSmsProvider implements SmsProvider {
           "Content-Type": "application/json",
           Authorization: `Bearer ${this.apiKey}`,
         },
+        cache: "no-store",
         body: JSON.stringify({
           phone: cleanPhone,
           text: message,
@@ -154,6 +155,7 @@ export class TwilioSmsProvider implements SmsProvider {
           Authorization: `Basic ${Buffer.from(`${this.accountSid}:${this.authToken}`).toString("base64")}`,
           "Content-Type": "application/x-www-form-urlencoded",
         },
+        cache: "no-store",
         body: body.toString(),
       });
 
@@ -184,12 +186,13 @@ export class GenericHttpSmsProvider implements SmsProvider {
           .replace("{phone}", cleanPhone)
           .replace("{text}", encodeURIComponent(message))
           .replace("{message}", encodeURIComponent(message));
-        const res = await fetch(url);
+        const res = await fetch(url, { cache: "no-store" });
         return res.ok;
       } else {
         const res = await fetch(this.gatewayUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          cache: "no-store",
           body: JSON.stringify({ to: cleanPhone, phone: cleanPhone, message, text: message }),
         });
         return res.ok;
@@ -521,11 +524,13 @@ export class SmsService {
       throw e;
     }
 
-    // Send Telegram notification with full client details asynchronously
+    // Send Telegram notification with full client details
     const { telegramService } = await import("./telegram.service");
-    telegramService.notifyNewBooking(bookingId).catch((err) => {
+    try {
+      await telegramService.notifyNewBooking(bookingId);
+    } catch (err) {
       console.error("Failed to send telegram notification:", err);
-    });
+    }
 
     return { success: true, status: "SUCCESS" };
   }

@@ -50,7 +50,7 @@ export class TelegramService {
 
     // 3. Auto-detect from getUpdates
     try {
-      const res = await fetch(`https://api.telegram.org/bot${this.botToken}/getUpdates`);
+      const res = await fetch(`https://api.telegram.org/bot${this.botToken}/getUpdates`, { cache: "no-store" });
       const data = await res.json();
       if (data.ok && Array.isArray(data.result) && data.result.length > 0) {
         for (const item of data.result) {
@@ -114,7 +114,9 @@ export class TelegramService {
     text: string,
     targetChatId?: string
   ): Promise<{ success: boolean; error?: string; sentCount?: number }> {
-    const chatIds = targetChatId ? [targetChatId] : await this.getAllChatIds();
+    const chatIds = targetChatId 
+      ? targetChatId.split(/[,;\s]+/).map(s => s.trim()).filter(Boolean)
+      : await this.getAllChatIds();
 
     if (chatIds.length === 0) {
       return {
@@ -132,6 +134,7 @@ export class TelegramService {
           const res = await fetch(`https://api.telegram.org/bot${this.botToken}/sendMessage`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
+            cache: "no-store",
             body: JSON.stringify({
               chat_id: cid,
               text,

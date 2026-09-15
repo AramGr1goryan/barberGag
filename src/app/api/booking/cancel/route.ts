@@ -23,9 +23,11 @@ export async function POST(req: NextRequest) {
 
     // Send Telegram cancellation notification
     const { telegramService } = await import("@/services/telegram.service");
-    telegramService.notifyBookingCancelled(bookingId, reason).catch((err) => {
+    try {
+      await telegramService.notifyBookingCancelled(bookingId, reason);
+    } catch (err) {
       console.error("Failed to send telegram cancellation notification:", err);
-    });
+    }
 
     // Fetch configured cooldown hours from settings (default 3 hours)
     const { getCancellationCooldownHours } = await import("@/lib/settings");
