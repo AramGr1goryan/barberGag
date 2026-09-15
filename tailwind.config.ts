@@ -34,6 +34,8 @@ const config: Config = {
         "fade-in": "fadeIn 0.5s ease-out forwards",
         "fade-up": "fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards",
         "pulse-subtle": "pulseSubtle 3s infinite",
+        "shimmer": "shimmer 2s infinite",
+        "progress": "progressPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
       },
       keyframes: {
         fadeIn: {
@@ -47,6 +49,13 @@ const config: Config = {
         pulseSubtle: {
           "0%, 100%": { opacity: "1" },
           "50%": { opacity: "0.85" },
+        },
+        shimmer: {
+          "100%": { transform: "translateX(100%)" },
+        },
+        progressPulse: {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.5" },
         },
       },
     },

@@ -602,7 +602,7 @@ export function BookingWizard({
       */}
       {/* TOP CINEMATIC HERO SECTION — full width on mobile, left half on desktop */}
       <div
-        className="sticky top-0 h-[75vh] sm:h-[80vh] lg:h-full lg:sticky lg:top-0 lg:w-[45%] w-full shrink-0 overflow-hidden select-none z-0"
+        className="sticky top-0 h-[75vh] sm:h-[80vh] lg:h-screen lg:sticky lg:top-0 lg:w-[45%] w-full shrink-0 overflow-hidden select-none z-0"
         onClick={() => setIsPanelLowered(false)}
       >
         <Image

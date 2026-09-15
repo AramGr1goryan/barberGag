@@ -17,6 +17,8 @@ export const metadata: Metadata = {
   },
 };
 
+import { RouteProgressLoader } from "@/components/ui/RouteProgressLoader";
+
 export default async function RootLayout({
   children,
 }: {
@@ -44,6 +46,7 @@ export default async function RootLayout({
   return (
     <html lang="hy" style={themeStyle}>
       <body className="bg-background text-foreground antialiased selection:bg-accent selection:text-accent-foreground min-h-screen flex flex-col">
+        <RouteProgressLoader />
         {children}
       </body>
     </html>

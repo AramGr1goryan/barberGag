@@ -5,6 +5,7 @@ import { useAdminI18n } from "@/context/AdminI18nContext";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { Badge } from "@/components/ui/Badge";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import {
   CalendarDays,
   Plus,
@@ -926,8 +927,7 @@ export function CalendarManager() {
 
             {isLoading ? (
               <div className="py-16 text-center text-xs font-mono text-muted flex flex-col items-center justify-center space-y-2">
-                <div className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full animate-spin" />
-                <span>{t.common.loading}</span>
+                <LoadingSpinner size="md" label={t.common.loading} />
               </div>
             ) : filteredSlots.length === 0 ? (
               <div className="py-16 text-center space-y-3">

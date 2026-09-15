@@ -22,14 +22,15 @@ import {
   ArrowDownRight,
   RefreshCw,
   Download,
-  ShieldCheck,
   CheckCircle2,
   XCircle,
   BarChart3,
   Percent,
   Scissors,
+  ShieldCheck,
   UserCheck,
 } from "lucide-react";
+import { StatCardSkeleton, CardSkeleton, TableSkeleton } from "@/components/ui/Skeleton";
 
 export function FinancialAnalyticsDashboard() {
   const { t, locale } = useAdminI18n();
@@ -109,9 +110,18 @@ export function FinancialAnalyticsDashboard() {
 
   if (isLoading && !analytics) {
     return (
-      <div className="py-24 text-center space-y-4">
-        <div className="w-10 h-10 border-2 border-accent border-t-transparent rounded-full animate-spin mx-auto" />
-        <p className="text-xs font-mono text-muted">{t.common.loading}</p>
+      <div className="space-y-8 mt-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <CardSkeleton />
+          <CardSkeleton />
+        </div>
+        <TableSkeleton rows={5} />
       </div>
     );
   }

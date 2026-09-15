@@ -5,6 +5,7 @@ import { useAdminI18n } from "@/context/AdminI18nContext";
 import { formatCurrency } from "@/lib/timezone";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { TableSkeleton } from "@/components/ui/Skeleton";
 import { CheckCircle, XCircle, UserX, Search, RefreshCw, Clock, Check, Send, BarChart3 } from "lucide-react";
 
 export interface BookingAdminItem {
@@ -450,7 +451,7 @@ export function BookingsManager() {
       {/* Bookings Table Card */}
       <div className="bg-[#1d202c]/75 border border-white/[0.09] backdrop-blur-2xl rounded-3xl p-6 sm:p-8 shadow-[0_12px_45px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.06)] overflow-hidden">
         {isLoading ? (
-          <div className="py-14 text-center text-xs font-mono text-muted animate-pulse">{t.common.loading}</div>
+          <TableSkeleton rows={5} />
         ) : bookings.length === 0 ? (
           <div className="py-14 text-center text-xs font-mono text-muted">
             {t.bookings.noBookingsFound}

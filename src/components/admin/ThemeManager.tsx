@@ -501,21 +501,17 @@ export function ThemeManager() {
 
         {/* Action Save Button */}
         <div className="flex justify-end pt-2">
-          <button
+          <Button
             type="button"
+            variant="primary"
+            size="lg"
             onClick={handleSaveFonts}
-            disabled={isFontLoading}
-            className="inline-flex items-center space-x-2 px-8 py-3.5 rounded-full font-mono text-xs font-bold uppercase tracking-wider bg-accent text-accent-foreground shadow-[0_4px_25px_rgba(197,168,128,0.3)] hover:bg-accent-hover hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
+            isLoading={isFontLoading}
+            className="flex items-center space-x-2"
           >
-            {isFontLoading ? (
-              <span>{t.common.loading}</span>
-            ) : (
-              <>
-                <Check className="w-4 h-4" />
-                <span>{t.appearance.saveFonts}</span>
-              </>
-            )}
-          </button>
+            {!isFontLoading && <Check className="w-4 h-4" />}
+            <span>{t.appearance.saveFonts}</span>
+          </Button>
         </div>
       </div>
 
@@ -737,13 +733,15 @@ export function ThemeManager() {
           </div>
         </div>
 
-        <button
+        <Button
           type="submit"
-          disabled={isLoading}
-          className="inline-flex items-center justify-center px-8 py-3.5 rounded-full font-mono text-xs font-bold uppercase tracking-wider bg-accent text-accent-foreground shadow-[0_4px_20px_rgba(197,168,128,0.25)] hover:bg-accent-hover hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
+          variant="primary"
+          size="lg"
+          isLoading={isLoading}
+          className="w-full sm:w-auto mt-8"
         >
-          {isLoading ? t.common.loading : t.appearance.saveTheme}
-        </button>
+          {t.appearance.saveTheme}
+        </Button>
       </form>
     </div>
   );

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useAdminI18n } from "@/context/AdminI18nContext";
 import { Button } from "@/components/ui/Button";
 import { CheckCircle2, FileText } from "lucide-react";
+import { FormSkeleton } from "@/components/ui/Skeleton";
 
 export interface ContentItem {
   id: string;
@@ -96,10 +97,7 @@ export function ContentManager() {
       )}
 
       {isLoading ? (
-        <div className="py-16 text-center text-xs font-mono text-muted flex flex-col items-center justify-center space-y-3">
-          <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
-          <span>{t.common.loading}</span>
-        </div>
+        <FormSkeleton fields={5} />
       ) : (
         <div className="space-y-6">
           {contents.map((item) => (

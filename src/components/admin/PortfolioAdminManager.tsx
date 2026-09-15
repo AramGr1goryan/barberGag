@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
 import { Plus, Trash2, Image as ImageIcon, CheckCircle2 } from "lucide-react";
+import { MediaGridSkeleton } from "@/components/ui/Skeleton";
+import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
 export interface AdminPortfolioItem {
   id: string;
@@ -169,10 +171,7 @@ export function PortfolioAdminManager() {
 
       {/* Grid */}
       {isLoading ? (
-        <div className="py-16 text-center text-xs font-mono text-muted flex flex-col items-center justify-center space-y-3">
-          <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
-          <span>{t.common.loading}</span>
-        </div>
+        <MediaGridSkeleton count={6} />
       ) : items.length === 0 ? (
         <div className="rounded-3xl bg-[#1d202c]/65 backdrop-blur-xl border border-white/[0.09] p-12 text-center space-y-3 shadow-xl">
           <ImageIcon className="w-12 h-12 text-muted/30 mx-auto" />
@@ -248,10 +247,9 @@ export function PortfolioAdminManager() {
               />
             </div>
             {isUploading && (
-              <p className="text-xs text-accent mt-2 flex items-center gap-1.5 font-mono">
-                <span className="w-2 h-2 rounded-full bg-accent animate-ping" />
-                {t.common.loading}
-              </p>
+              <div className="mt-4 flex justify-center">
+                <LoadingSpinner size="sm" label={t.common.loading} />
+              </div>
             )}
             {imageUrl && (
               <p className="text-xs text-emerald-400 mt-2 font-mono truncate">
