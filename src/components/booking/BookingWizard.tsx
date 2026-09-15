@@ -171,18 +171,7 @@ export function BookingWizard({
   const [showMonthPicker, setShowMonthPicker] = useState<boolean>(false);
   const monthPickerRef = useRef<HTMLDivElement>(null);
 
-  // Close month picker on outside click
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (monthPickerRef.current && !monthPickerRef.current.contains(e.target as Node)) {
-        setShowMonthPicker(false);
-      }
-    };
-    if (showMonthPicker) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [showMonthPicker]);
+  // Close month picker is now handled by a full-screen overlay in JSX
 
   // Service & Addon selections
   const [selectedServiceId, setSelectedServiceId] = useState<string>(initialServiceId || services[0]?.id || "");
@@ -708,8 +697,14 @@ export function BookingWizard({
 
                 {/* Month Picker Dropdown */}
                 {showMonthPicker && (
-                  <div className="absolute right-0 top-full mt-2 z-50 w-56 py-2 rounded-2xl bg-[#1a1c24] border border-white/[0.1] shadow-[0_20px_60px_rgba(0,0,0,0.9)] backdrop-blur-xl animate-in fade-in slide-in-from-top-2 duration-200">
-                    {availableMonths.map((m) => (
+                  <>
+                    <div 
+                      className="fixed inset-0 z-40" 
+                      onClick={() => setShowMonthPicker(false)}
+                      onTouchStart={() => setShowMonthPicker(false)}
+                    />
+                    <div className="absolute right-0 top-full mt-2 z-50 w-56 py-2 rounded-2xl bg-[#1a1c24] border border-white/[0.1] shadow-[0_20px_60px_rgba(0,0,0,0.9)] backdrop-blur-xl animate-in fade-in slide-in-from-top-2 duration-200">
+                      {availableMonths.map((m) => (
                       <button
                         key={m.offset}
                         type="button"
@@ -725,7 +720,8 @@ export function BookingWizard({
                         {m.label}
                       </button>
                     ))}
-                  </div>
+                    </div>
+                  </>
                 )}
               </div>
 

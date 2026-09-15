@@ -34,6 +34,38 @@ export class AvailabilityService {
   async cleanupExpiredHeldSlots() {
     try {
       const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+      
+      // 1. Clean up abandoned PENDING_VERIFICATION bookings
+      const expiredBookings = await prisma.booking.findMany({
+        where: {
+          status: BookingStatus.PENDING_VERIFICATION,
+          updatedAt: { lt: tenMinutesAgo },
+        },
+        select: { id: true, slotId: true },
+      });
+
+      if (expiredBookings.length > 0) {
+        const bookingIds = expiredBookings.map((b) => b.id);
+        const slotIds = expiredBookings.map((b) => b.slotId).filter(Boolean) as string[];
+
+        await prisma.booking.updateMany({
+          where: { id: { in: bookingIds } },
+          data: {
+            slotId: null,
+            status: BookingStatus.CANCELLED,
+            cancellationReason: "EXPIRED_VERIFICATION",
+          },
+        });
+
+        if (slotIds.length > 0) {
+          await prisma.availabilitySlot.updateMany({
+            where: { id: { in: slotIds } },
+            data: { status: SlotStatus.AVAILABLE },
+          });
+        }
+      }
+      
+      // 2. Also clean up any lingering HELD slots just in case
       const expiredSlots = await prisma.availabilitySlot.findMany({
         where: {
           status: SlotStatus.HELD,
@@ -43,24 +75,13 @@ export class AvailabilityService {
 
       if (expiredSlots.length > 0) {
         const slotIds = expiredSlots.map((s) => s.id);
-        await prisma.booking.updateMany({
-          where: {
-            slotId: { in: slotIds },
-            status: BookingStatus.PENDING_VERIFICATION,
-          },
-          data: {
-            slotId: null,
-            status: BookingStatus.CANCELLED,
-            cancellationReason: "EXPIRED_VERIFICATION",
-          },
-        });
         await prisma.availabilitySlot.updateMany({
           where: { id: { in: slotIds } },
           data: { status: SlotStatus.AVAILABLE },
         });
       }
     } catch (e) {
-      console.error("Error cleaning up expired held slots:", e);
+      console.error("Error cleaning up expired held slots/bookings:", e);
     }
   }
 
