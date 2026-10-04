@@ -124,19 +124,53 @@ export class BookingService {
 
     // 5. Atomic Transaction to lock the slot and create booking
     const booking = await prisma.$transaction(async (tx) => {
-      // Re-fetch slot inside transaction with status check
       const currentSlot = await tx.availabilitySlot.findUnique({
         where: { id: slotId },
+        include: { availabilityDay: true },
       });
 
       if (!currentSlot || currentSlot.status !== SlotStatus.AVAILABLE) {
         throw new Error("SLOT_ALREADY_RESERVED");
       }
 
-      // DO NOT mark slot as HELD pending verification
-      // The slot will only be reserved and linked when the user enters the correct OTP
+      const slotsNeeded = Math.ceil(totalDuration / 15);
+      
+      const day = await tx.availabilityDay.findUnique({
+        where: { date: bookingDate },
+        include: {
+          slots: {
+            where: { status: SlotStatus.AVAILABLE, startTime: { gte: currentSlot.startTime } },
+            orderBy: { startTime: 'asc' },
+            take: slotsNeeded
+          }
+        }
+      });
+      
+      if (!day || day.slots.length < slotsNeeded) {
+        throw new Error("SLOT_ALREADY_RESERVED");
+      }
+      
+      for (let i = 1; i < slotsNeeded; i++) {
+          const prev = day.slots[i-1].startTime;
+          const curr = day.slots[i].startTime;
+          const [pH, pM] = prev.split(":").map(Number);
+          const [cH, cM] = curr.split(":").map(Number);
+          if (pH * 60 + pM + 15 !== cH * 60 + cM) {
+              throw new Error("SLOT_ALREADY_RESERVED");
+          }
+      }
 
-      // Create Booking record without locking the slots yet
+      await tx.availabilitySlot.updateMany({
+        where: { id: { in: day.slots.map(s => s.id) } },
+        data: { status: SlotStatus.HELD }
+      });
+
+      const endTimeCalc = (() => {
+        const [h, m] = currentSlot.startTime.split(":").map(Number);
+        const endMins = h * 60 + m + totalDuration;
+        return `${Math.floor(endMins / 60).toString().padStart(2, "0")}:${(endMins % 60).toString().padStart(2, "0")}`;
+      })();
+
       const createdBooking = await tx.booking.create({
         data: {
           bookingNumber,
@@ -147,11 +181,12 @@ export class BookingService {
           sessionTokenHash,
           date: bookingDate,
           startTime: currentSlot.startTime,
-          endTime: currentSlot.endTime,
+          endTime: endTimeCalc,
           totalDurationMinutes: totalDuration,
           totalPriceMinorUnits: totalPrice,
           status: BookingStatus.PENDING_VERIFICATION,
           locale: locale,
+          slots: { connect: day.slots.map(s => ({ id: s.id })) },
           items: {
             create: services.map(s => ({
               itemType: "SERVICE",

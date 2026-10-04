@@ -189,7 +189,6 @@ export class AvailabilityService {
         
         if (isConsecutive) {
             availableStartSlots.push(validSlots[i]);
-            i += slotsNeeded - 1;
         }
     }
 
