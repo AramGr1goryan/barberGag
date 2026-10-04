@@ -28,6 +28,44 @@ function getYerevanCurrentDateAndTime() {
 }
 
 export class AvailabilityService {
+  private currentMonthInitialized: string | null = null;
+
+  private async ensureCurrentMonthInitialized() {
+    const { dateStr: todayYerevanStr } = getYerevanCurrentDateAndTime();
+    const [yearStr, monthStr] = todayYerevanStr.split("-");
+    const monthPrefix = `${yearStr}-${monthStr}`;
+    
+    if (this.currentMonthInitialized === monthPrefix) {
+      return;
+    }
+    
+    const year = parseInt(yearStr, 10);
+    const month = parseInt(monthStr, 10);
+    
+    const daysInMonth = new Date(year, month, 0).getDate();
+    
+    const existingDaysCount = await prisma.availabilityDay.count({
+      where: { date: { startsWith: monthPrefix } }
+    });
+    
+    if (existingDaysCount < daysInMonth) {
+      const existingDays = await prisma.availabilityDay.findMany({
+        where: { date: { startsWith: monthPrefix } },
+        select: { date: true }
+      });
+      const existingDates = new Set(existingDays.map(d => d.date));
+      
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dStr = `${monthPrefix}-${d.toString().padStart(2, '0')}`;
+        if (!existingDates.has(dStr)) {
+          await this.bulkGenerateSlots(dStr, "10:00", "23:00", 60);
+        }
+      }
+    }
+    
+    this.currentMonthInitialized = monthPrefix;
+  }
+
   /**
    * Release slots that have been held for more than 10 minutes without completed verification
    */
@@ -90,6 +128,7 @@ export class AvailabilityService {
    * STRICT RULE: Closed by default. If day not explicitly opened, returns empty slots.
    */
   async getPublicAvailabilityForDate(dateStr: string): Promise<PublicDayAvailability> {
+    await this.ensureCurrentMonthInitialized();
     await this.cleanupExpiredHeldSlots();
 
     const day = await prisma.availabilityDay.findUnique({
@@ -146,6 +185,7 @@ export class AvailabilityService {
    * Any date not returned is CLOSED by default.
    */
   async getOpenDates(startDate: string, endDate: string): Promise<string[]> {
+    await this.ensureCurrentMonthInitialized();
     await this.cleanupExpiredHeldSlots();
 
     const days = await prisma.availabilityDay.findMany({
@@ -191,6 +231,8 @@ export class AvailabilityService {
    * Admin: Get all days and slots for a given date, including BOOKED and BLOCKED slots.
    */
   async getAdminDayDetails(dateStr: string) {
+    await this.ensureCurrentMonthInitialized();
+
     let day = await prisma.availabilityDay.findUnique({
       where: { date: dateStr },
       include: {
