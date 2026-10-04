@@ -129,7 +129,8 @@ model Booking {
   userId               String?
   user                 User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
   guestName            String
-  guestPhone           String
+  guestPhone           String            // We use this as Email
+  guestRealPhone       String?
   sessionTokenHash     String?
   date                 String            // YYYY-MM-DD
   startTime            String            // HH:mm

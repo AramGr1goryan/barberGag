@@ -136,6 +136,7 @@ export function BookingWizard({
   // User input
   const [guestName, setGuestName] = useState<string>(currentUser?.name || "");
   const [guestPhone, setGuestPhone] = useState<string>("");
+  const [guestRealPhone, setGuestRealPhone] = useState<string>("");
 
   // SMS verification & booking result
   const [createdBookingId, setCreatedBookingId] = useState<string>("");
@@ -390,6 +391,7 @@ export function BookingWizard({
           slotId: selectedSlotId,
           guestName,
           guestPhone,
+          guestRealPhone,
         }),
       });
 
@@ -696,7 +698,7 @@ export function BookingWizard({
                         key={item.dateStr}
                         type="button"
                         onClick={() => setSelectedDate(item.dateStr)}
-                        className={`min-w-[62px] h-[72px] lg:min-w-[68px] lg:h-[78px] rounded-2xl flex flex-col items-center justify-center transition-all duration-200 shrink-0 lg:shrink select-none cursor-pointer border ${isSelected
+                        className={`min-w-[56px] h-[64px] lg:min-w-[60px] lg:h-[70px] rounded-[14px] flex flex-col items-center justify-center transition-all duration-200 shrink-0 lg:shrink select-none cursor-pointer border ${isSelected
                             ? "bg-white text-black border-white scale-[1.03]"
                             : "bg-[#20222a] text-white hover:bg-[#282a34] border-white/[0.04] hover:border-white/20"
                           }`}
@@ -753,7 +755,7 @@ export function BookingWizard({
                           key={slot.id}
                           type="button"
                           onClick={() => setSelectedSlotId(slot.id)}
-                          className={`w-full py-3 rounded-xl text-[16px] sm:text-[16px] font-bold tracking-wider transition-all duration-200 select-none cursor-pointer flex items-center justify-center touch-manipulation border ${isSelected
+                          className={`w-full py-2.5 rounded-[12px] text-[15px] sm:text-[15px] font-bold tracking-wider transition-all duration-200 select-none cursor-pointer flex items-center justify-center touch-manipulation border ${isSelected
                               ? "bg-white text-black border-white scale-[1.03] z-10"
                               : "bg-[#20222a] text-white hover:bg-[#282a34] border-white/[0.04] hover:border-white/20"
                             }`}
@@ -1001,6 +1003,25 @@ export function BookingWizard({
 
                 <div>
                   <label className="block text-[11px] font-mono tracking-wider text-neutral-300 font-semibold uppercase mb-1.5">
+                    {locale === "ru" ? "Телефон *" : locale === "hy" ? "Հեռախոսահամար *" : "Phone *"}
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="tel"
+                      required
+                      value={guestRealPhone}
+                      onChange={(e) => setGuestRealPhone(e.target.value)}
+                      placeholder="+374 99 000 000"
+                      className="w-full bg-[#20222a] border border-white/[0.08] focus:border-white focus:ring-1 focus:ring-white rounded-2xl px-4 py-3.5 text-[16px] text-white placeholder-neutral-500 focus:outline-none transition-all"
+                    />
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none">
+                      <Phone className="w-4 h-4" />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-mono tracking-wider text-neutral-300 font-semibold uppercase mb-1.5">
                     Email *
                   </label>
                   <div className="relative">
@@ -1040,7 +1061,7 @@ export function BookingWizard({
             <div className="pt-4 border-t border-white/[0.08]">
               <button
                 type="button"
-                disabled={isSubmitting || !guestName.trim() || !guestPhone.trim()}
+                disabled={isSubmitting || !guestName.trim() || !guestPhone.trim() || !guestRealPhone.trim()}
                 onClick={handleInitiateBooking}
                 className="w-full py-4 px-6 rounded-full bg-white text-black font-serif font-bold text-base hover:bg-neutral-200 active:scale-[0.98] transition-all duration-200 shadow-[0_12px_35px_rgba(0,0,0,0.6)] disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer"
               >

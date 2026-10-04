@@ -150,6 +150,7 @@ export class BookingService {
           userId,
           guestName,
           guestPhone,
+          guestRealPhone,
           sessionTokenHash,
           date: bookingDate,
           startTime: currentSlot.startTime,
