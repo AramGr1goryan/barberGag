@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { Locale } from "@/i18n/config";
 import { Home, Image as ImageIcon, Scissors, ShoppingBag, User } from "lucide-react";
 
@@ -13,6 +13,7 @@ export interface MobileBottomNavProps {
 
 export function MobileBottomNav({ locale, user }: MobileBottomNavProps) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const isHome = pathname === `/${locale}`;
   const isPortfolio = pathname === `/${locale}/portfolio`;

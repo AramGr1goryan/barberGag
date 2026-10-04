@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { Locale } from "@/i18n/config";
 import { Button } from "@/components/ui/Button";
