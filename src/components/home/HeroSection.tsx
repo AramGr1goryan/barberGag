@@ -7,7 +7,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { BookingWizard, ServiceItem, AddonItem } from "@/components/booking/BookingWizard";
 import { Locale } from "@/i18n/config";
-import { Calendar, PhoneCall } from "lucide-react";
+import { Calendar, PhoneCall, ArrowRight } from "lucide-react";
 
 import { useSearchParams } from "next/navigation";
 
@@ -140,13 +140,14 @@ export function HeroSection({
           className={`mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 transition-all duration-300 ${isBookingOpen ? "pointer-events-none" : ""}`}
         >
           <Button
-            size="md"
+            size="lg"
             variant="primary"
             onClick={() => setIsBookingOpen(true)}
-            className="w-full sm:w-auto py-2.5 px-6 sm:py-3 sm:px-7 text-xs tracking-wider gap-2 sm:gap-2.5 shadow-[0_4px_25px_rgba(255,255,255,0.15)] hover:shadow-[0_8px_35px_rgba(255,255,255,0.3)] transition-all duration-300 transform hover:-translate-y-0.5"
+            className="group w-full sm:w-auto py-4 px-8 sm:py-5 sm:px-12 text-sm sm:text-base font-bold tracking-widest gap-3 sm:gap-4 rounded-full shadow-[0_4px_30px_rgba(255,255,255,0.2)] hover:shadow-[0_10px_50px_rgba(255,255,255,0.4)] transition-all duration-500 transform hover:-translate-y-1 hover:scale-105"
           >
-            <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            <span>{dict.bookNow}</span>
+            <Calendar className="w-5 h-5 sm:w-6 sm:h-6" />
+            <span className="uppercase">{dict.bookNow}</span>
+            <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 group-hover:translate-x-2 transition-transform duration-300" />
           </Button>
         </motion.div>
       </motion.div>
