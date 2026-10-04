@@ -122,3 +122,4 @@ Covers:
 2. Generate a secure 64-character secret for `AUTH_SECRET`.
 3. Provide production PostgreSQL credentials in `DATABASE_URL`.
 4. Run `npm run build` followed by `npm run start` (or deploy directly via Vercel/Railway/Render).
+  
