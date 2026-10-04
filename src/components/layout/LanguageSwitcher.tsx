@@ -55,10 +55,10 @@ export function LanguageSwitcher({ currentLocale }: { currentLocale: Locale }) {
       {/* Trigger button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl text-[11px] font-mono tracking-wider text-muted-foreground hover:text-foreground hover:border-accent/30 transition-all duration-200 shadow-[0_2px_15px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.04)]"
+        className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl text-[11px] font-mono tracking-wider text-muted-foreground hover:text-foreground hover:border-white/30 transition-all duration-200 shadow-[0_2px_15px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.04)]"
         aria-label="Switch language"
       >
-        <Globe className="w-3.5 h-3.5 text-accent" />
+        <Globe className="w-3.5 h-3.5 text-zinc-300" />
         <span className="font-semibold">{LOCALE_LABELS[currentLocale]}</span>
         <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
       </button>
