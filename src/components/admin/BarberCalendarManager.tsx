@@ -204,9 +204,9 @@ export function BarberCalendarManager() {
               <button
                 key={d.id}
                 onClick={() => setSelectedDate(d.date)}
-                className={`min-w-[60px] p-2 rounded-xl flex flex-col items-center justify-center border transition-all ${isSelected ? "bg-accent/20 border-accent scale-105" : "bg-surface border-white/10"}`}
+                className={`min-w-[60px] p-2 rounded-xl flex flex-col items-center justify-center border transition-all ${isSelected ? "bg-blue-500/20 border-blue-400 scale-105" : "bg-surface border-white/10"}`}
               >
-                <span className={`text-[10px] uppercase font-bold ${isSelected ? "text-accent" : "text-muted"}`}>{dt.toLocaleDateString(locale === "ru" ? "ru" : "en", { weekday: "short" })}</span>
+                <span className={`text-[10px] uppercase font-bold ${isSelected ? "text-blue-300" : "text-muted"}`}>{dt.toLocaleDateString(locale === "ru" ? "ru" : "en", { weekday: "short" })}</span>
                 <span className="text-lg font-bold text-foreground my-0.5">{dt.getDate()}</span>
                 <span className="text-[9px] uppercase text-muted">{dt.toLocaleDateString(locale === "ru" ? "ru" : "en", { month: "short" })}</span>
               </button>
@@ -236,7 +236,7 @@ export function BarberCalendarManager() {
                           </button>
                           <div>
                             <div className="flex items-center gap-2">
-                              <span className="text-xs font-bold text-accent">{task.startTime}-{task.endTime}</span>
+                              <span className="text-xs font-bold text-blue-300">{task.startTime}-{task.endTime}</span>
                               <span className={`text-sm font-bold ${isDone ? "line-through text-muted" : "text-white"}`}>{task.guestName}</span>
                             </div>
                             <div className="text-[10px] text-muted font-mono">{task.guestRealPhone && <a href={`tel:${task.guestRealPhone}`} className="text-primary">📞 {task.guestRealPhone} • </a>}{task.guestPhone} • {task.items.map((i: any) => i.nameSnapshot).join("+")}</div>
@@ -253,7 +253,7 @@ export function BarberCalendarManager() {
                     <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                       {availableSlots.map(slot => (
                         <div key={slot.id} className="relative group">
-                          <button onClick={() => openForm(slot.startTime)} className="w-full p-2 bg-[#141418] border border-white/10 rounded-lg text-xs font-mono text-center hover:border-accent hover:text-accent transition-colors">
+                          <button onClick={() => openForm(slot.startTime)} className="w-full p-2 bg-[#141418] border border-white/10 rounded-lg text-xs font-mono text-center hover:border-blue-400 hover:text-blue-300 transition-colors">
                             {slot.startTime}
                           </button>
                           <button onClick={(e) => { e.stopPropagation(); handleDeleteSlot(slot.id); }} className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"><X className="w-3 h-3" /></button>
@@ -268,7 +268,7 @@ export function BarberCalendarManager() {
 
           {/* Action Buttons moved to the bottom */}
           <div className="mt-6 pt-4 border-t border-white/10 flex flex-col sm:flex-row gap-2 shrink-0">
-            <Button variant="primary" size="lg" onClick={() => openForm()} className="w-full sm:flex-1 gap-2 font-bold shadow-[0_0_20px_rgba(197,168,128,0.2)]"><Plus className="w-4 h-4" /> {t.barberCalendar.addClient || (locale === "ru" ? "Записать клиента" : "Book Client")}</Button>
+            <Button variant="primary" size="lg" onClick={() => openForm()} className="w-full sm:flex-1 gap-2 font-bold shadow-[0_4px_25px_rgba(255,255,255,0.1)]"><Plus className="w-4 h-4" /> {t.barberCalendar.addClient || (locale === "ru" ? "Записать клиента" : "Book Client")}</Button>
             <Button variant="outline" size="lg" onClick={handleAddOpenSlot} className="w-full sm:w-auto px-6 border-white/20 hover:bg-white/5 font-bold"><Plus className="w-4 h-4 mr-2" /> {locale === "ru" ? "Открыть час" : "Open Hour"}</Button>
             {isDayOpen ? (
               <Button variant="danger" size="lg" onClick={() => handleToggleDay(false)} className="w-full sm:w-auto px-6">{locale === "ru" ? "Закрыть день" : "Close Day"}</Button>
@@ -279,16 +279,16 @@ export function BarberCalendarManager() {
         </div>
 
         {/* Permanently rendered, CSS-toggled Modal for INSTANT loading */}
-        <div className={`fixed inset-0 flex items-center justify-center p-4 transition-all duration-150 ${isManualBookingOpen ? "z-50 opacity-100 pointer-events-auto bg-black/85" : "z-[-1] opacity-0 pointer-events-none bg-black/0"}`}>
-          <div className={`relative w-full max-w-md max-h-[95vh] overflow-y-auto bg-[#1c1f2b] p-5 sm:p-6 rounded-3xl border border-white/10 shadow-2xl transition-transform duration-200 ${isManualBookingOpen ? "scale-100 translate-y-0" : "scale-95 translate-y-8"}`}>
+        <div className={`fixed inset-0 flex items-center justify-center p-4 transition-all duration-150 ${isManualBookingOpen ? "z-[100] opacity-100 pointer-events-auto bg-black/60 backdrop-blur-sm" : "z-[-1] opacity-0 pointer-events-none bg-black/0"}`}>
+          <div className={`relative w-full max-w-md max-h-[95vh] overflow-y-auto bg-[#1d202c]/75 backdrop-blur-2xl p-5 sm:p-6 rounded-3xl border border-white/[0.09] shadow-[0_12px_45px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.06)] transition-transform duration-200 ${isManualBookingOpen ? "scale-100 translate-y-0" : "scale-95 translate-y-8"}`}>
             <button type="button" onClick={() => setIsManualBookingOpen(false)} className="absolute top-4 right-4 p-2 bg-white/5 rounded-full hover:bg-white/10 text-white transition-colors"><X className="w-4 h-4" /></button>
 
             <h3 className="text-lg font-bold text-white mb-4 pr-8">{t.barberCalendar.addClient || (locale === "ru" ? "Записать клиента" : "Book Client")}</h3>
 
             <form ref={formRef} onSubmit={onSubmitBooking} className="space-y-3">
               <div className="grid grid-cols-2 gap-2">
-                <input type="time" required value={bookingTime} onChange={e => setBookingTime(e.target.value)} className="w-full bg-[#16161c] border border-white/20 rounded-lg px-3 py-2 text-xs text-white focus:border-accent outline-none" />
-                <select value={bookingDuration} onChange={e => setBookingDuration(Number(e.target.value))} className="w-full bg-[#16161c] border border-white/20 rounded-lg px-3 py-2 text-xs text-white focus:border-accent outline-none">
+                <input type="time" required value={bookingTime} onChange={e => setBookingTime(e.target.value)} className="w-full bg-[#16161c]/50 backdrop-blur-md border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:border-blue-400 outline-none transition-colors" />
+                <select value={bookingDuration} onChange={e => setBookingDuration(Number(e.target.value))} className="w-full bg-[#16161c]/50 backdrop-blur-md border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:border-blue-400 outline-none transition-colors">
                   <option value={30}>30 {locale === "ru" ? "мин" : "min"}</option>
                   <option value={45}>45 {locale === "ru" ? "мин" : "min"}</option>
                   <option value={60}>60 {locale === "ru" ? "мин" : "min"}</option>
@@ -296,7 +296,7 @@ export function BarberCalendarManager() {
                 </select>
               </div>
 
-              <select value={selectedServiceId} onChange={handleServiceChange} className="w-full bg-[#16161c] border border-white/20 rounded-lg px-3 py-2 text-xs text-white focus:border-accent outline-none">
+              <select value={selectedServiceId} onChange={handleServiceChange} className="w-full bg-[#16161c]/50 backdrop-blur-md border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:border-blue-400 outline-none transition-colors">
                 <option value="">— {locale === "ru" ? "Услуга" : "Service"} —</option>
                 <option value="CUSTOM">{locale === "ru" ? "Своя услуга" : "Custom Service"}</option>
                 {services.map(s => <option key={s.id} value={s.id}>{locale === "ru" ? s.nameRu : (locale === "hy" ? s.nameHy : s.nameEn)}</option>)}
@@ -304,20 +304,20 @@ export function BarberCalendarManager() {
 
               {selectedServiceId === "CUSTOM" && (
                 <div className="grid grid-cols-2 gap-2 animate-in fade-in zoom-in-95 duration-150">
-                  <input name="cService" type="text" placeholder={locale === "ru" ? "Название" : "Name"} className="w-full bg-[#16161c] border border-white/20 rounded-lg px-3 py-2 text-xs text-white focus:border-accent outline-none" />
-                  <input name="cPrice" type="number" placeholder={locale === "ru" ? "Цена" : "Price"} className="w-full bg-[#16161c] border border-white/20 rounded-lg px-3 py-2 text-xs text-white focus:border-accent outline-none" />
+                  <input name="cService" type="text" placeholder={locale === "ru" ? "Название" : "Name"} className="w-full bg-[#16161c]/50 backdrop-blur-md border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:border-blue-400 outline-none transition-colors" />
+                  <input name="cPrice" type="number" placeholder={locale === "ru" ? "Цена" : "Price"} className="w-full bg-[#16161c]/50 backdrop-blur-md border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:border-blue-400 outline-none transition-colors" />
                 </div>
               )}
 
               <div className="grid grid-cols-2 gap-2 pt-1">
-                <input name="cName" type="text" placeholder={locale === "ru" ? "Имя" : "Name"} className="w-full bg-[#16161c] border border-white/20 rounded-lg px-3 py-2 text-xs text-white focus:border-accent outline-none" />
-                <input name="cPhone" type="tel" placeholder={locale === "ru" ? "Телефон" : "Phone"} defaultValue="+374 " className="w-full bg-[#16161c] border border-white/20 rounded-lg px-3 py-2 text-xs text-white focus:border-accent outline-none" />
+                <input name="cName" type="text" placeholder={locale === "ru" ? "Имя" : "Name"} className="w-full bg-[#16161c]/50 backdrop-blur-md border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:border-blue-400 outline-none transition-colors" />
+                <input name="cPhone" type="tel" placeholder={locale === "ru" ? "Телефон" : "Phone"} defaultValue="+374 " className="w-full bg-[#16161c]/50 backdrop-blur-md border border-white/10 rounded-lg px-3 py-2 text-xs text-white focus:border-blue-400 outline-none transition-colors" />
               </div>
 
               {selectedServiceId !== "CUSTOM" && selectedServiceId !== "" && <input type="hidden" name="cPrice" value={defaultPrice} />}
 
               <div className="pt-2">
-                <Button variant="primary" type="submit" isLoading={isSubmitting} className="w-full py-2.5 text-sm font-bold shadow-[0_0_15px_rgba(197,168,128,0.2)]">
+                <Button variant="primary" type="submit" isLoading={isSubmitting} className="w-full py-2.5 text-sm font-bold shadow-[0_4px_25px_rgba(255,255,255,0.1)]">
                   {t.barberCalendar.addClient || (locale === "ru" ? "Записать" : "Book")}
                 </Button>
               </div>

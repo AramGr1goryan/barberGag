@@ -68,7 +68,7 @@ export function Modal({
             className={`relative w-full ${maxWidthStyles[maxWidth]} max-h-[92vh] flex flex-col bg-[#1c1f2b]/95 border border-white/[0.12] rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.5)] p-4 sm:p-6 z-10 my-auto`}
           >
             {/* Ambient subtle glow at top of modal */}
-            <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-64 h-32 bg-accent/15 blur-3xl pointer-events-none rounded-full" />
+            <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-64 h-32 bg-white/5 blur-3xl pointer-events-none rounded-full" />
 
             {/* Close Button */}
             <button

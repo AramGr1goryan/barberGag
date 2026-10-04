@@ -124,7 +124,7 @@ export function ServicesManager() {
         res = await fetch(endpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
+          body: JSON.stringify({ type: itemType, data: payload }),
         });
       }
 
