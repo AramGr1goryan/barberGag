@@ -55,7 +55,7 @@ export function AdminTopHeader() {
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 text-zinc-400 hover:text-white hover:bg-white/[0.06] rounded-xl border border-white/10 transition-colors"
+            className="p-2 text-zinc-400 hover:text-white hover:bg-white/[0.06] rounded-xl border border-white/10 transition-colors"
             aria-label="Toggle navigation menu"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -101,7 +101,7 @@ export function AdminTopHeader() {
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex">
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex">
           <div className="w-72 max-w-[85vw] bg-[#181a24]/98 backdrop-blur-2xl border-r border-white/10 rounded-r-3xl p-6 flex flex-col justify-between shadow-2xl h-full animate-in slide-in-from-left duration-200">
             <div>
               {/* Header */}
