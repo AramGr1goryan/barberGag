@@ -36,6 +36,7 @@ const config: Config = {
         "pulse-subtle": "pulseSubtle 3s infinite",
         "shimmer": "shimmer 2s infinite",
         "progress": "progressPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "ping-pong": "pingPong 1.5s ease-in-out infinite",
       },
       keyframes: {
         fadeIn: {
@@ -56,6 +57,10 @@ const config: Config = {
         progressPulse: {
           "0%, 100%": { opacity: "1" },
           "50%": { opacity: "0.5" },
+        },
+        pingPong: {
+          "0%, 100%": { transform: "translateX(0)" },
+          "50%": { transform: "translateX(6px)" },
         },
       },
     },
