@@ -126,7 +126,7 @@ export class TelegramService {
     text: string,
     targetChatId?: string
   ): Promise<{ success: boolean; error?: string; sentCount?: number }> {
-    const chatIds = targetChatId 
+    const chatIds = targetChatId
       ? targetChatId.split(/[,;\s]+/).map(s => s.trim()).filter(Boolean)
       : await this.getAllChatIds();
 
@@ -270,14 +270,14 @@ export class TelegramService {
         return { success: false, error: "Booking not found" };
       }
 
-      const totalAmount = (booking.totalPriceMinorUnits / 100).toLocaleString("hy-AM");
+      const totalAmount = (booking.totalPriceMinorUnits).toLocaleString("hy-AM");
 
       const itemsList =
         booking.items.length > 0
           ? booking.items
             .map(
               (item, i) =>
-                `  ${i + 1}. <b>${escapeHtml(item.nameSnapshot)}</b> — ${(item.priceSnapshotMinor / 100).toLocaleString("hy-AM")} ֏ (${item.durationSnapshotMin} րոպե)`
+                `  ${i + 1}. <b>${escapeHtml(item.nameSnapshot)}</b> — ${(item.priceSnapshotMinor).toLocaleString("hy-AM")} ֏ (${item.durationSnapshotMin} րոպե)`
             )
             .join("\n")
           : "  • Հիմնական ծառայություն";
@@ -308,7 +308,7 @@ export class TelegramService {
         `⏱ <b>Ընդհանուր տևողություն՝</b> ${booking.totalDurationMinutes} րոպե`,
         `💰 <b>Ընդհանուր գումար՝</b> <b>${totalAmount} ֏</b>`,
         ...(daySchedule ? [``, daySchedule] : [`━━━━━━━━━━━━━━━━━━━━`]),
-        `📍 <i>Հասցե՝ Հյուսիսային պողոտա 10, Երևան</i>`,
+        `📍 <i>Հասցե՝ Բագրատունյաց 19, Երևան</i>`,
       ].join("\n");
 
       return await this.sendMessage(message);
@@ -338,7 +338,7 @@ export class TelegramService {
         return { success: false, error: "Booking not found" };
       }
 
-      const totalAmount = (booking.totalPriceMinorUnits / 100).toLocaleString("hy-AM");
+      const totalAmount = (booking.totalPriceMinorUnits).toLocaleString("hy-AM");
 
       const daySchedule = await this.formatDaySchedule(booking.date);
 
@@ -384,7 +384,7 @@ export class TelegramService {
         return { success: false, error: "Booking not found" };
       }
 
-      const totalAmount = (booking.totalPriceMinorUnits / 100).toLocaleString("hy-AM");
+      const totalAmount = (booking.totalPriceMinorUnits).toLocaleString("hy-AM");
 
       const itemsList =
         booking.items.length > 0
