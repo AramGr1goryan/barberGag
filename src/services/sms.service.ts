@@ -4,6 +4,7 @@ import { BookingStatus, SlotStatus } from "@prisma/client";
 import fs from "fs";
 import path from "path";
 import nodemailer from "nodemailer";
+import { emailService } from "./email.service";
 
 export interface SmsProvider {
   sendSms(to: string, message: string, bookingDetails?: any): Promise<boolean>;
@@ -621,6 +622,30 @@ export class SmsService {
       await telegramService.notifyNewBooking(bookingId);
     } catch (err) {
       console.error("Failed to send telegram notification:", err);
+    }
+
+    // Send Premium Confirmation Email
+    try {
+      const updatedBooking = await prisma.booking.findUnique({
+        where: { id: bookingId },
+        include: { items: true }
+      });
+      if (updatedBooking && updatedBooking.guestPhone.includes("@")) {
+        const services = updatedBooking.items.length > 0 
+          ? updatedBooking.items.map(i => i.nameSnapshot).join(", ")
+          : "Հիմնական ծառայություն / Основная услуга / Main Service";
+          
+        await emailService.sendConfirmation(updatedBooking.guestPhone, {
+          date: updatedBooking.date,
+          startTime: updatedBooking.startTime,
+          endTime: updatedBooking.endTime,
+          services: services,
+          locale: updatedBooking.locale || "hy",
+          bookingNumber: updatedBooking.bookingNumber
+        });
+      }
+    } catch (err) {
+      console.error("Failed to send confirmation email:", err);
     }
 
     return { success: true, status: "SUCCESS" };

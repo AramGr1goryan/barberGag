@@ -138,6 +138,7 @@ model Booking {
   totalPriceMinorUnits Int
   status               BookingStatus     @default(PENDING_VERIFICATION)
   cancellationReason   String?
+  locale               String            @default("hy")
   slotId               String?           @unique
   slot                 AvailabilitySlot? @relation(fields: [slotId], references: [id], onDelete: SetNull)
   items                BookingItem[]

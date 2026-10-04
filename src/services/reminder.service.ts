@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { telegramService } from "@/services/telegram.service";
 import { BUSINESS_TIMEZONE, parseDateTimeToMinutes } from "@/lib/timezone";
 import { BookingStatus } from "@prisma/client";
+import { emailService } from "./email.service";
 
 function shiftDate(dateStr: string, daysDelta: number): string {
   const [y, m, d] = dateStr.split("-").map(Number);
@@ -76,9 +77,8 @@ export class ReminderService {
         const appointmentMin = parseDateTimeToMinutes(booking.date, booking.startTime);
         const diffMinutes = appointmentMin - nowMinutes;
 
-        // Trigger reminder if arrival is between 0 and 32 minutes away
-        // (Allows a 2-minute margin so cron or interval polling never skips a slot)
-        if (diffMinutes >= 0 && diffMinutes <= 32) {
+        // Trigger reminder if arrival is between 0 and 25 minutes away (20 min reminder)
+        if (diffMinutes >= 0 && diffMinutes <= 25) {
           // Check if reminder was already sent for this booking
           const existingLog = await prisma.auditLog.findFirst({
             where: {
@@ -111,6 +111,18 @@ export class ReminderService {
               });
             } else if (sendRes.error) {
               errors.push(`Booking ${booking.bookingNumber}: ${sendRes.error}`);
+            }
+
+            // Send Premium Email Reminder
+            if (booking.guestPhone.includes("@")) {
+              try {
+                await emailService.sendReminder(booking.guestPhone, {
+                  startTime: booking.startTime,
+                  locale: booking.locale || "hy"
+                });
+              } catch (e) {
+                console.error("Failed to send email reminder:", e);
+              }
             }
           }
         }

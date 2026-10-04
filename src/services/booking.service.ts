@@ -157,6 +157,7 @@ export class BookingService {
           totalDurationMinutes: totalDuration,
           totalPriceMinorUnits: totalPrice,
           status: BookingStatus.PENDING_VERIFICATION,
+          locale: locale,
           slotId: null, // Will be linked upon successful OTP verification
           items: {
             create: [
