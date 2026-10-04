@@ -149,8 +149,6 @@ export function AdminTopHeader() {
                       className={`flex items-center space-x-3 px-3.5 py-2.5 text-xs font-medium tracking-wider uppercase transition-all duration-200 rounded-2xl ${
                         isActive
                           ? "text-accent bg-accent/15 border border-accent/30 shadow-[0_0_20px_rgba(197,168,128,0.15)] font-semibold"
-                          : link.highlight
-                          ? "text-accent bg-accent/5 hover:bg-accent/10 border border-accent/20"
                           : "text-zinc-400 hover:text-white hover:bg-white/[0.04] border border-transparent hover:border-white/[0.06]"
                       }`}
                     >
