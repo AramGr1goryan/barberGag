@@ -129,12 +129,12 @@ export function HeroSection({
           Notice: scale from 0.75 -> 1.0, translate forward with expansive gold glow.
         */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.5, y: 20 }}
+          initial={{ opacity: 0, scale: 0.85, y: 40 }}
           animate={{ opacity: isBookingOpen ? 0 : 1, scale: 1, y: 0 }}
           transition={{
             type: "spring",
-            stiffness: 300,
-            damping: 20,
+            stiffness: 400,
+            damping: 25,
             delay: 0.1,
           }}
           className={`mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 transition-all duration-300 ${isBookingOpen ? "pointer-events-none" : ""}`}
