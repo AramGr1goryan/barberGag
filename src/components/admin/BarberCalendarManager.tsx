@@ -8,7 +8,7 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Plus, Clock, User, Phone, Check, X } from "lucide-react";
 
 export function BarberCalendarManager() {
-  const { locale } = useAdminI18n();
+  const { t, locale } = useAdminI18n();
   const todayStr = new Date().toISOString().split("T")[0];
   const [selectedDate, setSelectedDate] = useState<string>(todayStr);
 
@@ -164,7 +164,7 @@ export function BarberCalendarManager() {
             ) : (
               <Button variant="primary" size="sm" onClick={() => handleToggleDay(true)} className="h-8 text-xs px-3">{locale==="ru"?"Открыть день":"Open Day"}</Button>
             )}
-            <Button variant="primary" size="sm" onClick={() => setIsManualBookingOpen(true)} className="h-8 text-xs px-3 gap-1"><Plus className="w-3.5 h-3.5"/> Запись</Button>
+            <Button variant="primary" size="sm" onClick={() => setIsManualBookingOpen(true)} className="h-8 text-xs px-3 gap-1"><Plus className="w-3.5 h-3.5"/> {t.barberCalendar.addClient || (locale==="ru"?"Запись":"Book")}</Button>
           </div>
         </div>
 
@@ -211,7 +211,7 @@ export function BarberCalendarManager() {
         )}
       </div>
 
-      <Modal isOpen={isManualBookingOpen} onClose={() => setIsManualBookingOpen(false)} title="Записать клиента">
+      <Modal isOpen={isManualBookingOpen} onClose={() => setIsManualBookingOpen(false)} title={t.barberCalendar.addClient || (locale==="ru"?"Записать клиента":"Book Client")}>
         <form onSubmit={onSubmitBooking} className="space-y-3">
           <div className="grid grid-cols-2 gap-2">
             <input type="time" required value={bookingTime} onChange={e=>setBookingTime(e.target.value)} className="w-full bg-[#16161c] border border-white/20 rounded-lg px-3 py-2 text-xs text-white" />
@@ -220,9 +220,9 @@ export function BarberCalendarManager() {
             </select>
           </div>
           <select value={selectedServiceId} onChange={handleServiceChange} className="w-full bg-[#16161c] border border-white/20 rounded-lg px-3 py-2 text-xs text-white">
-            <option value="">— Услуга —</option>
-            {services.map(s => <option key={s.id} value={s.id}>{s.nameRu}</option>)}
-            <option value="CUSTOM">Своя услуга</option>
+            <option value="">— {locale==="ru"?"Услуга":"Service"} —</option>
+            <option value="CUSTOM">{locale==="ru"?"Своя услуга":"Custom Service"}</option>
+            {services.map(s => <option key={s.id} value={s.id}>{locale==="ru"?s.nameRu:(locale==="hy"?s.nameHy:s.nameEn)}</option>)}
           </select>
           {selectedServiceId === "CUSTOM" && (
             <div className="grid grid-cols-2 gap-2">
@@ -235,7 +235,7 @@ export function BarberCalendarManager() {
             <input name="cPhone" type="tel" placeholder="Телефон" defaultValue="+374 " className="w-full bg-[#16161c] border border-white/20 rounded-lg px-3 py-2 text-xs text-white" />
           </div>
           {selectedServiceId !== "CUSTOM" && selectedServiceId !== "" && <input type="hidden" name="cPrice" value={defaultPrice} />}
-          <Button variant="primary" type="submit" isLoading={isSubmitting} className="w-full mt-2 py-2">Записать</Button>
+          <Button variant="primary" type="submit" isLoading={isSubmitting} className="w-full mt-2 py-2">{t.barberCalendar.addClient || (locale==="ru"?"Записать":"Book")}</Button>
         </form>
       </Modal>
     </div>

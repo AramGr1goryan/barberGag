@@ -47,6 +47,11 @@ export function AdminTopHeader() {
   const currentLink = navLinks.find((l) => l.href === pathname);
   const currentTitle = currentLink ? currentLink.label : t.nav.adminConsole;
 
+  // Fully isolate barber-calendar to prevent any header loading
+  if (pathname === "/admin/barber-calendar") {
+    return null;
+  }
+
   return (
     <>
       <header className="sticky top-0 z-40 bg-[#181a24]/85 backdrop-blur-2xl border-b border-white/[0.08] px-4 sm:px-8 py-3.5 flex items-center justify-between shadow-[0_4px_30px_rgba(0,0,0,0.25)]">

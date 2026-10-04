@@ -53,7 +53,7 @@ export function Modal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/85 backdrop-blur-sm"
+            className="fixed inset-0 bg-black/85"
             onClick={onClose}
           />
 
@@ -62,10 +62,10 @@ export function Modal({
             initial={{ opacity: 0, scale: 0.95, y: 15 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 15 }}
-            transition={{ duration: 0.25, ease: "easeOut" }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
             role="dialog"
             aria-modal="true"
-            className={`relative w-full ${maxWidthStyles[maxWidth]} max-h-[92vh] flex flex-col bg-[#1c1f2b]/95 backdrop-blur-2xl border border-white/[0.12] rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.5)] p-4 sm:p-6 z-10 my-auto`}
+            className={`relative w-full ${maxWidthStyles[maxWidth]} max-h-[92vh] flex flex-col bg-[#1c1f2b]/95 border border-white/[0.12] rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.5)] p-4 sm:p-6 z-10 my-auto`}
           >
             {/* Ambient subtle glow at top of modal */}
             <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-64 h-32 bg-accent/15 blur-3xl pointer-events-none rounded-full" />
