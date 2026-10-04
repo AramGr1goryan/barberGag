@@ -53,6 +53,8 @@ export function ServicesManager() {
   const [isSaving, setIsSaving] = useState(false);
   const [notification, setNotification] = useState("");
 
+  const [editingId, setEditingId] = useState<string | null>(null);
+
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -71,36 +73,68 @@ export function ServicesManager() {
     fetchData();
   }, [fetchData]);
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const openCreateModal = (type: "service" | "addon") => {
+    setItemType(type);
+    setEditingId(null);
+    setNameHy(""); setNameRu(""); setNameEn("");
+    setDescHy(""); setDescRu(""); setDescEn("");
+    setDuration(45); setPrice(7000);
+    setIsModalOpen(true);
+  };
+
+  const handleEdit = (type: "service" | "addon", item: any) => {
+    setItemType(type);
+    setEditingId(item.id);
+    setNameHy(item.nameHy);
+    setNameRu(item.nameRu);
+    setNameEn(item.nameEn);
+    setDescHy(item.descriptionHy || "");
+    setDescRu(item.descriptionRu || "");
+    setDescEn(item.descriptionEn || "");
+    setDuration(item.durationMinutes);
+    setPrice(item.priceMinorUnits);
+    setIsModalOpen(true);
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
     try {
-      const endpoint = itemType === "service" ? "/api/admin/services" : "/api/admin/addons";
       const payload = {
         nameHy,
         nameRu,
         nameEn,
-        descriptionHy: descHy || nameHy,
-        descriptionRu: descRu || nameRu,
-        descriptionEn: descEn || nameEn,
+        descriptionHy: descHy || "",
+        descriptionRu: descRu || "",
+        descriptionEn: descEn || "",
         durationMinutes: duration,
         priceMinorUnits: price,
         category: "HAIRCUT",
       };
 
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      let res;
+      if (editingId) {
+        res = await fetch("/api/admin/services", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: itemType, id: editingId, data: payload }),
+        });
+      } else {
+        const endpoint = itemType === "service" ? "/api/admin/services" : "/api/admin/addons";
+        res = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      }
 
       if (res.ok) {
         setNotification(t.common.success);
         setTimeout(() => setNotification(""), 3500);
         setIsModalOpen(false);
-        setNameHy("");
-        setNameRu("");
-        setNameEn("");
+        setEditingId(null);
+        setNameHy(""); setNameRu(""); setNameEn("");
+        setDescHy(""); setDescRu(""); setDescEn("");
         fetchData();
       }
     } catch {
@@ -136,7 +170,7 @@ export function ServicesManager() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-6">
         <div>
-          <span className="text-[11px] font-mono tracking-widest text-accent uppercase font-semibold">
+          <span className="text-[11px] font-mono tracking-widest text-blue-200 uppercase font-semibold">
             {t.dashboard.executiveOverview}
           </span>
           <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground mt-1 uppercase">
@@ -148,11 +182,8 @@ export function ServicesManager() {
           <Button
             size="sm"
             variant="primary"
-            className="gap-2 rounded-full shadow-[0_4px_25px_rgba(197,168,128,0.25)]"
-            onClick={() => {
-              setItemType("service");
-              setIsModalOpen(true);
-            }}
+            className="gap-2 rounded-full shadow-[0_4px_25px_rgba(255,255,255,0.1)]"
+            onClick={() => openCreateModal("service")}
           >
             <Plus className="w-3.5 h-3.5" />
             <span>{t.services.addNewService}</span>
@@ -162,12 +193,9 @@ export function ServicesManager() {
             size="sm"
             variant="secondary"
             className="gap-2 rounded-full border-white/10"
-            onClick={() => {
-              setItemType("addon");
-              setIsModalOpen(true);
-            }}
+            onClick={() => openCreateModal("addon")}
           >
-            <Plus className="w-3.5 h-3.5 text-accent" />
+            <Plus className="w-3.5 h-3.5 text-blue-200" />
             <span>{t.services.addNewAddon}</span>
           </Button>
         </div>
@@ -183,7 +211,7 @@ export function ServicesManager() {
       {/* Services Table Card */}
       <div className="bg-[#1d202c]/75 border border-white/[0.09] backdrop-blur-2xl rounded-3xl p-6 sm:p-8 space-y-5 shadow-[0_12px_45px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.06)] overflow-hidden">
         <div className="flex items-center space-x-2.5 border-b border-white/[0.06] pb-4">
-          <div className="w-8 h-8 rounded-xl bg-accent/10 border border-accent/25 flex items-center justify-center text-accent">
+          <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-blue-200">
             <Scissors className="w-4 h-4" />
           </div>
           <h3 className="font-display text-lg font-bold text-foreground uppercase tracking-wide">
@@ -209,17 +237,26 @@ export function ServicesManager() {
                     <span className="text-[11px] text-zinc-400">{s.nameHy} • {s.nameEn}</span>
                   </td>
                   <td className="py-4 px-4 text-zinc-300">{s.durationMinutes} min</td>
-                  <td className="py-4 px-4 text-accent font-bold">
+                  <td className="py-4 px-4 text-white font-bold">
                     {formatCurrency(s.priceMinorUnits, locale)}
                   </td>
                   <td className="py-4 px-4 text-right">
-                    <button
-                      onClick={() => handleDelete("service", s.id)}
-                      className="p-2 rounded-xl text-rose-400 hover:text-rose-200 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all"
-                      title={t.common.delete}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <div className="flex justify-end gap-2">
+                      <button
+                        onClick={() => handleEdit("service", s)}
+                        className="p-2 rounded-xl text-blue-300 hover:text-blue-100 hover:bg-blue-500/10 border border-transparent hover:border-blue-500/20 transition-all"
+                        title={t.common.edit || "Edit"}
+                      >
+                        <Plus className="w-4 h-4 rotate-45" /> {/* Just a placeholder icon for Edit if no Pencil imported */}
+                      </button>
+                      <button
+                        onClick={() => handleDelete("service", s.id)}
+                        className="p-2 rounded-xl text-rose-400 hover:text-rose-200 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all"
+                        title={t.common.delete}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -231,7 +268,7 @@ export function ServicesManager() {
       {/* Addons Table Card */}
       <div className="bg-[#1d202c]/75 border border-white/[0.09] backdrop-blur-2xl rounded-3xl p-6 sm:p-8 space-y-5 shadow-[0_12px_45px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.06)] overflow-hidden">
         <div className="flex items-center space-x-2.5 border-b border-white/[0.06] pb-4">
-          <div className="w-8 h-8 rounded-xl bg-accent/10 border border-accent/25 flex items-center justify-center text-accent">
+          <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-blue-200">
             <Sparkles className="w-4 h-4" />
           </div>
           <h3 className="font-display text-lg font-bold text-foreground uppercase tracking-wide">
@@ -251,23 +288,32 @@ export function ServicesManager() {
             </thead>
             <tbody className="divide-y divide-white/[0.04]">
               {addons.map((a) => (
-                <tr key={a.id} className="hover:bg-surface-elevated transition-colors">
+                <tr key={a.id} className="hover:bg-white/[0.03] transition-colors">
                   <td className="py-3.5 px-4">
                     <span className="font-sans font-bold text-foreground block">{getName(a)}</span>
                     <span className="text-[11px] text-muted">{a.nameHy} • {a.nameEn}</span>
                   </td>
                   <td className="py-3.5 px-4 text-muted">{a.durationMinutes} min</td>
-                  <td className="py-3.5 px-4 text-accent font-bold">
+                  <td className="py-3.5 px-4 text-white font-bold">
                     {formatCurrency(a.priceMinorUnits, locale)}
                   </td>
                   <td className="py-3.5 px-4 text-right">
-                    <button
-                      onClick={() => handleDelete("addon", a.id)}
-                      className="p-1 text-red-400 hover:text-red-300 transition-colors"
-                      title={t.common.delete}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <div className="flex justify-end gap-2">
+                      <button
+                        onClick={() => handleEdit("addon", a)}
+                        className="p-1 text-blue-300 hover:text-blue-100 transition-colors"
+                        title={t.common.edit || "Edit"}
+                      >
+                        <Plus className="w-4 h-4 rotate-45" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete("addon", a.id)}
+                        className="p-1 text-red-400 hover:text-red-300 transition-colors"
+                        title={t.common.delete}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -283,7 +329,7 @@ export function ServicesManager() {
         title={itemType === "service" ? t.services.addNewService : t.services.addNewAddon}
         description={t.services.subtitle}
       >
-        <form onSubmit={handleCreate} className="space-y-4 py-2">
+        <form onSubmit={handleSave} className="space-y-4 py-2">
           <Input
             label={t.services.nameHy}
             required
@@ -307,6 +353,30 @@ export function ServicesManager() {
             onChange={(e) => setNameEn(e.target.value)}
             placeholder="Classic Haircut"
           />
+
+          {itemType === "service" && (
+            <div className="space-y-4 border-t border-white/10 pt-4 mt-4">
+              <h4 className="text-xs font-bold text-blue-200">ОПИСАНИЕ (НЕОБЯЗАТЕЛЬНО)</h4>
+              <Input
+                label="Описание (HY)"
+                value={descHy}
+                onChange={(e) => setDescHy(e.target.value)}
+                placeholder="Пр: Լավագույն կտրվածքը..."
+              />
+              <Input
+                label="Описание (RU)"
+                value={descRu}
+                onChange={(e) => setDescRu(e.target.value)}
+                placeholder="Пр: Отличная стрижка..."
+              />
+              <Input
+                label="Описание (EN)"
+                value={descEn}
+                onChange={(e) => setDescEn(e.target.value)}
+                placeholder="Ex: Great haircut..."
+              />
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-4">
             <Input
