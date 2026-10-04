@@ -696,9 +696,9 @@ export function BookingWizard({
                         key={item.dateStr}
                         type="button"
                         onClick={() => setSelectedDate(item.dateStr)}
-                        className={`min-w-[62px] h-[72px] lg:min-w-[68px] lg:h-[78px] rounded-2xl flex flex-col items-center justify-center transition-all duration-200 shrink-0 lg:shrink select-none cursor-pointer ${isSelected
-                            ? "bg-white text-black shadow-[0_8px_25px_rgba(255,255,255,0.25)] scale-[1.03]"
-                            : "bg-[#20222a] text-white hover:bg-[#282a34] border border-white/[0.04]"
+                        className={`min-w-[62px] h-[72px] lg:min-w-[68px] lg:h-[78px] rounded-2xl flex flex-col items-center justify-center transition-all duration-200 shrink-0 lg:shrink select-none cursor-pointer border ${isSelected
+                            ? "bg-white text-black border-white scale-[1.03]"
+                            : "bg-[#20222a] text-white hover:bg-[#282a34] border-white/[0.04] hover:border-white/20"
                           }`}
                       >
                         <span
@@ -753,9 +753,9 @@ export function BookingWizard({
                           key={slot.id}
                           type="button"
                           onClick={() => setSelectedSlotId(slot.id)}
-                          className={`w-full py-3 rounded-xl text-xs sm:text-sm font-bold tracking-wider transition-all duration-200 select-none cursor-pointer flex items-center justify-center touch-manipulation ${isSelected
-                              ? "bg-white text-black shadow-[0_8px_25px_rgba(255,255,255,0.22)] scale-[1.03] z-10"
-                              : "bg-[#20222a] text-white hover:bg-[#282a34] border border-white/[0.04]"
+                          className={`w-full py-3 rounded-xl text-[16px] sm:text-[16px] font-bold tracking-wider transition-all duration-200 select-none cursor-pointer flex items-center justify-center touch-manipulation border ${isSelected
+                              ? "bg-white text-black border-white scale-[1.03] z-10"
+                              : "bg-[#20222a] text-white hover:bg-[#282a34] border-white/[0.04] hover:border-white/20"
                             }`}
                         >
                           {slot.startTime}
@@ -991,7 +991,7 @@ export function BookingWizard({
                       value={guestName}
                       onChange={(e) => setGuestName(e.target.value)}
                       placeholder="Արամ Սարգսյան"
-                      className="w-full bg-[#20222a] border border-white/[0.08] focus:border-white focus:ring-1 focus:ring-white rounded-2xl px-4 py-3.5 text-sm text-white placeholder-neutral-500 focus:outline-none transition-all"
+                      className="w-full bg-[#20222a] border border-white/[0.08] focus:border-white focus:ring-1 focus:ring-white rounded-2xl px-4 py-3.5 text-[16px] text-white placeholder-neutral-500 focus:outline-none transition-all"
                     />
                     <div className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none">
                       <User className="w-4 h-4" />
@@ -1010,7 +1010,7 @@ export function BookingWizard({
                       value={guestPhone}
                       onChange={(e) => setGuestPhone(e.target.value)}
                       placeholder="aram@example.com"
-                      className="w-full bg-[#20222a] border border-white/[0.08] focus:border-white focus:ring-1 focus:ring-white rounded-2xl px-4 py-3.5 text-sm text-white placeholder-neutral-500 focus:outline-none transition-all"
+                      className="w-full bg-[#20222a] border border-white/[0.08] focus:border-white focus:ring-1 focus:ring-white rounded-2xl px-4 py-3.5 text-[16px] text-white placeholder-neutral-500 focus:outline-none transition-all"
                     />
                     <div className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none">
                       <span className="font-serif italic text-lg">@</span>
@@ -1137,66 +1137,76 @@ export function BookingWizard({
 
         {/* ================= STEP 5: CONFIRMATION SUCCESS ================= */}
         {(!activeBooking && !blockedData?.isBlocked && currentStep === 5) && (
-          <div className="flex-1 flex flex-col justify-between space-y-6 text-center">
-            <div className="space-y-6">
-              <div className="w-16 h-16 rounded-full bg-white text-black flex items-center justify-center mx-auto shadow-[0_0_40px_rgba(255,255,255,0.4)]">
-                <Check className="w-8 h-8 stroke-[3]" />
+          <div className="flex-1 flex flex-col justify-between text-center relative overflow-hidden rounded-[24px]">
+            
+            {/* Premium Gradient Background */}
+            <div className="absolute inset-0 z-0 bg-gradient-to-br from-[#1a1410] via-[#2a1b12] to-[#3a1d0f] opacity-80" />
+            
+            {/* Wavy Blob Accents (Like the reference image) */}
+            <div className="absolute top-[-20%] left-[-20%] w-[150%] h-[80%] bg-gradient-to-tr from-[#ff4d00]/20 to-[#c5a880]/30 rounded-[100%] filter blur-[60px] opacity-70 z-0" />
+            <div className="absolute bottom-[-10%] right-[-30%] w-[120%] h-[60%] bg-gradient-to-tl from-[#c5a880]/20 to-[#ff4d00]/10 rounded-[100%] filter blur-[50px] opacity-60 z-0" />
+
+            <div className="relative z-10 space-y-6 pt-4">
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#c5a880] to-[#9b805c] text-[#14151a] flex items-center justify-center mx-auto shadow-[0_10px_40px_rgba(197,168,128,0.5)] transform hover:scale-105 transition-transform duration-500">
+                <Check className="w-10 h-10 stroke-[3]" />
               </div>
 
               <div>
-                <h3 className="font-serif text-2xl font-bold text-white tracking-tight">
+                <h3 className="font-serif text-3xl font-extrabold text-white tracking-tight drop-shadow-md">
                   {dict.successTitle}
                 </h3>
-                <p className="text-xs text-neutral-400 mt-1 font-mono">
-                  {dict.bookingRef}:{" "}
-                  <span className="text-[#c5a880] font-bold">{createdBookingNumber}</span>
+                <p className="text-sm text-[#c5a880] mt-2 font-mono uppercase tracking-widest font-bold drop-shadow-md">
+                  {dict.bookingRef}: <span className="text-white">{createdBookingNumber}</span>
                 </p>
               </div>
 
-              {/* Receipt card */}
-              <div className="p-5 rounded-2xl bg-[#20222a] border border-white/[0.06] space-y-2.5 text-xs font-mono text-left">
-                <div className="flex justify-between">
-                  <span className="text-neutral-400">
-                    {locale === "ru" ? "Гость:" : locale === "hy" ? "Հյուր՝" : "Guest:"}
+              {/* Receipt card with glassmorphism */}
+              <div className="p-6 rounded-[24px] bg-black/30 backdrop-blur-xl border border-white/[0.08] shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_20px_50px_rgba(0,0,0,0.5)] space-y-3.5 text-[13px] font-mono text-left relative overflow-hidden mx-2">
+                
+                {/* Spotlight effect inside card */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[1px] bg-gradient-to-r from-transparent via-[#c5a880]/50 to-transparent" />
+                
+                <div className="flex justify-between items-center border-b border-white/[0.05] pb-3">
+                  <span className="text-white/50 uppercase tracking-widest text-[10px] font-bold">
+                    {locale === "ru" ? "Гость" : locale === "hy" ? "Հյուր" : "Guest"}
                   </span>
-                  <span className="text-white font-semibold">{guestName}</span>
+                  <span className="text-white font-semibold text-sm">{guestName}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-neutral-400">
-                    {locale === "ru" ? "Мастер:" : locale === "hy" ? "Վարպետ՝" : "Master:"}
+                <div className="flex justify-between items-center border-b border-white/[0.05] pb-3">
+                  <span className="text-white/50 uppercase tracking-widest text-[10px] font-bold">
+                    {locale === "ru" ? "Мастер" : locale === "hy" ? "Վարպետ" : "Master"}
                   </span>
-                  <span className="text-[#c5a880] font-semibold">{masterBarberName}</span>
+                  <span className="text-[#c5a880] font-semibold text-sm">{masterBarberName}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-neutral-400">
-                    {locale === "ru" ? "Услуга:" : locale === "hy" ? "Ծառայություն՝" : "Service:"}
+                <div className="flex justify-between items-center border-b border-white/[0.05] pb-3">
+                  <span className="text-white/50 uppercase tracking-widest text-[10px] font-bold">
+                    {locale === "ru" ? "Услуга" : locale === "hy" ? "Ծառայություն" : "Service"}
                   </span>
-                  <span className="text-white font-semibold">{getServiceName(selectedService)}</span>
+                  <span className="text-white font-semibold text-right max-w-[150px] leading-tight text-sm">
+                    {getServiceName(selectedService)}
+                  </span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-neutral-400">
-                    {locale === "ru" ? "Дата и время:" : locale === "hy" ? "Օր և Ժամ՝" : "Date & Time:"}
+                <div className="flex justify-between items-center border-b border-white/[0.05] pb-3">
+                  <span className="text-white/50 uppercase tracking-widest text-[10px] font-bold">
+                    {locale === "ru" ? "Дата и время" : locale === "hy" ? "Օր և Ժամ" : "Date & Time"}
                   </span>
-                  <span className="text-white font-semibold">
+                  <span className="text-white font-semibold text-sm">
                     {selectedDate} • {selectedSlot?.startTime}
                   </span>
                 </div>
-                <div className="flex justify-between pt-2 border-t border-white/10">
-                  <span className="text-neutral-400">
-                    {locale === "ru" ? "К оплате в салоне:" : locale === "hy" ? "Գումար՝" : "Total Price:"}
+                <div className="flex justify-between items-center pt-2">
+                  <span className="text-white/50 uppercase tracking-widest text-[10px] font-bold">
+                    {locale === "ru" ? "К оплате" : locale === "hy" ? "Գումար" : "Total Price"}
                   </span>
-                  <span className="text-[#c5a880] font-bold text-sm">
+                  <span className="text-[#c5a880] font-bold text-lg">
                     {formatCurrency(totalPrice, locale)}
                   </span>
-                </div>
-                <div className="pt-2 text-[10px] text-neutral-500 text-center">
-                  📍 ք. Երևան, Բագրատունյաց 19 (19 Bagratunyats St, Yerevan)
                 </div>
               </div>
             </div>
 
             {/* Actions */}
-            <div className="space-y-3 pt-4 border-t border-white/[0.08]">
+            <div className="relative z-10 space-y-3 pt-6 pb-2">
               <button
                 type="button"
                 onClick={handleDownloadIcs}

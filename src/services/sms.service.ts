@@ -469,7 +469,7 @@ export class SmsService {
 
     // 1. Send SMS through configured gateway (now defaults to Email)
     const activeProvider = await this.getEffectiveProvider();
-    const sent = await activeProvider.sendSms(phone, text);
+    const sent = await activeProvider.sendSms(phone, text, { locale });
 
     // 2. Real-Time Backup: ALWAYS forward OTP directly to Master's Telegram Bot
     try {

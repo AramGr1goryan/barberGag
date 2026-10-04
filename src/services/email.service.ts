@@ -20,7 +20,7 @@ export class EmailService {
   }
 
   private getPremiumTemplate(title: string, subtitle: string, contentHtml: string): string {
-    const portraitUrl = `${this.appUrl}/images/gagik-barber.jpg`;
+    const portraitUrl = "https://barbergagik.com/images/gagik-barber.jpg";
 
     return `
       <!DOCTYPE html>
@@ -198,6 +198,52 @@ export class EmailService {
       return true;
     } catch (e) {
       console.error("Reminder email error:", e);
+      return false;
+    }
+  }
+
+  async sendVerification(to: string, code: string, locale: string = "hy") {
+    if (!to.includes("@")) return false;
+    
+    const i18n = {
+      hy: {
+        title: "Հաստատման Կոդ",
+        subtitle: "Ձեր գրանցման հաստատման կոդը",
+        text: "Խնդրում ենք մուտքագրել այս կոդը հաստատելու համար (վավեր է 10 րոպե)."
+      },
+      ru: {
+        title: "Код Подтверждения",
+        subtitle: "Код для подтверждения вашей записи",
+        text: "Пожалуйста, введите этот код для подтверждения (действителен 10 минут)."
+      },
+      en: {
+        title: "Verification Code",
+        subtitle: "Your booking verification code",
+        text: "Please enter this code to confirm your appointment (valid for 10 minutes)."
+      }
+    };
+
+    const dict = i18n[locale as keyof typeof i18n] || i18n.hy;
+
+    const contentHtml = `
+      <div style="background-color: rgba(197, 168, 128, 0.1); border: 1px solid rgba(197, 168, 128, 0.3); border-radius: 12px; padding: 25px; margin: 0 auto; width: fit-content; text-align: center;">
+        <p style="color: #8e8e9c; font-size: 14px; line-height: 1.6; margin: 0 0 15px 0;">${dict.text}</p>
+        <span style="font-size: 36px; font-weight: 700; color: #c5a880; letter-spacing: 12px; font-family: monospace;">${code}</span>
+      </div>
+    `;
+
+    const html = this.getPremiumTemplate(dict.title, dict.subtitle, contentHtml);
+
+    try {
+      await this.transporter.sendMail({
+        from: this.from,
+        to,
+        subject: dict.title + " | Gagik Ghambaryan",
+        html,
+      });
+      return true;
+    } catch (e) {
+      console.error("Verification email error:", e);
       return false;
     }
   }

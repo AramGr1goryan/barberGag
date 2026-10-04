@@ -227,7 +227,7 @@ export function ReturningAppointmentCard({
               value={newDate}
               min={new Date().toISOString().split("T")[0]}
               onChange={(e) => handleDateChange(e.target.value)}
-              className="w-full bg-[#16161c] border border-white/10 hover:border-[#c5a880]/50 focus:border-[#c5a880] focus:ring-1 focus:ring-[#c5a880]/30 rounded-2xl px-5 py-4 text-sm font-mono text-white transition-all duration-300 [color-scheme:dark] shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] cursor-pointer"
+              className="w-full bg-[#16161c] border border-white/10 hover:border-[#c5a880]/50 focus:border-[#c5a880] focus:ring-1 focus:ring-[#c5a880]/30 rounded-2xl px-5 py-4 text-[16px] font-mono text-white transition-all duration-300 [color-scheme:dark] shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] cursor-pointer"
             />
           </div>
 
