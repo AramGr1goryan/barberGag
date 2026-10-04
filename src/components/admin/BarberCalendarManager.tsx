@@ -3,9 +3,9 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useAdminI18n } from "@/context/AdminI18nContext";
 import { Button } from "@/components/ui/Button";
-import { Modal } from "@/components/ui/Modal";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { Plus, Clock, User, Phone, Check, X } from "lucide-react";
+import { Plus, Check, X, ArrowLeft } from "lucide-react";
+import Link from "next/link";
 
 export function BarberCalendarManager() {
   const { t, locale } = useAdminI18n();
@@ -26,6 +26,7 @@ export function BarberCalendarManager() {
   const [defaultPrice, setDefaultPrice] = useState("0");
   
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const fetchData = useCallback(async (date: string) => {
     setIsLoading(true);
@@ -102,9 +103,9 @@ export function BarberCalendarManager() {
     const cService = fd.get("cService") as string;
     const cPrice = fd.get("cPrice") as string;
 
-    const guestName = cName?.trim() || "Клиент";
+    const guestName = cName?.trim() || (locale === "ru" ? "Клиент" : "Client");
     const guestPhone = cPhone?.trim() || "—";
-    const serviceName = cService?.trim() || "Услуга";
+    const serviceName = cService?.trim() || (locale === "ru" ? "Услуга" : "Service");
     const price = Number(cPrice) || 0;
 
     try {
@@ -132,8 +133,22 @@ export function BarberCalendarManager() {
 
   const availableSlots = daySlots.filter(s => s.status === "AVAILABLE");
 
+  const openForm = (time: string = "12:00") => {
+    setBookingTime(time);
+    setSelectedServiceId("");
+    setIsManualBookingOpen(true);
+    if (formRef.current) formRef.current.reset();
+  };
+
   return (
-    <div className="max-w-4xl mx-auto space-y-4 pb-20">
+    <div className="max-w-4xl mx-auto space-y-4 pb-20 pt-2">
+      <div className="mb-1">
+        <Link href="/admin/analytics" className="inline-flex items-center gap-1.5 text-xs font-mono text-muted hover:text-white transition-colors bg-white/5 px-3 py-1.5 rounded-lg border border-white/10">
+          <ArrowLeft className="w-3.5 h-3.5" />
+          {locale === "ru" ? "В основную админку" : "To Main Admin"}
+        </Link>
+      </div>
+
       <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-2">
         {openDays.map(d => {
           const isSelected = d.date === selectedDate;
@@ -152,92 +167,115 @@ export function BarberCalendarManager() {
         })}
       </div>
 
-      <div className="bg-surface/80 border border-white/10 rounded-2xl p-4 shadow-lg">
-        <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-3">
+      <div className="bg-surface/80 border border-white/10 rounded-2xl p-4 shadow-lg flex flex-col min-h-[50vh]">
+        <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-3 shrink-0">
           <div className="flex items-center gap-3">
             <h2 className="text-lg font-bold text-foreground">{new Date(selectedDate).toLocaleDateString(locale==="ru"?"ru":"en",{weekday:"long", day:"numeric", month:"long"})}</h2>
-            {isDayOpen ? <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded">ОТКРЫТ</span> : <span className="text-[10px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded">ЗАКРЫТ</span>}
-          </div>
-          <div className="flex gap-2">
-            {isDayOpen ? (
-              <Button variant="danger" size="sm" onClick={() => handleToggleDay(false)} className="h-8 text-xs px-3">{locale==="ru"?"Закрыть день":"Close Day"}</Button>
-            ) : (
-              <Button variant="primary" size="sm" onClick={() => handleToggleDay(true)} className="h-8 text-xs px-3">{locale==="ru"?"Открыть день":"Open Day"}</Button>
-            )}
-            <Button variant="primary" size="sm" onClick={() => setIsManualBookingOpen(true)} className="h-8 text-xs px-3 gap-1"><Plus className="w-3.5 h-3.5"/> {t.barberCalendar.addClient || (locale==="ru"?"Запись":"Book")}</Button>
+            {isDayOpen ? <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded font-bold">ОТКРЫТ</span> : <span className="text-[10px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded font-bold">ЗАКРЫТ</span>}
           </div>
         </div>
 
-        {isLoading ? <div className="py-10 flex justify-center"><LoadingSpinner size="sm" /></div> : (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              {dayBookings.filter(b => b.status !== "CANCELLED").map(task => {
-                const isDone = task.status === "COMPLETED";
-                return (
-                  <div key={task.id} className={`flex items-center justify-between p-3 rounded-xl border ${isDone ? "bg-emerald-950/20 border-emerald-500/20 opacity-70" : "bg-background/80 border-white/10"}`}>
-                    <div className="flex items-center gap-3">
-                      <button onClick={() => handleToggleTask(task)} className={`w-6 h-6 rounded flex items-center justify-center border ${isDone ? "bg-emerald-500 border-emerald-500 text-black" : "border-white/30"}`}>
-                        <Check className="w-4 h-4" />
-                      </button>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-accent">{task.startTime}-{task.endTime}</span>
-                          <span className={`text-sm font-bold ${isDone?"line-through text-muted":"text-white"}`}>{task.guestName}</span>
+        <div className="flex-1">
+          {isLoading ? <div className="py-10 flex justify-center"><LoadingSpinner size="sm" /></div> : (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                {dayBookings.filter(b => b.status !== "CANCELLED").map(task => {
+                  const isDone = task.status === "COMPLETED";
+                  return (
+                    <div key={task.id} className={`flex items-center justify-between p-3 rounded-xl border ${isDone ? "bg-emerald-950/20 border-emerald-500/20 opacity-70" : "bg-background/80 border-white/10"}`}>
+                      <div className="flex items-center gap-3">
+                        <button onClick={() => handleToggleTask(task)} className={`w-6 h-6 rounded flex items-center justify-center border ${isDone ? "bg-emerald-500 border-emerald-500 text-black" : "border-white/30"}`}>
+                          <Check className="w-4 h-4" />
+                        </button>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-accent">{task.startTime}-{task.endTime}</span>
+                            <span className={`text-sm font-bold ${isDone?"line-through text-muted":"text-white"}`}>{task.guestName}</span>
+                          </div>
+                          <div className="text-[10px] text-muted font-mono">{task.guestPhone} • {task.items.map((i:any)=>i.nameSnapshot).join("+")}</div>
                         </div>
-                        <div className="text-[10px] text-muted font-mono">{task.guestPhone} • {task.items.map((i:any)=>i.nameSnapshot).join("+")}</div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {availableSlots.length > 0 && (
-              <div className="pt-2 border-t border-white/10">
-                <h4 className="text-xs text-muted mb-2 font-bold uppercase">Свободные часы ({availableSlots.length})</h4>
-                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                  {availableSlots.map(slot => (
-                    <div key={slot.id} className="relative group">
-                      <button onClick={() => { setBookingTime(slot.startTime); setIsManualBookingOpen(true); }} className="w-full p-2 bg-[#141418] border border-white/10 rounded-lg text-xs font-mono text-center hover:border-accent hover:text-accent">
-                        {slot.startTime}
-                      </button>
-                      <button onClick={(e) => { e.stopPropagation(); handleDeleteSlot(slot.id); }} className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"><X className="w-3 h-3" /></button>
-                    </div>
-                  ))}
-                </div>
+                  );
+                })}
               </div>
-            )}
-          </div>
-        )}
-      </div>
 
-      <Modal isOpen={isManualBookingOpen} onClose={() => setIsManualBookingOpen(false)} title={t.barberCalendar.addClient || (locale==="ru"?"Записать клиента":"Book Client")}>
-        <form onSubmit={onSubmitBooking} className="space-y-3">
-          <div className="grid grid-cols-2 gap-2">
-            <input type="time" required value={bookingTime} onChange={e=>setBookingTime(e.target.value)} className="w-full bg-[#16161c] border border-white/20 rounded-lg px-3 py-2 text-xs text-white" />
-            <select value={bookingDuration} onChange={e=>setBookingDuration(Number(e.target.value))} className="w-full bg-[#16161c] border border-white/20 rounded-lg px-3 py-2 text-xs text-white">
-              <option value={30}>30 мин</option><option value={45}>45 мин</option><option value={60}>60 мин</option><option value={90}>90 мин</option>
-            </select>
-          </div>
-          <select value={selectedServiceId} onChange={handleServiceChange} className="w-full bg-[#16161c] border border-white/20 rounded-lg px-3 py-2 text-xs text-white">
-            <option value="">— {locale==="ru"?"Услуга":"Service"} —</option>
-            <option value="CUSTOM">{locale==="ru"?"Своя услуга":"Custom Service"}</option>
-            {services.map(s => <option key={s.id} value={s.id}>{locale==="ru"?s.nameRu:(locale==="hy"?s.nameHy:s.nameEn)}</option>)}
-          </select>
-          {selectedServiceId === "CUSTOM" && (
-            <div className="grid grid-cols-2 gap-2">
-              <input name="cService" type="text" placeholder="Название" className="w-full bg-[#16161c] border border-white/20 rounded-lg px-3 py-2 text-xs text-white" />
-              <input name="cPrice" type="number" placeholder="Цена" className="w-full bg-[#16161c] border border-white/20 rounded-lg px-3 py-2 text-xs text-white" />
+              {availableSlots.length > 0 && (
+                <div className="pt-2 border-t border-white/10">
+                  <h4 className="text-xs text-muted mb-2 font-bold uppercase">{locale==="ru"?"Свободные часы":"Free Hours"} ({availableSlots.length})</h4>
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                    {availableSlots.map(slot => (
+                      <div key={slot.id} className="relative group">
+                        <button onClick={() => openForm(slot.startTime)} className="w-full p-2 bg-[#141418] border border-white/10 rounded-lg text-xs font-mono text-center hover:border-accent hover:text-accent transition-colors">
+                          {slot.startTime}
+                        </button>
+                        <button onClick={(e) => { e.stopPropagation(); handleDeleteSlot(slot.id); }} className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"><X className="w-3 h-3" /></button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
-          <div className="grid grid-cols-2 gap-2">
-            <input name="cName" type="text" placeholder="Имя" className="w-full bg-[#16161c] border border-white/20 rounded-lg px-3 py-2 text-xs text-white" />
-            <input name="cPhone" type="tel" placeholder="Телефон" defaultValue="+374 " className="w-full bg-[#16161c] border border-white/20 rounded-lg px-3 py-2 text-xs text-white" />
-          </div>
-          {selectedServiceId !== "CUSTOM" && selectedServiceId !== "" && <input type="hidden" name="cPrice" value={defaultPrice} />}
-          <Button variant="primary" type="submit" isLoading={isSubmitting} className="w-full mt-2 py-2">{t.barberCalendar.addClient || (locale==="ru"?"Записать":"Book")}</Button>
-        </form>
-      </Modal>
+        </div>
+
+        {/* Action Buttons moved to the bottom */}
+        <div className="mt-6 pt-4 border-t border-white/10 flex flex-col sm:flex-row gap-2 shrink-0">
+          <Button variant="primary" size="lg" onClick={() => openForm()} className="w-full sm:flex-1 gap-2 font-bold shadow-[0_0_20px_rgba(197,168,128,0.2)]"><Plus className="w-4 h-4"/> {t.barberCalendar.addClient || (locale==="ru"?"Записать клиента":"Book Client")}</Button>
+          {isDayOpen ? (
+            <Button variant="danger" size="lg" onClick={() => handleToggleDay(false)} className="w-full sm:w-auto px-6">{locale==="ru"?"Закрыть день":"Close Day"}</Button>
+          ) : (
+            <Button variant="primary" size="lg" onClick={() => handleToggleDay(true)} className="w-full sm:w-auto px-6">{locale==="ru"?"Открыть день":"Open Day"}</Button>
+          )}
+        </div>
+      </div>
+
+      {/* Permanently rendered, CSS-toggled Modal for INSTANT loading */}
+      <div className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-150 ${isManualBookingOpen ? "opacity-100 pointer-events-auto bg-black/85" : "opacity-0 pointer-events-none bg-black/0"}`}>
+        <div className={`relative w-full max-w-md max-h-[95vh] overflow-y-auto bg-[#1c1f2b] p-5 sm:p-6 rounded-3xl border border-white/10 shadow-2xl transition-transform duration-200 ${isManualBookingOpen ? "scale-100 translate-y-0" : "scale-95 translate-y-8"}`}>
+          <button type="button" onClick={() => setIsManualBookingOpen(false)} className="absolute top-4 right-4 p-2 bg-white/5 rounded-full hover:bg-white/10 text-white transition-colors"><X className="w-4 h-4"/></button>
+          
+          <h3 className="text-lg font-bold text-white mb-4 pr-8">{t.barberCalendar.addClient || (locale==="ru"?"Записать клиента":"Book Client")}</h3>
+          
+          <form ref={formRef} onSubmit={onSubmitBooking} className="space-y-3">
+            <div className="grid grid-cols-2 gap-2">
+              <input type="time" required value={bookingTime} onChange={e=>setBookingTime(e.target.value)} className="w-full bg-[#16161c] border border-white/20 rounded-lg px-3 py-2 text-xs text-white focus:border-accent outline-none" />
+              <select value={bookingDuration} onChange={e=>setBookingDuration(Number(e.target.value))} className="w-full bg-[#16161c] border border-white/20 rounded-lg px-3 py-2 text-xs text-white focus:border-accent outline-none">
+                <option value={30}>30 {locale==="ru"?"мин":"min"}</option>
+                <option value={45}>45 {locale==="ru"?"мин":"min"}</option>
+                <option value={60}>60 {locale==="ru"?"мин":"min"}</option>
+                <option value={90}>90 {locale==="ru"?"мин":"min"}</option>
+              </select>
+            </div>
+            
+            <select value={selectedServiceId} onChange={handleServiceChange} className="w-full bg-[#16161c] border border-white/20 rounded-lg px-3 py-2 text-xs text-white focus:border-accent outline-none">
+              <option value="">— {locale==="ru"?"Услуга":"Service"} —</option>
+              <option value="CUSTOM">{locale==="ru"?"Своя услуга":"Custom Service"}</option>
+              {services.map(s => <option key={s.id} value={s.id}>{locale==="ru"?s.nameRu:(locale==="hy"?s.nameHy:s.nameEn)}</option>)}
+            </select>
+            
+            {selectedServiceId === "CUSTOM" && (
+              <div className="grid grid-cols-2 gap-2 animate-in fade-in zoom-in-95 duration-150">
+                <input name="cService" type="text" placeholder={locale==="ru"?"Название":"Name"} className="w-full bg-[#16161c] border border-white/20 rounded-lg px-3 py-2 text-xs text-white focus:border-accent outline-none" />
+                <input name="cPrice" type="number" placeholder={locale==="ru"?"Цена":"Price"} className="w-full bg-[#16161c] border border-white/20 rounded-lg px-3 py-2 text-xs text-white focus:border-accent outline-none" />
+              </div>
+            )}
+            
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              <input name="cName" type="text" placeholder={locale==="ru"?"Имя":"Name"} className="w-full bg-[#16161c] border border-white/20 rounded-lg px-3 py-2 text-xs text-white focus:border-accent outline-none" />
+              <input name="cPhone" type="tel" placeholder={locale==="ru"?"Телефон":"Phone"} defaultValue="+374 " className="w-full bg-[#16161c] border border-white/20 rounded-lg px-3 py-2 text-xs text-white focus:border-accent outline-none" />
+            </div>
+            
+            {selectedServiceId !== "CUSTOM" && selectedServiceId !== "" && <input type="hidden" name="cPrice" value={defaultPrice} />}
+            
+            <div className="pt-2">
+              <Button variant="primary" type="submit" isLoading={isSubmitting} className="w-full py-2.5 text-sm font-bold shadow-[0_0_15px_rgba(197,168,128,0.2)]">
+                {t.barberCalendar.addClient || (locale==="ru"?"Записать":"Book")}
+              </Button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   );
 }

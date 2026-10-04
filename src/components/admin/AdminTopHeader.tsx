@@ -31,7 +31,7 @@ export function AdminTopHeader() {
 
   const navLinks = [
     { href: "/admin", label: t.nav.overview, icon: LayoutDashboard },
-    { href: "/admin/analytics", label: t.nav.analytics, icon: TrendingUp, highlight: true },
+    { href: "/admin/analytics", label: t.nav.analytics, icon: TrendingUp },
     { href: "/admin/barber-calendar", label: t.nav.barberCalendar, icon: CalendarCheck2 },
     { href: "/admin/calendar", label: t.nav.calendar, icon: CalendarDays },
     { href: "/admin/bookings", label: t.nav.bookings, icon: Clock },
