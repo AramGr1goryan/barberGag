@@ -186,7 +186,7 @@ export class BookingService {
           endTime: endTimeCalc,
           totalDurationMinutes: totalDuration,
           totalPriceMinorUnits: totalPrice,
-          status: BookingStatus.PENDING_VERIFICATION,
+          status: BookingStatus.CONFIRMED,
           locale: locale,
           slots: { connect: day.slots.map(s => ({ id: s.id })) },
           items: {
@@ -209,12 +209,12 @@ export class BookingService {
     });
 
     // 6. Send SMS verification code
-    await smsService.sendVerificationCode(booking.id, guestPhone, locale);
+    // await smsService.sendVerificationCode(booking.id, guestPhone, locale);
 
     return {
       booking,
       sessionToken,
-      verificationRequired: true,
+      verificationRequired: false,
     };
   }
 

@@ -62,19 +62,7 @@ export function MobileBottomNav({ locale, user }: MobileBottomNavProps) {
           <span className="text-[9px] font-mono tracking-tight mt-0.5">{labels.home}</span>
         </Link>
 
-        {/* 2. Portfolio */}
-        <Link
-          href={`/${locale}/portfolio`}
-          className={`flex flex-col items-center justify-center min-w-[54px] min-h-[44px] rounded-full transition-all duration-200 ${
-            isPortfolio
-              ? "text-accent scale-105 font-medium"
-              : "text-zinc-400 hover:text-zinc-200 active:scale-95"
-          }`}
-          aria-label={labels.portfolio}
-        >
-          <ImageIcon className={`w-5 h-5 ${isPortfolio ? "text-accent drop-shadow-[0_0_8px_rgba(197,168,128,0.5)]" : ""}`} />
-          <span className="text-[9px] font-mono tracking-tight mt-0.5">{labels.portfolio}</span>
-        </Link>
+
 
         {/* 3. Center Elevated Quick-Book Action (The Thumb Prime Spot) */}
         <Link

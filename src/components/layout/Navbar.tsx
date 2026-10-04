@@ -43,8 +43,6 @@ export function Navbar({ locale, dict, user }: NavbarProps) {
 
   const navLinks = [
     { href: `/${locale}?book=true`, label: dict.booking },
-    { href: `/${locale}/about`, label: dict.about },
-    { href: `/${locale}/portfolio`, label: dict.portfolio },
     { href: `/${locale}/contact`, label: dict.contact },
   ];
 

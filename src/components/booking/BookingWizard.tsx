@@ -410,10 +410,16 @@ export function BookingWizard({
         throw new Error(data.message || data.error || "Booking failed");
       }
 
+      
       setCreatedBookingId(data.bookingId);
       setCreatedBookingNumber(data.bookingNumber);
-      setResendCooldown(60);
-      setCurrentStep(4); // Move to SMS verification
+      if (data.verificationRequired) {
+        setResendCooldown(60);
+        setCurrentStep(4); // Move to SMS verification
+      } else {
+        setCurrentStep(5); // Move to Success directly
+      }
+
     } catch (err: unknown) {
       setErrorMessage(err instanceof Error ? err.message : "Error initiating booking");
     } finally {
