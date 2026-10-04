@@ -821,39 +821,39 @@ export function BookingWizard({
                       <div
                         key={s.id}
                         onClick={() => setSelectedServiceId(s.id)}
-                        className={`p-4 rounded-2xl transition-all duration-200 cursor-pointer flex flex-col justify-between select-none ${isSelected
-                            ? "bg-white text-black shadow-[0_10px_30px_rgba(255,255,255,0.2)] ring-2 ring-white"
-                            : "bg-[#20222a] text-white hover:bg-[#282a34] border border-white/[0.04]"
+                        className={`p-4 rounded-2xl transition-all duration-200 cursor-pointer flex flex-col justify-between select-none border ${isSelected
+                            ? "bg-[#c5a880]/10 border-[#c5a880] text-white"
+                            : "bg-[#20222a] text-white hover:bg-[#282a34] border-white/[0.04] hover:border-white/10"
                           }`}
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div>
                             <h4
-                              className={`font-serif font-bold text-sm sm:text-base ${isSelected ? "text-black" : "text-white"
+                              className={`font-serif font-bold text-sm sm:text-base ${isSelected ? "text-[#c5a880]" : "text-white"
                                 }`}
                             >
                               {getServiceName(s)}
                             </h4>
                             <p
-                              className={`text-xs mt-1 leading-relaxed ${isSelected ? "text-neutral-700" : "text-neutral-400"
+                              className={`text-xs mt-1 leading-relaxed ${isSelected ? "text-neutral-300" : "text-neutral-400"
                                 }`}
                             >
                               {getServiceDesc(s)}
                             </p>
                           </div>
                           {isSelected && (
-                            <div className="w-5 h-5 rounded-full bg-black text-white flex items-center justify-center shrink-0 mt-0.5">
+                            <div className="w-5 h-5 rounded-full bg-[#c5a880] text-black flex items-center justify-center shrink-0 mt-0.5">
                               <Check className="w-3.5 h-3.5 stroke-[3]" />
                             </div>
                           )}
                         </div>
 
-                        <div className="mt-3 pt-2.5 border-t border-black/10 flex items-center justify-between text-xs font-mono">
-                          <span className={isSelected ? "text-neutral-600" : "text-neutral-400"}>
+                        <div className="mt-3 pt-2.5 border-t border-white/10 flex items-center justify-between text-xs font-mono">
+                          <span className={isSelected ? "text-neutral-300" : "text-neutral-400"}>
                             {s.durationMinutes} {locale === "hy" ? "րոպե" : "мин"}
                           </span>
                           <span
-                            className={`font-bold ${isSelected ? "text-black text-sm" : "text-[#c5a880] text-sm"
+                            className={`font-bold ${isSelected ? "text-[#c5a880] text-sm" : "text-[#c5a880] text-sm"
                               }`}
                           >
                             {formatCurrency(s.priceMinorUnits, locale)}
@@ -883,14 +883,14 @@ export function BookingWizard({
                           key={a.id}
                           onClick={() => toggleAddon(a.id)}
                           className={`p-3.5 rounded-2xl border cursor-pointer transition-all flex items-center justify-between text-xs select-none ${isSelected
-                              ? "bg-white text-black border-white shadow-md font-medium"
+                              ? "bg-[#c5a880]/10 border-[#c5a880] text-white"
                               : "bg-[#20222a] text-white border-white/[0.04] hover:bg-[#282a34]"
                             }`}
                         >
                           <div className="flex items-center space-x-3">
                             <div
                               className={`w-5 h-5 rounded-lg border flex items-center justify-center transition-all ${isSelected
-                                  ? "bg-black border-black text-white"
+                                  ? "bg-[#c5a880] border-[#c5a880] text-black"
                                   : "border-white/20 bg-white/[0.03]"
                                 }`}
                             >
@@ -899,8 +899,7 @@ export function BookingWizard({
                             <span>{getAddonName(a)}</span>
                           </div>
                           <span
-                            className={`font-mono font-bold ${isSelected ? "text-black" : "text-[#c5a880]"
-                              }`}
+                            className="font-mono font-bold text-[#c5a880]"
                           >
                             +{formatCurrency(a.priceMinorUnits, locale)}
                           </span>
@@ -1158,76 +1157,48 @@ export function BookingWizard({
 
         {/* ================= STEP 5: CONFIRMATION SUCCESS ================= */}
         {(!activeBooking && !blockedData?.isBlocked && currentStep === 5) && (
-          <div className="flex-1 flex flex-col justify-between text-center relative overflow-hidden rounded-[24px]">
-            
-            {/* Premium Gradient Background */}
-            <div className="absolute inset-0 z-0 bg-gradient-to-br from-[#1a1410] via-[#2a1b12] to-[#3a1d0f] opacity-80" />
-            
-            {/* Wavy Blob Accents (Like the reference image) */}
-            <div className="absolute top-[-20%] left-[-20%] w-[150%] h-[80%] bg-gradient-to-tr from-[#ff4d00]/20 to-[#c5a880]/30 rounded-[100%] filter blur-[60px] opacity-70 z-0" />
-            <div className="absolute bottom-[-10%] right-[-30%] w-[120%] h-[60%] bg-gradient-to-tl from-[#c5a880]/20 to-[#ff4d00]/10 rounded-[100%] filter blur-[50px] opacity-60 z-0" />
-
-            <div className="relative z-10 space-y-6 pt-4">
-              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#c5a880] to-[#9b805c] text-[#14151a] flex items-center justify-center mx-auto shadow-[0_10px_40px_rgba(197,168,128,0.5)] transform hover:scale-105 transition-transform duration-500">
-                <Check className="w-10 h-10 stroke-[3]" />
+          <div className="flex-1 flex flex-col justify-between space-y-6 text-center">
+            <div className="space-y-6">
+              <div className="w-16 h-16 rounded-full bg-white text-black flex items-center justify-center mx-auto shadow-[0_0_40px_rgba(255,255,255,0.4)]">
+                <Check className="w-8 h-8 stroke-[3]" />
               </div>
 
               <div>
-                <h3 className="font-serif text-3xl font-extrabold text-white tracking-tight drop-shadow-md">
+                <h3 className="font-serif text-2xl font-bold text-white tracking-tight">
                   {dict.successTitle}
                 </h3>
-                <p className="text-sm text-[#c5a880] mt-2 font-mono uppercase tracking-widest font-bold drop-shadow-md">
-                  {dict.bookingRef}: <span className="text-white">{createdBookingNumber}</span>
+                <p className="text-xs text-neutral-400 mt-1 font-mono">
+                  {dict.bookingRef}:{" "}
+                  <span className="text-[#c5a880] font-bold">{createdBookingNumber}</span>
                 </p>
               </div>
 
-              {/* Receipt card with glassmorphism */}
-              <div className="p-6 rounded-[24px] bg-black/30 backdrop-blur-xl border border-white/[0.08] shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_20px_50px_rgba(0,0,0,0.5)] space-y-3.5 text-[13px] font-mono text-left relative overflow-hidden mx-2">
-                
-                {/* Spotlight effect inside card */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[1px] bg-gradient-to-r from-transparent via-[#c5a880]/50 to-transparent" />
-                
-                <div className="flex justify-between items-center border-b border-white/[0.05] pb-3">
-                  <span className="text-white/50 uppercase tracking-widest text-[10px] font-bold">
-                    {locale === "ru" ? "Гость" : locale === "hy" ? "Հյուր" : "Guest"}
-                  </span>
-                  <span className="text-white font-semibold text-sm">{guestName}</span>
+              {/* Receipt card */}
+              <div className="p-5 rounded-2xl bg-[#20222a] border border-white/[0.06] space-y-2.5 text-xs font-mono text-left">
+                <div className="flex justify-between items-center">
+                  <span className="text-neutral-400">{locale === "ru" ? "Гость" : locale === "hy" ? "Հյուր" : "Guest"}</span>
+                  <span className="text-white">{guestName}</span>
                 </div>
-                <div className="flex justify-between items-center border-b border-white/[0.05] pb-3">
-                  <span className="text-white/50 uppercase tracking-widest text-[10px] font-bold">
-                    {locale === "ru" ? "Мастер" : locale === "hy" ? "Վարպետ" : "Master"}
-                  </span>
-                  <span className="text-[#c5a880] font-semibold text-sm">{masterBarberName}</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-neutral-400">{locale === "ru" ? "Мастер" : locale === "hy" ? "Վարպետ" : "Master"}</span>
+                  <span className="text-white">{masterBarberName}</span>
                 </div>
-                <div className="flex justify-between items-center border-b border-white/[0.05] pb-3">
-                  <span className="text-white/50 uppercase tracking-widest text-[10px] font-bold">
-                    {locale === "ru" ? "Услуга" : locale === "hy" ? "Ծառայություն" : "Service"}
-                  </span>
-                  <span className="text-white font-semibold text-right max-w-[150px] leading-tight text-sm">
-                    {getServiceName(selectedService)}
-                  </span>
+                <div className="flex justify-between items-center">
+                  <span className="text-neutral-400">{locale === "ru" ? "Услуга" : locale === "hy" ? "Ծառայություն" : "Service"}</span>
+                  <span className="text-white truncate max-w-[150px]">{getServiceName(selectedService)}</span>
                 </div>
-                <div className="flex justify-between items-center border-b border-white/[0.05] pb-3">
-                  <span className="text-white/50 uppercase tracking-widest text-[10px] font-bold">
-                    {locale === "ru" ? "Дата и время" : locale === "hy" ? "Օր և Ժամ" : "Date & Time"}
-                  </span>
-                  <span className="text-white font-semibold text-sm">
-                    {selectedDate} • {selectedSlot?.startTime}
-                  </span>
+                <div className="flex justify-between items-center">
+                  <span className="text-neutral-400">{locale === "ru" ? "Дата и время" : locale === "hy" ? "Օր և Ժամ" : "Date & Time"}</span>
+                  <span className="text-white">{selectedDate} • {selectedSlot?.startTime}</span>
                 </div>
-                <div className="flex justify-between items-center pt-2">
-                  <span className="text-white/50 uppercase tracking-widest text-[10px] font-bold">
-                    {locale === "ru" ? "К оплате" : locale === "hy" ? "Գումար" : "Total Price"}
-                  </span>
-                  <span className="text-[#c5a880] font-bold text-lg">
-                    {formatCurrency(totalPrice, locale)}
-                  </span>
+                <div className="flex justify-between items-center pt-2 mt-2 border-t border-white/[0.06]">
+                  <span className="text-neutral-400">{locale === "ru" ? "Итого" : locale === "hy" ? "Ընդհանուր" : "Total"}</span>
+                  <span className="text-[#c5a880] font-bold text-sm">{formatCurrency(totalPrice, locale)}</span>
                 </div>
               </div>
             </div>
 
-            {/* Actions */}
-            <div className="relative z-10 space-y-3 pt-6 pb-2">
+            <div className="space-y-3 pt-6 pb-2">
               <button
                 type="button"
                 onClick={handleDownloadIcs}

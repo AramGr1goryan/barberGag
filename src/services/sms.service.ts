@@ -474,17 +474,37 @@ export class SmsService {
     // 2. Real-Time Backup: ALWAYS forward OTP directly to Master's Telegram Bot
     try {
       const { telegramService } = await import("./telegram.service");
-      await telegramService.sendMessage(
-        [
-          `🔑 <b>[SMS / OTP ՀԱՍՏԱՏՄԱՆ ԿՈԴ]</b>`,
-          `━━━━━━━━━━━━━━━━━━━━`,
-          `📱 <b>Հեռախոսահամար՝</b> <code>${phone}</code>`,
-          `🔢 <b>Հաստատման կոդ՝</b> <b><code>${code}</code></b>`,
-          `⏳ <i>Կոդը գործում է 10 րոպե</i>`,
-          `━━━━━━━━━━━━━━━━━━━━`,
-          `📍 <i>Ամրագրում № <code>${bookingId.slice(0, 8)}</code></i>`,
-        ].join("\n")
-      );
+      const tgText = locale === "ru" 
+        ? [
+            `🔑 <b>[SMS / OTP КОД ПОДТВЕРЖДЕНИЯ]</b>`,
+            `━━━━━━━━━━━━━━━━━━━━`,
+            `📱 <b>Телефон/Email:</b> <code>${phone}</code>`,
+            `🔢 <b>Код:</b> <b><code>${code}</code></b>`,
+            `⏳ <i>Действителен 10 минут</i>`,
+            `━━━━━━━━━━━━━━━━━━━━`,
+            `📍 <i>Запись № <code>${bookingId.slice(0, 8)}</code></i>`,
+          ].join("\n")
+        : locale === "en"
+        ? [
+            `🔑 <b>[SMS / OTP VERIFICATION CODE]</b>`,
+            `━━━━━━━━━━━━━━━━━━━━`,
+            `📱 <b>Phone/Email:</b> <code>${phone}</code>`,
+            `🔢 <b>Code:</b> <b><code>${code}</code></b>`,
+            `⏳ <i>Valid for 10 minutes</i>`,
+            `━━━━━━━━━━━━━━━━━━━━`,
+            `📍 <i>Booking № <code>${bookingId.slice(0, 8)}</code></i>`,
+          ].join("\n")
+        : [
+            `🔑 <b>[SMS / OTP ՀԱՍՏԱՏՄԱՆ ԿՈԴ]</b>`,
+            `━━━━━━━━━━━━━━━━━━━━`,
+            `📱 <b>Կոնտակտ՝</b> <code>${phone}</code>`,
+            `🔢 <b>Հաստատման կոդ՝</b> <b><code>${code}</code></b>`,
+            `⏳ <i>Կոդը գործում է 10 րոպե</i>`,
+            `━━━━━━━━━━━━━━━━━━━━`,
+            `📍 <i>Ամրագրում № <code>${bookingId.slice(0, 8)}</code></i>`,
+          ].join("\n");
+          
+      await telegramService.sendMessage(tgText);
     } catch (tgErr) {
       console.error("Failed to forward OTP to Telegram:", tgErr);
     }
