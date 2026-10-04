@@ -478,7 +478,7 @@ export function BookingsManager() {
                       <td className="py-4 px-3 font-bold text-accent">{b.bookingNumber}</td>
                       <td className="py-4 px-3">
                         <span className="font-sans font-medium text-foreground block">{b.guestName}</span>
-                        <span className="text-[10px] text-zinc-400">{b.guestPhone}</span>
+                        <span className="text-[10px] text-zinc-400">{(b as any).guestRealPhone ? `📞 ${(b as any).guestRealPhone} · ` : ""}{b.guestPhone}</span>
                       </td>
                       <td className="py-4 px-3">
                         <span className="text-foreground block">{b.date}</span>

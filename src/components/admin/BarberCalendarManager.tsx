@@ -212,7 +212,7 @@ export function BarberCalendarManager() {
                             <span className="text-xs font-bold text-accent">{task.startTime}-{task.endTime}</span>
                             <span className={`text-sm font-bold ${isDone?"line-through text-muted":"text-white"}`}>{task.guestName}</span>
                           </div>
-                          <div className="text-[10px] text-muted font-mono">{task.guestPhone} • {task.items.map((i:any)=>i.nameSnapshot).join("+")}</div>
+                          <div className="text-[10px] text-muted font-mono">{task.guestRealPhone && <a href={`tel:${task.guestRealPhone}`} className="text-primary">📞 {task.guestRealPhone} • </a>}{task.guestPhone} • {task.items.map((i:any)=>i.nameSnapshot).join("+")}</div>
                         </div>
                       </div>
                     </div>

@@ -164,7 +164,7 @@ export function LuxuryCalendarPicker({
   return (
     <div className="space-y-4">
       {/* CALENDAR SECTION (COMPACT LUXURY DESIGN) */}
-      <div className="bg-[#121216]/90 border border-white/10 rounded-2xl p-4 sm:p-6 shadow-xl space-y-4 backdrop-blur-xl">
+      <div className="bg-white/[0.03] border border-white/10 rounded-2xl p-4 sm:p-6 shadow-xl space-y-4 backdrop-blur-xl">
         {/* Calendar Navigation Header */}
         <div className="flex items-center justify-between border-b border-white/10 pb-3">
           <div className="space-y-0.5">
@@ -207,7 +207,7 @@ export function LuxuryCalendarPicker({
         {/* Legend */}
         <div className="flex items-center space-x-4 text-[10px] font-mono text-muted">
           <div className="flex items-center space-x-1.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)]" />
+            <span className="w-2 h-2 rounded-full bg-[#c5a880]" />
             <span>
               {locale === "hy"
                 ? "Հասանելի օրեր"
@@ -234,7 +234,7 @@ export function LuxuryCalendarPicker({
             <span
               key={idx}
               className={`text-[10px] font-mono uppercase tracking-wider py-0.5 font-semibold ${
-                idx >= 5 ? "text-amber-400/80" : "text-muted/80"
+                idx >= 5 ? "text-[#c5a880]/80" : "text-muted/80"
               }`}
             >
               {day}
@@ -266,7 +266,7 @@ export function LuxuryCalendarPicker({
                   isSelected
                     ? "bg-accent text-slate-950 font-bold border-accent shadow-[0_0_15px_rgba(197,168,128,0.5)] scale-105 z-10"
                     : isOpen
-                    ? "bg-white/[0.03] hover:bg-white/[0.08] border-emerald-500/30 hover:border-emerald-400 text-white cursor-pointer"
+                    ? "bg-white/[0.03] hover:bg-white/[0.08] border-[#c5a880]/25 hover:border-[#c5a880] text-white cursor-pointer"
                     : "bg-surface/20 text-white/20 border-transparent cursor-not-allowed"
                 }`}
               >
@@ -280,7 +280,7 @@ export function LuxuryCalendarPicker({
                     className={`mt-0.5 rounded-full transition-all duration-150 ${
                       isSelected
                         ? "w-3 h-0.5 bg-slate-950/80"
-                        : "w-1.5 h-1.5 bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.9)] group-hover:w-2.5 group-hover:h-0.5"
+                        : "w-1.5 h-1.5 bg-[#c5a880] group-hover:w-2.5 group-hover:h-0.5"
                     }`}
                   />
                 )}

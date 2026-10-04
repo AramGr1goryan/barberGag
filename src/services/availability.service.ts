@@ -244,6 +244,7 @@ export class AvailabilityService {
                 bookingNumber: true,
                 guestName: true,
                 guestPhone: true,
+                guestRealPhone: true,
                 status: true,
               },
             },

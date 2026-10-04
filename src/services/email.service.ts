@@ -1,5 +1,7 @@
 import nodemailer from "nodemailer";
 
+const GOLD = "#c5a880";
+
 export class EmailService {
   private transporter: any;
   private from: string;
@@ -19,155 +21,127 @@ export class EmailService {
     this.appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://barbergagik.com";
   }
 
+  /**
+   * Glassmorphism email shell. Light/dark follows the device theme.
+   * Only two tones: neutral (white/black glass) + gold accent.
+   */
   private getPremiumTemplate(title: string, subtitle: string, contentHtml: string): string {
     return `
       <!DOCTYPE html>
       <html>
       <head>
         <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="color-scheme" content="light dark">
         <meta name="supported-color-schemes" content="light dark">
         <title>${title}</title>
         <style>
-          :root {
-            color-scheme: light dark;
-            supported-color-schemes: light dark;
-          }
+          :root { color-scheme: light dark; supported-color-schemes: light dark; }
           body {
+            margin: 0; padding: 0;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f4f4f5;
+            background-color: #eeebe6;
             color: #18181b;
-            margin: 0;
-            padding: 40px 20px;
+            -webkit-font-smoothing: antialiased;
           }
-          .container {
-            background-color: #ffffff;
-            border: 1px solid rgba(0,0,0,0.08);
-            border-radius: 24px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+          .bg {
+            background-color: #eeebe6;
+            background-image: radial-gradient(circle at 15% 0%, rgba(197,168,128,0.35) 0%, rgba(197,168,128,0) 45%),
+                              radial-gradient(circle at 90% 100%, rgba(197,168,128,0.25) 0%, rgba(197,168,128,0) 50%);
+            padding: 48px 16px;
+          }
+          .glass {
+            max-width: 520px; margin: 0 auto;
+            background-color: rgba(255,255,255,0.62);
+            background-image: linear-gradient(135deg, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.45) 100%);
+            border: 1px solid rgba(255,255,255,0.9);
+            border-radius: 28px;
+            -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px);
             overflow: hidden;
-            max-width: 600px;
-            margin: 0 auto;
           }
-          .header {
-            padding: 40px 20px 20px 20px;
-            text-align: center;
+          .tile {
+            background-color: rgba(255,255,255,0.55);
+            border: 1px solid rgba(24,24,27,0.06);
+            border-radius: 18px;
           }
-          .header h1 {
-            color: #c5a880;
-            font-size: 16px;
-            text-transform: uppercase;
-            letter-spacing: 5px;
-            margin: 0 0 5px 0;
-            font-weight: 600;
-          }
-          .header p {
-            color: #71717a;
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            margin: 0;
-          }
-          .content {
-            padding: 10px 40px 40px 40px;
-          }
-          .content h2 {
-            color: #18181b;
-            font-size: 26px;
-            font-weight: 300;
-            margin: 0 0 10px 0;
-            text-align: center;
-          }
-          .content p.subtitle {
-            color: #c5a880;
-            font-size: 14px;
-            text-align: center;
-            margin: 0 0 30px 0;
-            font-style: italic;
-          }
-          .footer {
-            padding: 25px 40px;
-            background-color: rgba(0,0,0,0.03);
-            border-top: 1px solid rgba(0,0,0,0.05);
-            text-align: center;
-          }
-          .footer p {
-            color: #71717a;
-            font-size: 11px;
-            margin: 0;
-            letter-spacing: 1px;
-          }
-          
-          /* Dark Mode */
+          .muted { color: #71717a; }
+          .strong { color: #18181b; }
+          .line { border-bottom: 1px solid rgba(24,24,27,0.06); }
+          .divider { height: 1px; background-image: linear-gradient(90deg, rgba(197,168,128,0), ${GOLD}, rgba(197,168,128,0)); }
+          .btn { background-color: #18181b; color: #ffffff !important; }
+
           @media (prefers-color-scheme: dark) {
-            body {
-              background-color: #000000 !important;
-              color: #ffffff !important;
+            body, .bg { background-color: #09090b !important; color: #fafafa !important; }
+            .bg {
+              background-image: radial-gradient(circle at 15% 0%, rgba(197,168,128,0.22) 0%, rgba(197,168,128,0) 45%),
+                                radial-gradient(circle at 90% 100%, rgba(197,168,128,0.14) 0%, rgba(197,168,128,0) 50%) !important;
             }
-            .container {
-              background-color: #141416 !important;
-              border: 1px solid rgba(255,255,255,0.1) !important;
-              box-shadow: 0 20px 40px rgba(0,0,0,0.8) !important;
+            .glass {
+              background-color: rgba(255,255,255,0.04) !important;
+              background-image: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%) !important;
+              border: 1px solid rgba(255,255,255,0.10) !important;
             }
-            .header p {
-              color: #8e8e9c !important;
-            }
-            .content h2 {
-              color: #ffffff !important;
-            }
-            .footer {
-              background-color: rgba(255,255,255,0.03) !important;
-              border-top: 1px solid rgba(255,255,255,0.05) !important;
-            }
-            .footer p {
-              color: #8e8e9c !important;
-            }
-            .card {
-              background-color: rgba(197, 168, 128, 0.05) !important;
-            }
-            .card td {
-              border-bottom: 1px solid rgba(255,255,255,0.05) !important;
-            }
-            .card-text-light {
-              color: #8e8e9c !important;
-            }
-            .card-text-dark {
-              color: #ffffff !important;
-            }
+            .tile { background-color: rgba(255,255,255,0.04) !important; border: 1px solid rgba(255,255,255,0.08) !important; }
+            .muted { color: #a1a1aa !important; }
+            .strong { color: #fafafa !important; }
+            .line { border-bottom: 1px solid rgba(255,255,255,0.07) !important; }
+            .btn { background-color: ${GOLD} !important; color: #09090b !important; }
+          }
+          @media (max-width: 480px) {
+            .pad { padding-left: 24px !important; padding-right: 24px !important; }
           }
         </style>
       </head>
       <body>
-        <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" class="container">
-          <tr>
-            <td class="header">
-              <h1 style="color: #c5a880;">Gagik Ghambaryan</h1>
-              <p>Bespoke Barber</p>
-            </td>
-          </tr>
-          <tr>
-            <td class="content">
-              <h2>${title}</h2>
-              <p class="subtitle">${subtitle}</p>
-              ${contentHtml}
-            </td>
-          </tr>
-          <tr>
-            <td class="footer">
-              <p>&copy; ${new Date().getFullYear()} BARBER GAGIK GHAMBARYAN.<br>ALL RIGHTS RESERVED.</p>
-            </td>
-          </tr>
-        </table>
+        <div class="bg">
+          <table role="presentation" align="center" border="0" cellpadding="0" cellspacing="0" width="100%" class="glass">
+            <tr>
+              <td class="pad" style="padding: 44px 40px 8px 40px; text-align: center;">
+                <div style="display: inline-block; width: 46px; height: 46px; line-height: 46px; border-radius: 50%; border: 1px solid ${GOLD}; color: ${GOLD}; font-size: 18px; font-family: Georgia, 'Times New Roman', serif;">G</div>
+                <p style="margin: 16px 0 2px 0; color: ${GOLD}; font-size: 12px; letter-spacing: 6px; text-transform: uppercase; font-weight: 600;">Gagik Ghambaryan</p>
+                <p class="muted" style="margin: 0; font-size: 10px; letter-spacing: 4px; text-transform: uppercase;">Bespoke Barber</p>
+              </td>
+            </tr>
+            <tr>
+              <td class="pad" style="padding: 28px 40px 0 40px;"><div class="divider" style="height: 1px; font-size: 0; line-height: 0;">&nbsp;</div></td>
+            </tr>
+            <tr>
+              <td class="pad" style="padding: 28px 40px 40px 40px;">
+                <h1 class="strong" style="margin: 0 0 8px 0; font-size: 24px; font-weight: 300; text-align: center; letter-spacing: 0.5px;">${title}</h1>
+                <p class="muted" style="margin: 0 0 28px 0; font-size: 14px; text-align: center;">${subtitle}</p>
+                ${contentHtml}
+              </td>
+            </tr>
+            <tr>
+              <td class="pad" style="padding: 0 40px 32px 40px; text-align: center;">
+                <p class="muted" style="margin: 0; font-size: 10px; letter-spacing: 2px; text-transform: uppercase;">&copy; ${new Date().getFullYear()} Barber Gagik Ghambaryan</p>
+              </td>
+            </tr>
+          </table>
+        </div>
       </body>
       </html>
     `;
+  }
+
+  private row(label: string, value: string, opts: { accent?: boolean; mono?: boolean; last?: boolean } = {}) {
+    const valueStyle = opts.accent
+      ? `font-size: 18px; color: ${GOLD}; font-weight: 600;`
+      : `font-size: 15px; line-height: 1.5; font-weight: 500;${opts.mono ? " font-family: monospace; letter-spacing: 1px;" : ""}`;
+    return `
+      <tr>
+        <td class="${opts.last ? "" : "line"}" style="padding: 14px 0;">
+          <span class="muted" style="font-size: 10px; text-transform: uppercase; letter-spacing: 2px;">${label}</span><br>
+          <span class="${opts.accent ? "" : "strong"}" style="${valueStyle}">${value}</span>
+        </td>
+      </tr>`;
   }
 
   async sendConfirmation(to: string, bookingDetails: any) {
     if (!to.includes("@")) return false;
 
     const { date, startTime, endTime, services, locale, bookingNumber } = bookingDetails;
-    
+
     const i18n = {
       hy: {
         title: "Ամրագրումը Հաստատված է",
@@ -175,7 +149,8 @@ export class EmailService {
         date: "Ամսաթիվ",
         time: "Ժամ",
         service: "Ծառայություն",
-        ref: "Ամրագրման համար"
+        ref: "Ամրագրման համար",
+        cta: "Այցելել կայք",
       },
       ru: {
         title: "Запись Подтверждена",
@@ -183,7 +158,8 @@ export class EmailService {
         date: "Дата",
         time: "Время",
         service: "Услуга",
-        ref: "Номер записи"
+        ref: "Номер записи",
+        cta: "Перейти на сайт",
       },
       en: {
         title: "Booking Confirmed",
@@ -191,40 +167,24 @@ export class EmailService {
         date: "Date",
         time: "Time",
         service: "Service",
-        ref: "Booking Ref"
-      }
+        ref: "Booking Ref",
+        cta: "Visit website",
+      },
     };
 
     const dict = i18n[locale as keyof typeof i18n] || i18n.hy;
 
     const contentHtml = `
-      <div class="card" style="background-color: rgba(197, 168, 128, 0.1); border: 1px solid rgba(197, 168, 128, 0.3); border-radius: 12px; padding: 25px; margin: 0 auto; width: 100%; box-sizing: border-box;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="margin: 0; padding: 0;">
-          <tr>
-            <td style="padding-bottom: 15px; border-bottom: 1px solid rgba(0,0,0,0.05);">
-              <span class="card-text-light" style="font-size: 11px; color: #71717a; text-transform: uppercase; letter-spacing: 1px;">${dict.date}</span><br>
-              <span class="card-text-dark" style="font-size: 16px; color: #18181b; font-weight: 500;">${date}</span>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding: 15px 0; border-bottom: 1px solid rgba(0,0,0,0.05);">
-              <span class="card-text-light" style="font-size: 11px; color: #71717a; text-transform: uppercase; letter-spacing: 1px;">${dict.time}</span><br>
-              <span style="font-size: 18px; color: #c5a880; font-weight: 600;">${startTime} - ${endTime}</span>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding: 15px 0; border-bottom: 1px solid rgba(0,0,0,0.05);">
-              <span class="card-text-light" style="font-size: 11px; color: #71717a; text-transform: uppercase; letter-spacing: 1px;">${dict.service}</span><br>
-              <span class="card-text-dark" style="font-size: 15px; color: #18181b; line-height: 1.5;">${services}</span>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding-top: 15px;">
-              <span class="card-text-light" style="font-size: 11px; color: #71717a; text-transform: uppercase; letter-spacing: 1px;">${dict.ref}</span><br>
-              <span class="card-text-dark" style="font-size: 13px; color: #18181b; font-family: monospace;">${bookingNumber}</span>
-            </td>
-          </tr>
+      <div class="tile" style="padding: 8px 24px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+          ${this.row(dict.date, date)}
+          ${this.row(dict.time, `${startTime} – ${endTime}`, { accent: true })}
+          ${this.row(dict.service, services)}
+          ${this.row(dict.ref, bookingNumber, { mono: true, last: true })}
         </table>
+      </div>
+      <div style="text-align: center; margin-top: 28px;">
+        <a href="${this.appUrl}" class="btn" style="display: inline-block; padding: 13px 32px; border-radius: 999px; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; text-decoration: none; font-weight: 600; background-color: #18181b; color: #ffffff;">${dict.cta}</a>
       </div>
     `;
 
@@ -249,32 +209,31 @@ export class EmailService {
     if (!to.includes("@")) return false;
 
     const { startTime, locale } = bookingDetails;
-    
+
     const i18n = {
       hy: {
         title: "Հիշեցում",
         subtitle: `Ձեր այցին մնացել է ~20 րոպե (${startTime})`,
-        text: "Խնդրում ենք չուշանալ, որպեսզի մենք կարողանանք լիարժեք սպասարկել Ձեզ:"
+        text: "Խնդրում ենք չուշանալ, որպեսզի մենք կարողանանք լիարժեք սպասարկել Ձեզ:",
       },
       ru: {
         title: "Напоминание",
         subtitle: `До вашего визита осталось ~20 минут (${startTime})`,
-        text: "Пожалуйста, не опаздывайте, чтобы мы могли предоставить вам полноценную услугу."
+        text: "Пожалуйста, не опаздывайте, чтобы мы могли предоставить вам полноценную услугу.",
       },
       en: {
         title: "Reminder",
         subtitle: `Your appointment is in ~20 mins (${startTime})`,
-        text: "Please arrive on time so we can provide you with the full experience."
-      }
+        text: "Please arrive on time so we can provide you with the full experience.",
+      },
     };
 
     const dict = i18n[locale as keyof typeof i18n] || i18n.hy;
 
     const contentHtml = `
-      <div style="background: rgba(197, 168, 128, 0.05); border-radius: 16px; padding: 25px; border: 1px solid rgba(197, 168, 128, 0.2); text-align: center;">
-        <p style="font-size: 16px; color: #ffffff; line-height: 1.6; margin: 0;">
-          ${dict.text}
-        </p>
+      <div class="tile" style="padding: 24px; text-align: center;">
+        <p style="margin: 0 0 6px 0; font-size: 28px; font-weight: 600; color: ${GOLD}; letter-spacing: 2px;">${startTime}</p>
+        <p class="strong" style="margin: 0; font-size: 15px; line-height: 1.6;">${dict.text}</p>
       </div>
     `;
 
@@ -285,6 +244,7 @@ export class EmailService {
         from: this.from,
         to,
         subject: dict.title + " | Gagik Ghambaryan",
+        text: `${dict.title}\n\n${dict.subtitle}\n\n${dict.text}`,
         html,
       });
       return true;
@@ -296,32 +256,32 @@ export class EmailService {
 
   async sendVerification(to: string, code: string, locale: string = "hy") {
     if (!to.includes("@")) return false;
-    
+
     const i18n = {
       hy: {
         title: "Հաստատման Կոդ",
         subtitle: "Ձեր գրանցման հաստատման կոդը",
-        text: "Խնդրում ենք մուտքագրել այս կոդը հաստատելու համար (վավեր է 10 րոպե)."
+        text: "Մուտքագրեք այս կոդը հաստատելու համար։ Վավեր է 10 րոպե։",
       },
       ru: {
         title: "Код Подтверждения",
         subtitle: "Код для подтверждения вашей записи",
-        text: "Пожалуйста, введите этот код для подтверждения (действителен 10 минут)."
+        text: "Введите этот код для подтверждения. Действителен 10 минут.",
       },
       en: {
         title: "Verification Code",
         subtitle: "Your booking verification code",
-        text: "Please enter this code to confirm your appointment (valid for 10 minutes)."
-      }
+        text: "Enter this code to confirm your appointment. Valid for 10 minutes.",
+      },
     };
 
     const dict = i18n[locale as keyof typeof i18n] || i18n.hy;
 
     const contentHtml = `
-      <div style="background-color: rgba(197, 168, 128, 0.1); border: 1px solid rgba(197, 168, 128, 0.3); border-radius: 12px; padding: 25px; margin: 0 auto; width: fit-content; text-align: center;">
-        <p class="card-text-light" style="font-size: 14px; line-height: 1.6; margin: 0 0 15px 0; color: #71717a;">${dict.text}</p>
-        <span style="font-size: 36px; font-weight: 700; color: #c5a880; letter-spacing: 12px; font-family: monospace;">${code}</span>
+      <div class="tile" style="padding: 28px 20px; text-align: center;">
+        <span style="display: inline-block; font-size: 34px; font-weight: 600; color: ${GOLD}; letter-spacing: 14px; padding-left: 14px; font-family: 'SF Mono', Menlo, Consolas, monospace;">${code}</span>
       </div>
+      <p class="muted" style="margin: 20px 0 0 0; font-size: 13px; line-height: 1.6; text-align: center;">${dict.text}</p>
     `;
 
     const html = this.getPremiumTemplate(dict.title, dict.subtitle, contentHtml);

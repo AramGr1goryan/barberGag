@@ -1029,7 +1029,7 @@ export function CalendarManager() {
                           </div>
                           <div className="flex items-center space-x-1.5 text-muted truncate">
                             <Phone className="w-3.5 h-3.5 shrink-0" />
-                            <span>{slot.booking.guestPhone}</span>
+                            <span>{(slot.booking as any).guestRealPhone ? `📞 ${(slot.booking as any).guestRealPhone} · ` : ""}{slot.booking.guestPhone}</span>
                           </div>
                           <span className="text-[10px] text-muted/80 block font-mono">
                             #{slot.booking.bookingNumber}

@@ -235,7 +235,7 @@ export function DashboardOverview({ metrics }: DashboardMetricsProps) {
                   <tr key={b.id} className="hover:bg-white/[0.03] transition-colors rounded-2xl">
                     <td className="py-4 px-4 font-bold text-accent">{b.bookingNumber}</td>
                     <td className="py-4 px-4 text-foreground font-sans font-medium">{b.guestName}</td>
-                    <td className="py-4 px-4 text-zinc-400">{b.guestPhone}</td>
+                    <td className="py-4 px-4 text-zinc-400">{(b as any).guestRealPhone ? <div>📞 {(b as any).guestRealPhone}</div> : null}{b.guestPhone}</td>
                     <td className="py-4 px-4 text-foreground font-medium">
                       {b.date} • {b.startTime}
                     </td>
