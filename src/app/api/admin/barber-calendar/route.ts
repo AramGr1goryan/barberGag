@@ -9,82 +9,68 @@ export async function GET(req: NextRequest) {
     await authService.requireAdmin();
     const { searchParams } = new URL(req.url);
     const dateParam = searchParams.get("date");
+    const isLite = searchParams.get("lite") === "true";
 
     // 1. Fetch all open days (from past 7 days to next 60 days)
     const today = new Date();
     today.setDate(today.getDate() - 7);
     const pastCutoff = today.toISOString().split("T")[0];
 
-    const openDaysRecords = await prisma.availabilityDay.findMany({
-      where: {
-        isOpen: true,
-        date: { gte: pastCutoff },
-      },
-      include: {
-        slots: {
-          select: {
-            id: true,
-            status: true,
-            startTime: true,
-            endTime: true,
+    let openDays: any[] = [];
+    let services: any[] = [];
+
+    if (!isLite) {
+      const openDaysRecords = await prisma.availabilityDay.findMany({
+        where: {
+          isOpen: true,
+          date: { gte: pastCutoff },
+        },
+        include: {
+          slots: {
+            select: { id: true, status: true, startTime: true, endTime: true },
           },
         },
-      },
-      orderBy: { date: "asc" },
-    });
+        orderBy: { date: "asc" },
+      });
 
-    // Also get all bookings count per day
-    const allBookings = await prisma.booking.findMany({
-      where: {
-        date: { gte: pastCutoff },
-        status: { in: [BookingStatus.CONFIRMED, BookingStatus.COMPLETED, BookingStatus.PENDING_VERIFICATION] },
-      },
-      select: {
-        id: true,
-        date: true,
-        status: true,
-      },
-    });
+      const allBookings = await prisma.booking.findMany({
+        where: {
+          date: { gte: pastCutoff },
+          status: { in: [BookingStatus.CONFIRMED, BookingStatus.COMPLETED, BookingStatus.PENDING_VERIFICATION] },
+        },
+        select: { id: true, date: true, status: true },
+      });
 
-    const bookingsByDate: Record<string, { total: number; completed: number }> = {};
-    for (const b of allBookings) {
-      if (!bookingsByDate[b.date]) {
-        bookingsByDate[b.date] = { total: 0, completed: 0 };
+      const bookingsByDate: Record<string, { total: number; completed: number }> = {};
+      for (const b of allBookings) {
+        if (!bookingsByDate[b.date]) bookingsByDate[b.date] = { total: 0, completed: 0 };
+        bookingsByDate[b.date].total++;
+        if (b.status === BookingStatus.COMPLETED) bookingsByDate[b.date].completed++;
       }
-      bookingsByDate[b.date].total++;
-      if (b.status === BookingStatus.COMPLETED) {
-        bookingsByDate[b.date].completed++;
-      }
+
+      openDays = openDaysRecords.map((d) => {
+        const dayBookings = bookingsByDate[d.date] || { total: 0, completed: 0 };
+        const availableSlotsCount = d.slots.filter((s) => s.status === SlotStatus.AVAILABLE).length;
+        return {
+          id: d.id,
+          date: d.date,
+          isOpen: d.isOpen,
+          notes: d.notes,
+          totalSlots: d.slots.length,
+          availableSlots: availableSlotsCount,
+          totalBookings: dayBookings.total,
+          completedBookings: dayBookings.completed,
+        };
+      });
+
+      services = await prisma.service.findMany({
+        where: { active: true },
+        orderBy: { sortOrder: "asc" },
+        select: {
+          id: true, nameRu: true, nameHy: true, nameEn: true, priceMinorUnits: true, durationMinutes: true,
+        },
+      });
     }
-
-    const openDays = openDaysRecords.map((d) => {
-      const dayBookings = bookingsByDate[d.date] || { total: 0, completed: 0 };
-      const availableSlotsCount = d.slots.filter((s) => s.status === SlotStatus.AVAILABLE).length;
-      return {
-        id: d.id,
-        date: d.date,
-        isOpen: d.isOpen,
-        notes: d.notes,
-        totalSlots: d.slots.length,
-        availableSlots: availableSlotsCount,
-        totalBookings: dayBookings.total,
-        completedBookings: dayBookings.completed,
-      };
-    });
-
-    // 2. Fetch active services for manual booking dropdown
-    const services = await prisma.service.findMany({
-      where: { active: true },
-      orderBy: { sortOrder: "asc" },
-      select: {
-        id: true,
-        nameRu: true,
-        nameHy: true,
-        nameEn: true,
-        priceMinorUnits: true,
-        durationMinutes: true,
-      },
-    });
 
     // 3. If a specific date is requested, get its full details, slots, and bookings
     let selectedDayDetails = null;

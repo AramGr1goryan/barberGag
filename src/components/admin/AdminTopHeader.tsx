@@ -54,7 +54,7 @@ export function AdminTopHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-[#181a24]/85 backdrop-blur-2xl border-b border-white/[0.08] px-4 sm:px-8 py-3.5 flex items-center justify-between shadow-[0_4px_30px_rgba(0,0,0,0.25)]">
+      <header className="sticky top-0 z-40 bg-[#181a24] border-b border-white/[0.08] px-4 sm:px-8 py-3.5 flex items-center justify-between shadow-[0_4px_30px_rgba(0,0,0,0.25)]">
         {/* Left: Mobile menu toggle + Title / Master branding */}
         <div className="flex items-center space-x-3">
           <button

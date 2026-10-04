@@ -28,14 +28,18 @@ export function BarberCalendarManager() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
-  const fetchData = useCallback(async (date: string) => {
+  const fetchData = useCallback(async (date: string, forceFull = false) => {
     setIsLoading(true);
     try {
-      const res = await fetch(`/api/admin/barber-calendar?date=${date}`);
+      // If we already have openDays, we don't need to re-fetch the entire 60 days on every click.
+      const isLite = openDays.length > 0 && !forceFull;
+      const res = await fetch(`/api/admin/barber-calendar?date=${date}${isLite ? "&lite=true" : ""}`);
       if (!res.ok) throw new Error("");
       const data = await res.json();
-      setOpenDays(data.openDays || []);
-      setServices(data.services || []);
+      
+      if (data.openDays && data.openDays.length > 0) setOpenDays(data.openDays);
+      if (data.services && data.services.length > 0) setServices(data.services);
+      
       if (data.selectedDayDetails) {
         setDayBookings(data.selectedDayDetails.bookings || []);
         setDaySlots(data.selectedDayDetails.slots || []);
@@ -44,7 +48,7 @@ export function BarberCalendarManager() {
     } catch {} finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [openDays.length]);
 
   useEffect(() => { fetchData(selectedDate); }, [selectedDate, fetchData]);
 
@@ -55,7 +59,7 @@ export function BarberCalendarManager() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "toggleDay", date: selectedDate, isOpen: open, duration: open ? 60 : undefined })
       });
-      fetchData(selectedDate);
+      fetchData(selectedDate, true);
     } catch {}
   };
 
@@ -67,7 +71,7 @@ export function BarberCalendarManager() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "deleteSlot", slotId })
       });
-      fetchData(selectedDate);
+      fetchData(selectedDate, true);
     } catch {}
   };
 
@@ -80,8 +84,8 @@ export function BarberCalendarManager() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "toggleTask", bookingId: task.id, completed: nextCompleted })
       });
-      fetchData(selectedDate);
-    } catch { fetchData(selectedDate); }
+      fetchData(selectedDate, true);
+    } catch { fetchData(selectedDate, true); }
   };
 
   const handleServiceChange = (e: any) => {
@@ -132,7 +136,7 @@ export function BarberCalendarManager() {
       }
 
       setIsManualBookingOpen(false);
-      fetchData(selectedDate);
+      fetchData(selectedDate, true);
     } catch (e) {
       alert(locale === "ru" ? "Ошибка сети" : "Network error");
     } finally {
