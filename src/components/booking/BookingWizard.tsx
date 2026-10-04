@@ -529,7 +529,6 @@ export function BookingWizard({
       {/* TOP CINEMATIC HERO SECTION — full width on mobile, left half on desktop */}
       <div
         className="h-[60dvh] lg:h-[100dvh] lg:w-[45%] w-full shrink-0 overflow-hidden select-none z-0 relative"
-        onClick={() => setIsPanelLowered(false)}
       >
         <Image
           src="/images/gagik-barber.jpg"
