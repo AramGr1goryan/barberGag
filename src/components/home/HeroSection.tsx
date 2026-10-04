@@ -116,24 +116,25 @@ export function HeroSection({
           initial={{ opacity: 0, y: -20, scale: 0.9 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-          className="hidden sm:inline-flex items-center space-x-2 border border-accent/40 bg-background/80 backdrop-blur-md px-4 py-1.5 mb-6 rounded-full shadow-[0_0_20px_rgba(197,168,128,0.15)]"
+          className="hidden sm:inline-flex items-center space-x-2 border border-blue-400/40 bg-background/80 backdrop-blur-md px-4 py-1.5 mb-6 rounded-full shadow-[0_0_20px_rgba(255,255,255,0.1)]"
         >
-          <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-          <span className="text-[11px] font-mono tracking-[0.25em] text-accent uppercase font-semibold">
+          <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+          <span className="text-[11px] font-mono tracking-[0.25em] text-blue-200 uppercase font-semibold">
             {dict.badge}
           </span>
         </motion.div>
 
         {/* 
           CTA BUTTONS FLYING FORWARD INTO THE FOREGROUND
-          Notice: scale from 0.75 -> 1.0, translate forward with expansive gold glow.
+          Notice: scale from 0 -> 1.0, translating from 0 with liquid glass glow.
         */}
         <motion.div
-          initial={{ opacity: 0, scale: 1.35, filter: "blur(4px)" }}
+          initial={{ opacity: 0, scale: 0, filter: "blur(8px)" }}
           animate={{ opacity: isBookingOpen ? 0 : 1, scale: 1, filter: "blur(0px)" }}
           transition={{
-            duration: 0.55,
-            ease: [0.16, 1, 0.3, 1],
+            duration: 0.6,
+            type: "spring",
+            bounce: 0.4,
             delay: 0.15,
           }}
           className={`mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 transition-all duration-300 ${isBookingOpen ? "pointer-events-none" : ""}`}
@@ -142,7 +143,7 @@ export function HeroSection({
             size="md"
             variant="primary"
             onClick={() => setIsBookingOpen(true)}
-            className="w-full sm:w-auto py-2.5 px-6 sm:py-3 sm:px-7 text-xs tracking-wider gap-2 sm:gap-2.5 shadow-[0_0_25px_rgba(197,168,128,0.3)] hover:shadow-[0_0_45px_rgba(197,168,128,0.55)] transition-all duration-300 transform hover:-translate-y-0.5"
+            className="w-full sm:w-auto py-2.5 px-6 sm:py-3 sm:px-7 text-xs tracking-wider gap-2 sm:gap-2.5 shadow-[0_4px_25px_rgba(255,255,255,0.15)] hover:shadow-[0_8px_35px_rgba(255,255,255,0.3)] transition-all duration-300 transform hover:-translate-y-0.5"
           >
             <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             <span>{dict.bookNow}</span>
