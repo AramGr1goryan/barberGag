@@ -140,7 +140,6 @@ export function ServicesManager() {
         setNameHy(""); setNameRu(""); setNameEn("");
         setDescHy(""); setDescRu(""); setDescEn("");
         fetchData();
-      }
     } catch {
       // ignore
     } finally {
