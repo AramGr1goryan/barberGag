@@ -1331,6 +1331,7 @@ export function CalendarManager() {
                 onChange={(e) => setBulkDuration(Number(e.target.value))}
                 className="w-full bg-[#16161c] border border-white/25 hover:border-accent/60 focus:border-accent focus:ring-1 focus:ring-accent/30 text-white rounded-xl px-3 py-2 text-xs font-mono transition-all [color-scheme:dark]"
               >
+                <option value={15}>15 мин (0.25ч)</option>
                 <option value={30}>30 мин (0.5ч)</option>
                 <option value={45}>45 мин (0.75ч)</option>
                 <option value={60}>60 мин (1.0ч)</option>
@@ -1339,8 +1340,8 @@ export function CalendarManager() {
                 <option value={120}>120 мин (2.0ч)</option>
               </select>
 
-              <div className="grid grid-cols-4 gap-1">
-                {[30, 45, 60, 90].map((mins) => (
+              <div className="grid grid-cols-5 gap-1">
+                {[15, 30, 45, 60, 90].map((mins) => (
                   <button
                     key={mins}
                     type="button"

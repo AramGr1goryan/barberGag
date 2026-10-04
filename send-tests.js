@@ -1,3 +1,4 @@
+require('dotenv').config();
 const { emailService } = require('./src/services/email.service');
 
 async function sendTestReminders() {

@@ -3,6 +3,7 @@ import { BookingStatus, SlotStatus } from "@prisma/client";
 import { isWithinThreeHours } from "@/lib/timezone";
 import { generateSessionToken, hashToken } from "@/lib/crypto";
 import { smsService } from "./sms.service";
+import { emailService } from "./email.service";
 
 export interface CanUserBookParams {
   phone: string;
@@ -210,6 +211,18 @@ export class BookingService {
 
     // 6. Send SMS verification code
     // await smsService.sendVerificationCode(booking.id, guestPhone, locale);
+
+    if (guestPhone.includes("@")) {
+      const serviceNames = booking.items.map(i => i.nameSnapshot).join(", ");
+      emailService.sendConfirmation(guestPhone, {
+        date: booking.date,
+        startTime: booking.startTime,
+        endTime: booking.endTime,
+        services: serviceNames,
+        locale: booking.locale,
+        bookingNumber: booking.bookingNumber,
+      }).catch(e => console.error("Confirmation email error:", e));
+    }
 
     return {
       booking,
