@@ -601,14 +601,14 @@ export function BookingWizard({
   }
 
   return (
-    <div className="w-full mx-auto min-h-screen lg:min-h-[calc(100vh-96px)] flex flex-col lg:flex-row relative bg-[#14151a] overflow-x-clip">
+    <div className="w-full mx-auto h-[100dvh] flex flex-col lg:flex-row relative bg-[#14151a] overflow-hidden">
       {/* 
         TOP CINEMATIC HERO SECTION
         Barbershop interior background image + Golden brand logo + Back chevron
       */}
       {/* TOP CINEMATIC HERO SECTION — full width on mobile, left half on desktop */}
       <div
-        className="sticky top-0 h-[75vh] sm:h-[80vh] lg:h-screen lg:sticky lg:top-0 lg:w-[45%] w-full shrink-0 overflow-hidden select-none z-0"
+        className="h-[60dvh] lg:h-[100dvh] lg:w-[45%] w-full shrink-0 overflow-hidden select-none z-0 relative"
         onClick={() => setIsPanelLowered(false)}
       >
         <Image
@@ -686,9 +686,9 @@ export function BookingWizard({
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        className={`will-change-transform transform-gpu relative z-20 min-h-[90vh] lg:min-h-0 rounded-t-[40px] lg:rounded-none bg-[#14151a] border-t lg:border-t-0 lg:border-l border-white/[0.08] shadow-[0_-25px_60px_rgba(0,0,0,0.95)] lg:shadow-none px-5 sm:px-6 lg:px-10 pt-8 lg:pt-10 pb-10 flex-1 flex flex-col justify-between lg:w-[55%] lg:overflow-y-auto transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${isPanelLowered
-            ? "mt-[-5vh] sm:mt-[-10vh] lg:mt-0"
-            : "mt-[calc(-30vh-3rem)] sm:mt-[calc(-30vh-4rem)] lg:mt-0"
+        className={`will-change-transform transform-gpu relative z-20 rounded-t-[40px] lg:rounded-none bg-[#14151a] border-t lg:border-t-0 lg:border-l border-white/[0.08] shadow-[0_-25px_60px_rgba(0,0,0,0.95)] lg:shadow-none px-5 sm:px-6 lg:px-10 pt-8 lg:pt-10 pb-10 flex-1 flex flex-col justify-between lg:w-[55%] overflow-y-auto transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${isPanelLowered
+            ? "mt-[-5dvh] lg:mt-0"
+            : "mt-[-25dvh] sm:mt-[-30dvh] lg:mt-0"
           }`}
       >
         {/* Mobile Drag Handle */}
