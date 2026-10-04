@@ -859,12 +859,12 @@ export function BookingWizard({
 
             {/* Minimalist Floating Action Button for Date & Time */}
             {selectedSlotId && (
-              <div className="fixed bottom-8 left-0 right-0 z-[100] flex justify-center pointer-events-none px-4">
-                <div className="bg-[#14151a]/85 backdrop-blur-2xl border border-white/[0.08] rounded-full p-1.5 shadow-[0_20px_40px_rgba(0,0,0,0.8)] pointer-events-auto transition-all animate-in slide-in-from-bottom-8 fade-in">
+              <div className="fixed bottom-0 left-0 right-0 lg:left-[45%] z-[100] flex justify-center w-full pointer-events-none bg-gradient-to-t from-[#0d0d0f] via-[#0d0d0f]/80 to-transparent pt-16 pb-6 px-4">
+                <div className="bg-[#1a1b22]/95 backdrop-blur-3xl border border-white/[0.1] rounded-full p-1.5 shadow-[0_20px_40px_rgba(0,0,0,0.8)] pointer-events-auto transition-all animate-in slide-in-from-bottom-8 fade-in w-full max-w-[320px] flex justify-center">
                   <button
                     type="button"
                     onClick={() => setCurrentStep(3)}
-                    className="py-2.5 px-8 rounded-full bg-white text-black font-sans font-semibold text-xs hover:bg-neutral-200 active:scale-[0.96] transition-all flex items-center gap-2 cursor-pointer shadow-md"
+                    className="w-full justify-center py-2.5 px-8 rounded-full bg-white text-black font-sans font-semibold text-xs hover:bg-neutral-200 active:scale-[0.96] transition-all flex items-center gap-2 cursor-pointer shadow-md"
                   >
                     <span>{locale === "ru" ? "Продолжить" : locale === "hy" ? "Շարունակել" : "Continue"}</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -955,8 +955,8 @@ export function BookingWizard({
 
             {/* Minimalist Floating Action Button for Services */}
             {selectedServiceIds.length > 0 && (
-              <div className="fixed bottom-8 left-0 right-0 z-[100] flex justify-center pointer-events-none px-4">
-                <div className="bg-[#14151a]/85 backdrop-blur-2xl border border-white/[0.08] rounded-full p-1.5 flex items-center gap-5 shadow-[0_20px_40px_rgba(0,0,0,0.8)] pointer-events-auto transition-all animate-in slide-in-from-bottom-8 fade-in">
+              <div className="fixed bottom-0 left-0 right-0 lg:left-[45%] z-[100] flex justify-center w-full pointer-events-none bg-gradient-to-t from-[#0d0d0f] via-[#0d0d0f]/80 to-transparent pt-16 pb-6 px-4">
+                <div className="bg-[#1a1b22]/95 backdrop-blur-3xl border border-white/[0.1] rounded-full p-1.5 flex items-center justify-between shadow-[0_20px_40px_rgba(0,0,0,0.8)] pointer-events-auto transition-all animate-in slide-in-from-bottom-8 fade-in w-full max-w-[320px]">
                    <div className="pl-4 flex flex-col items-start select-none">
                      <span className="text-[12px] font-bold text-white tracking-wider">{formatCurrency(totalPrice)}</span>
                      <span className="text-[10px] text-neutral-400 font-medium">{totalDuration} {locale === "ru" ? "мин" : locale === "hy" ? "րոպե" : "min"}</span>
@@ -964,7 +964,7 @@ export function BookingWizard({
                    <button
                      type="button"
                      onClick={() => setCurrentStep(2)}
-                     className="py-2.5 px-6 rounded-full bg-white text-black font-sans font-semibold text-xs hover:bg-neutral-200 active:scale-[0.96] transition-all flex items-center gap-2 cursor-pointer shadow-md"
+                     className="py-2.5 px-6 rounded-full bg-white text-black font-sans font-semibold text-xs hover:bg-neutral-200 active:scale-[0.96] transition-all flex items-center gap-2 cursor-pointer shadow-md ml-4"
                    >
                      <span>{locale === "ru" ? "Продолжить" : locale === "hy" ? "Շարունակել" : "Continue"}</span>
                      <ArrowRight className="w-3.5 h-3.5" />
