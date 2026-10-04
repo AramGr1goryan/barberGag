@@ -13,7 +13,7 @@ function SwipeBooking({ task, isDone, locale, onToggleTask, onDelete, onEdit }: 
   const controls = useAnimation();
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [isEditing, setIsEditing] = React.useState(false);
-  const swipeThreshold = 80;
+  const swipeThreshold = 40;
 
   const handleDrag = (e: any, info: any) => {
     if (info.offset.x < -swipeThreshold) {

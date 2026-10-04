@@ -27,6 +27,61 @@ function getYerevanCurrentDateAndTime() {
   return { dateStr, timeStr };
 }
 
+
+function timeToMin(timeStr: string) {
+  const [h, m] = timeStr.split(':').map(Number);
+  return h * 60 + m;
+}
+
+function getAvailableStartSlots(daySlots: any[], durationMinutes: number, todayYerevanStr: string, currentHourMin: string, dateStr: string) {
+  const availableCandidates = daySlots.filter(s => {
+    if (s.status !== "AVAILABLE") return false;
+    if (s.booking && s.booking.status !== "CANCELLED") return false;
+    if (dateStr === todayYerevanStr && s.startTime <= currentHourMin) return false;
+    return true;
+  });
+
+  const slotsNeeded = Math.ceil(durationMinutes / 15);
+  const result = [];
+
+  for (const candidate of availableCandidates) {
+    const candidateStartMin = timeToMin(candidate.startTime);
+    const candidateEndMin = candidateStartMin + durationMinutes;
+    
+    // 1. Check if all consecutive AVAILABLE slots exist
+    let hasAllConsecutive = true;
+    for (let i = 0; i < slotsNeeded; i++) {
+      const neededStartMin = candidateStartMin + i * 15;
+      const found = availableCandidates.find(s => timeToMin(s.startTime) === neededStartMin);
+      if (!found) {
+        hasAllConsecutive = false;
+        break;
+      }
+    }
+    if (!hasAllConsecutive) continue;
+
+    // 2. Check for overlaps with ANY non-available or booked slot
+    let hasOverlap = false;
+    for (const slot of daySlots) {
+      const isAvailablePool = availableCandidates.some(s => s.id === slot.id);
+      if (!isAvailablePool) {
+        const slotStart = timeToMin(slot.startTime);
+        const slotEnd = timeToMin(slot.endTime);
+        if (slotStart < candidateEndMin && slotEnd > candidateStartMin) {
+          hasOverlap = true;
+          break;
+        }
+      }
+    }
+
+    if (!hasOverlap) {
+      result.push(candidate);
+    }
+  }
+
+  return result;
+}
+
 export class AvailabilityService {
   private currentMonthInitialized: string | null = null;
 
@@ -134,11 +189,8 @@ export class AvailabilityService {
       where: { date: dateStr },
       include: {
         slots: {
-          where: { status: SlotStatus.AVAILABLE },
           include: {
-            booking: {
-              select: { id: true, status: true },
-            },
+            booking: { select: { id: true, status: true } },
           },
           orderBy: { startTime: "asc" },
         },
@@ -146,51 +198,11 @@ export class AvailabilityService {
     });
 
     if (!day || !day.isOpen) {
-      return {
-        date: dateStr,
-        isOpen: false,
-        slots: [],
-      };
+      return { date: dateStr, isOpen: false, slots: [] };
     }
 
     const { dateStr: todayYerevanStr, timeStr: currentHourMin } = getYerevanCurrentDateAndTime();
-
-    const validSlots = day.slots.filter((s) => {
-      // Must not have an active booking
-      if (s.booking && s.booking.status !== "CANCELLED") {
-        return false;
-      }
-      // If it's today, slot must be in the future
-      if (dateStr === todayYerevanStr && s.startTime <= currentHourMin) {
-        return false;
-      }
-      return true;
-    });
-
-    const slotsNeeded = Math.ceil(durationMinutes / 15);
-    const availableStartSlots = [];
-    
-    for (let i = 0; i <= validSlots.length - slotsNeeded; i++) {
-        let isConsecutive = true;
-        for (let j = 0; j < slotsNeeded; j++) {
-            if (j > 0) {
-                const prev = validSlots[i+j-1].startTime;
-                const curr = validSlots[i+j].startTime;
-                
-                const [pH, pM] = prev.split(":").map(Number);
-                const [cH, cM] = curr.split(":").map(Number);
-                
-                if (pH * 60 + pM + 15 !== cH * 60 + cM) {
-                    isConsecutive = false;
-                    break;
-                }
-            }
-        }
-        
-        if (isConsecutive) {
-            availableStartSlots.push(validSlots[i]);
-        }
-    }
+    const availableStartSlots = getAvailableStartSlots(day.slots, durationMinutes, todayYerevanStr, currentHourMin, dateStr);
 
     return {
       date: day.date,
@@ -214,24 +226,13 @@ export class AvailabilityService {
 
     const days = await prisma.availabilityDay.findMany({
       where: {
-        date: {
-          gte: startDate,
-          lte: endDate,
-        },
+        date: { gte: startDate, lte: endDate },
         isOpen: true,
-        slots: {
-          some: {
-            status: SlotStatus.AVAILABLE,
-          },
-        },
       },
       include: {
         slots: {
-          where: { status: SlotStatus.AVAILABLE },
           include: {
-            booking: {
-              select: { id: true, status: true },
-            },
+            booking: { select: { id: true, status: true } },
           },
           orderBy: { startTime: "asc" }
         },
@@ -240,35 +241,11 @@ export class AvailabilityService {
     });
 
     const { dateStr: todayYerevanStr, timeStr: currentHourMin } = getYerevanCurrentDateAndTime();
-    const slotsNeeded = Math.ceil(durationMinutes / 15);
 
     return days
       .filter((d) => {
-        const validSlots = d.slots.filter((s) => {
-          if (s.booking && s.booking.status !== "CANCELLED") return false;
-          if (d.date === todayYerevanStr && s.startTime <= currentHourMin) return false;
-          return true;
-        });
-        
-        if (validSlots.length < slotsNeeded) return false;
-        
-        for (let i = 0; i <= validSlots.length - slotsNeeded; i++) {
-            let isConsecutive = true;
-            for (let j = 0; j < slotsNeeded; j++) {
-                if (j > 0) {
-                    const prev = validSlots[i+j-1].startTime;
-                    const curr = validSlots[i+j].startTime;
-                    const [pH, pM] = prev.split(":").map(Number);
-                    const [cH, cM] = curr.split(":").map(Number);
-                    if (pH * 60 + pM + 15 !== cH * 60 + cM) {
-                        isConsecutive = false;
-                        break;
-                    }
-                }
-            }
-            if (isConsecutive) return true;
-        }
-        return false;
+        const availableStartSlots = getAvailableStartSlots(d.slots, durationMinutes, todayYerevanStr, currentHourMin, d.date);
+        return availableStartSlots.length > 0;
       })
       .map((d) => d.date);
   }
