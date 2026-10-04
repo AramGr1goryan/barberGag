@@ -548,43 +548,29 @@ export function BookingWizard({
         {/* Top Header Bar */}
         <div className="absolute top-0 left-0 right-0 z-30 pt-24 px-5 flex items-start justify-between">
           {/* Premium Back Button */}
-          {currentStep === 1 ? (
-            onClose ? (
-              <button
-                type="button"
-                onClick={onClose}
-                className="flex items-center gap-2 px-4 py-2 rounded-full bg-black/40 backdrop-blur-xl border border-white/10 text-white/90 hover:text-white hover:bg-black/60 active:scale-95 transition-all shadow-[0_4px_20px_rgba(0,0,0,0.5)] cursor-pointer group"
-                aria-label="Back to Home"
-              >
-                <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-                <span className="text-[10px] font-mono font-bold tracking-[0.2em] uppercase">
-                  {locale === "ru" ? "Закрыть" : locale === "hy" ? "Փակել" : "Close"}
-                </span>
-              </button>
-            ) : (
-              <Link
-                href={`/${locale}`}
-                className="flex items-center gap-2 px-4 py-2 rounded-full bg-black/40 backdrop-blur-xl border border-white/10 text-white/90 hover:text-white hover:bg-black/60 active:scale-95 transition-all shadow-[0_4px_20px_rgba(0,0,0,0.5)] group"
-                aria-label="Back to Home"
-              >
-                <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-                <span className="text-[10px] font-mono font-bold tracking-[0.2em] uppercase">
-                  {locale === "ru" ? "Главная" : locale === "hy" ? "Գլխավոր" : "Home"}
-                </span>
-              </Link>
-            )
-          ) : (
+          {onClose ? (
             <button
               type="button"
-              onClick={() => setCurrentStep((prev) => Math.max(1, prev - 1))}
+              onClick={onClose}
               className="flex items-center gap-2 px-4 py-2 rounded-full bg-black/40 backdrop-blur-xl border border-white/10 text-white/90 hover:text-white hover:bg-black/60 active:scale-95 transition-all shadow-[0_4px_20px_rgba(0,0,0,0.5)] cursor-pointer group"
-              aria-label="Back"
+              aria-label="Close"
             >
               <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
               <span className="text-[10px] font-mono font-bold tracking-[0.2em] uppercase">
-                {locale === "ru" ? "Назад" : locale === "hy" ? "Հետ" : "Back"}
+                {locale === "ru" ? "Закрыть" : locale === "hy" ? "Փակել" : "Close"}
               </span>
             </button>
+          ) : (
+            <Link
+              href={`/${locale}`}
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-black/40 backdrop-blur-xl border border-white/10 text-white/90 hover:text-white hover:bg-black/60 active:scale-95 transition-all shadow-[0_4px_20px_rgba(0,0,0,0.5)] group"
+              aria-label="Back to Home"
+            >
+              <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+              <span className="text-[10px] font-mono font-bold tracking-[0.2em] uppercase">
+                {locale === "ru" ? "Главная" : locale === "hy" ? "Գլխավոր" : "Home"}
+              </span>
+            </Link>
           )}
         </div>
 
