@@ -165,7 +165,7 @@ export function Navbar({ locale, dict, user }: NavbarProps) {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-surface border-b border-border/80 px-6 py-8 space-y-6"
+            className="md:hidden bg-surface px-6 py-8 space-y-6"
           >
             <nav className="flex flex-col space-y-4">
               {navLinks.map((link) => (

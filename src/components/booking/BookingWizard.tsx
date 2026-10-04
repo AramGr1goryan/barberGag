@@ -17,6 +17,7 @@ import {
   ShieldCheck,
   ArrowRight,
   Download,
+  X,
 } from "lucide-react";
 
 export interface ServiceItem {
@@ -546,30 +547,23 @@ export function BookingWizard({
         <div className="absolute inset-0 bg-gradient-to-t from-[#14151a] via-[#14151a]/60 to-transparent lg:bg-gradient-to-r lg:from-transparent lg:via-transparent lg:to-[#14151a] pointer-events-none" />
 
         {/* Top Header Bar */}
-        <div className="absolute top-0 left-0 right-0 z-30 pt-24 px-5 flex items-start justify-between">
-          {/* Premium Back Button */}
+        <div className="absolute top-5 right-5 z-[100]">
           {onClose ? (
             <button
               type="button"
               onClick={onClose}
-              className="flex items-center gap-2 px-4 py-2 rounded-full bg-black/40 backdrop-blur-xl border border-white/10 text-white/90 hover:text-white hover:bg-black/60 active:scale-95 transition-all shadow-[0_4px_20px_rgba(0,0,0,0.5)] cursor-pointer group"
+              className="p-2 text-white hover:text-neutral-300 transition-colors cursor-pointer"
               aria-label="Close"
             >
-              <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-              <span className="text-[10px] font-mono font-bold tracking-[0.2em] uppercase">
-                {locale === "ru" ? "Закрыть" : locale === "hy" ? "Փակել" : "Close"}
-              </span>
+              <X className="w-8 h-8 drop-shadow-md" />
             </button>
           ) : (
             <Link
               href={`/${locale}`}
-              className="flex items-center gap-2 px-4 py-2 rounded-full bg-black/40 backdrop-blur-xl border border-white/10 text-white/90 hover:text-white hover:bg-black/60 active:scale-95 transition-all shadow-[0_4px_20px_rgba(0,0,0,0.5)] group"
-              aria-label="Back to Home"
+              className="p-2 text-white hover:text-neutral-300 transition-colors block"
+              aria-label="Close"
             >
-              <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-              <span className="text-[10px] font-mono font-bold tracking-[0.2em] uppercase">
-                {locale === "ru" ? "Главная" : locale === "hy" ? "Գլխավոր" : "Home"}
-              </span>
+              <X className="w-8 h-8 drop-shadow-md" />
             </Link>
           )}
         </div>
@@ -590,7 +584,7 @@ export function BookingWizard({
       {/* FLOATING BOTTOM SHEET — full width on mobile, right 55% on desktop */}
       <div
         ref={panelRef}
-        className={`will-change-transform transform-gpu relative z-20 rounded-t-[40px] lg:rounded-none bg-[#14151a] border-t lg:border-t-0 lg:border-l border-white/[0.08] shadow-[0_-25px_60px_rgba(0,0,0,0.95)] lg:shadow-none px-5 sm:px-6 lg:px-10 pt-8 lg:pt-10 pb-10 flex-1 flex flex-col justify-between lg:w-[55%] overflow-y-auto transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] mt-[-35dvh] lg:mt-0`}
+        className={`will-change-transform transform-gpu relative z-20 rounded-t-[40px] lg:rounded-none bg-[#14151a] border-t lg:border-t-0 lg:border-l border-white/[0.08] shadow-[0_-25px_60px_rgba(0,0,0,0.95)] lg:shadow-none px-5 sm:px-6 lg:px-10 pt-8 lg:pt-10 pb-10 flex-1 flex flex-col justify-between lg:w-[55%] overflow-y-auto transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] mt-[-55dvh] lg:mt-0`}
       >
 
         {(!isCheckingActive && blockedData?.isBlocked) && (

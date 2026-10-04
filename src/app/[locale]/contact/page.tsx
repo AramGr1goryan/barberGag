@@ -27,25 +27,25 @@ export default async function ContactPage({
     hy: {
       cardTitle: "Սրահի Կոնտակտներ",
       statusOpen: "Բաց է այցելությունների համար",
-      parkingTitle: "Կայանատեղի և Ընդունելություն",
+      parkingTitle: "Ընդունելություն",
       parkingText:
-        "Մեր սրահի հյուրերի համար գործում է ավտոկայանատեղի Բագրատունյաց պողոտայում: Այցելությունները կազմակերպվում են բացառապես նախնական գրանցմամբ՝ ապահովելով ձեր անձնական ժամանակն ու հարմարավետությունը:",
+        "Այցելությունները կազմակերպվում են բացառապես նախնական գրանցմամբ՝ ապահովելով ձեր անձնական ժամանակն ու հարմարավետությունը:",
       getDirections: "Բացել Քարտեզում",
     },
     ru: {
       cardTitle: "Контакты Студии",
       statusOpen: "Открыто по предварительной записи",
-      parkingTitle: "Парковка и Приватный Прием",
+      parkingTitle: "Приватный Прием",
       parkingText:
-        "Для гостей нашего барбершопа доступна парковка на проспекте Багратуняц. Прием ведется строго по предварительной записи для сохранения приватности и безупречного комфорта.",
+        "Прием ведется строго по предварительной записи для сохранения приватности и безупречного комфорта.",
       getDirections: "Открыть в Картах",
     },
     en: {
       cardTitle: "Studio Contacts",
       statusOpen: "Open strictly by appointment",
-      parkingTitle: "Private Reception & Parking",
+      parkingTitle: "Private Reception",
       parkingText:
-        "Complimentary parking on Bagratunyats Avenue is available for all studio guests. All appointments are strictly scheduled in advance to guarantee absolute privacy and dedicated artisan attention.",
+        "All appointments are strictly scheduled in advance to guarantee absolute privacy and dedicated artisan attention.",
       getDirections: "Open Navigation",
     },
   };

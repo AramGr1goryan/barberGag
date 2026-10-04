@@ -61,7 +61,7 @@ export function HeroSection({
   return (
     <section
       ref={containerRef}
-      className="relative min-h-[96vh] flex items-center justify-center overflow-hidden -mt-20 pt-20 perspective-[1000px]"
+      className="relative h-[100dvh] flex items-center justify-center overflow-hidden -mt-20 pt-20 perspective-[1000px]"
     >
       {/* 
         CINEMATIC BARBER PORTRAIT
@@ -152,10 +152,10 @@ export function HeroSection({
 
       {/* Sliding Pre-rendered Booking Flow Overlay */}
       <div 
-        className={`fixed inset-0 z-50 bg-[#14151a] transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${
+        className={`fixed inset-0 z-50 bg-[#14151a] transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] ${
           isBookingOpen 
             ? "opacity-100 pointer-events-auto translate-y-0" 
-            : "opacity-0 pointer-events-none translate-y-[20px]"
+            : "opacity-0 pointer-events-none translate-y-[10px]"
         }`}
       >
         {services && addons && bookingDict && (
