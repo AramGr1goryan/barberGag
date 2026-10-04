@@ -122,6 +122,9 @@ export function BookingWizard({
   const [selectedSlotId, setSelectedSlotId] = useState<string>("");
   const [isDayClosed, setIsDayClosed] = useState<boolean>(false);
   const [isLoadingSlots, setIsLoadingSlots] = useState<boolean>(false);
+  const [showMorning, setShowMorning] = useState<boolean>(true);
+  const [showAfternoon, setShowAfternoon] = useState<boolean>(true);
+  const [showEvening, setShowEvening] = useState<boolean>(true);
 
   // Month navigation offset (0 = current month, 1 = next month, ...)
   const [monthOffset, setMonthOffset] = useState<number>(0);
@@ -529,7 +532,7 @@ export function BookingWizard({
       */}
       {/* TOP CINEMATIC HERO SECTION — full width on mobile, left half on desktop */}
       <div
-        className="h-[60dvh] lg:h-[100dvh] lg:w-[45%] w-full shrink-0 overflow-hidden select-none z-0 relative"
+        className="h-[20dvh] lg:h-[100dvh] lg:w-[45%] w-full shrink-0 overflow-hidden select-none z-0 relative"
       >
         <Image
           src="/images/gagik-barber.jpg"
@@ -556,7 +559,7 @@ export function BookingWizard({
       {/* FLOATING BOTTOM SHEET — full width on mobile, right 55% on desktop */}
       <div
         ref={panelRef}
-        className={`will-change-transform transform-gpu relative z-30 rounded-t-[40px] lg:rounded-none bg-[#14151a]/85 backdrop-blur-2xl border-t lg:border-t-0 lg:border-l border-white/[0.08] shadow-[0_-10px_40px_rgba(0,0,0,0.45)] lg:shadow-none px-5 sm:px-6 lg:px-10 pt-16 lg:pt-16 pb-10 flex-1 flex flex-col justify-between lg:w-[55%] overflow-y-auto transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] mt-[calc(-60dvh+4.5rem)] lg:mt-0`}
+        className={`will-change-transform transform-gpu relative z-30 rounded-t-[40px] lg:rounded-none bg-[#14151a]/85 backdrop-blur-2xl border-t lg:border-t-0 lg:border-l border-white/[0.08] shadow-[0_-10px_40px_rgba(0,0,0,0.45)] lg:shadow-none px-5 sm:px-6 lg:px-10 pt-8 lg:pt-16 pb-10 flex-1 flex flex-col justify-between lg:w-[55%] overflow-y-auto transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] mt-[calc(-20dvh+4.5rem)] lg:mt-0`}
       >
         {/* Close Button (Inside panel to avoid overlap issues) */}
         <div className="absolute top-5 right-5 z-[100]">
@@ -695,7 +698,7 @@ export function BookingWizard({
               </div>
 
               {/* TIME SECTION */}
-              <div className="space-y-2.5 mt-6">
+              <div className="space-y-4 mt-6">
                 <div className="text-[10px] font-mono tracking-[0.25em] text-neutral-400 font-semibold uppercase select-none">
                   {locale === "ru" ? "ВРЕМЯ" : locale === "hy" ? "ԺԱՄ" : "TIME"}
                 </div>
@@ -720,51 +723,100 @@ export function BookingWizard({
                     </p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-4 gap-2 sm:gap-2.5 max-h-[30vh] sm:max-h-[35vh] lg:max-h-[40vh] overflow-y-auto overflow-x-hidden pb-2 pt-1 scrollbar-none select-none -mx-1 px-1">
-                    {availableSlots.map((slot) => {
-                      const isSelected = selectedSlotId === slot.id;
-                      return (
-                        <button
-                          key={slot.id}
-                          type="button"
-                          onClick={() => setSelectedSlotId(slot.id)}
-                          className={`w-full py-2 rounded-[10px] text-[13px] font-bold tracking-wider transition-all duration-200 select-none cursor-pointer flex items-center justify-center touch-manipulation border ${isSelected
-                              ? "bg-[#cbd5e1]/[0.12] text-white border-[#cbd5e1]/70 backdrop-blur-xl scale-[1.03] z-10"
-                              : "bg-white/[0.04] backdrop-blur-xl text-white hover:bg-white/[0.08] border-white/[0.08]"
-                            }`}
-                        >
-                          {slot.startTime}
+                  <div className="space-y-4 max-h-[30vh] sm:max-h-[35vh] lg:max-h-[40vh] overflow-y-auto overflow-x-hidden pb-2 scrollbar-none select-none px-1">
+                    {/* Morning */}
+                    {availableSlots.some(s => s.startTime < "12:00") && (
+                      <div className="space-y-2">
+                        <button type="button" onClick={() => setShowMorning(!showMorning)} className="flex items-center justify-between w-full py-1 text-xs text-neutral-400 font-semibold tracking-wider">
+                          <span>{locale === "ru" ? "УТРО" : locale === "hy" ? "ԱՌԱՎՈՏ" : "MORNING"}</span>
+                          <ChevronDown className={`w-4 h-4 transition-transform ${showMorning ? "rotate-180" : ""}`} />
                         </button>
-                      );
-                    })}
+                        {showMorning && (
+                          <div className="grid grid-cols-4 gap-2 sm:gap-2.5">
+                            {availableSlots.filter(s => s.startTime < "12:00").map(slot => {
+                              const isSelected = selectedSlotId === slot.id;
+                              return (
+                                <button key={slot.id} type="button" onClick={() => setSelectedSlotId(slot.id)} className={`w-full py-2 rounded-[10px] text-[13px] font-bold tracking-wider transition-all duration-200 flex items-center justify-center border ${isSelected ? "bg-[#cbd5e1]/[0.12] text-white border-[#cbd5e1]/70 backdrop-blur-xl scale-[1.03]" : "bg-white/[0.04] backdrop-blur-xl text-white hover:bg-white/[0.08] border-white/[0.08]"}`}>
+                                  {slot.startTime}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {/* Afternoon */}
+                    {availableSlots.some(s => s.startTime >= "12:00" && s.startTime < "17:00") && (
+                      <div className="space-y-2">
+                        <button type="button" onClick={() => setShowAfternoon(!showAfternoon)} className="flex items-center justify-between w-full py-1 text-xs text-neutral-400 font-semibold tracking-wider">
+                          <span>{locale === "ru" ? "ДЕНЬ" : locale === "hy" ? "ԿԵՍՕՐ" : "AFTERNOON"}</span>
+                          <ChevronDown className={`w-4 h-4 transition-transform ${showAfternoon ? "rotate-180" : ""}`} />
+                        </button>
+                        {showAfternoon && (
+                          <div className="grid grid-cols-4 gap-2 sm:gap-2.5">
+                            {availableSlots.filter(s => s.startTime >= "12:00" && s.startTime < "17:00").map(slot => {
+                              const isSelected = selectedSlotId === slot.id;
+                              return (
+                                <button key={slot.id} type="button" onClick={() => setSelectedSlotId(slot.id)} className={`w-full py-2 rounded-[10px] text-[13px] font-bold tracking-wider transition-all duration-200 flex items-center justify-center border ${isSelected ? "bg-[#cbd5e1]/[0.12] text-white border-[#cbd5e1]/70 backdrop-blur-xl scale-[1.03]" : "bg-white/[0.04] backdrop-blur-xl text-white hover:bg-white/[0.08] border-white/[0.08]"}`}>
+                                  {slot.startTime}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {/* Evening */}
+                    {availableSlots.some(s => s.startTime >= "17:00") && (
+                      <div className="space-y-2">
+                        <button type="button" onClick={() => setShowEvening(!showEvening)} className="flex items-center justify-between w-full py-1 text-xs text-neutral-400 font-semibold tracking-wider">
+                          <span>{locale === "ru" ? "ВЕЧЕР" : locale === "hy" ? "ԵՐԵԿՈ" : "EVENING"}</span>
+                          <ChevronDown className={`w-4 h-4 transition-transform ${showEvening ? "rotate-180" : ""}`} />
+                        </button>
+                        {showEvening && (
+                          <div className="grid grid-cols-4 gap-2 sm:gap-2.5">
+                            {availableSlots.filter(s => s.startTime >= "17:00").map(slot => {
+                              const isSelected = selectedSlotId === slot.id;
+                              return (
+                                <button key={slot.id} type="button" onClick={() => setSelectedSlotId(slot.id)} className={`w-full py-2 rounded-[10px] text-[13px] font-bold tracking-wider transition-all duration-200 flex items-center justify-center border ${isSelected ? "bg-[#cbd5e1]/[0.12] text-white border-[#cbd5e1]/70 backdrop-blur-xl scale-[1.03]" : "bg-white/[0.04] backdrop-blur-xl text-white hover:bg-white/[0.08] border-white/[0.08]"}`}>
+                                  {slot.startTime}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
-
             </div>
 
-            {/* ACTION BUTTON: "Choose a service" */}
-            <div className="mt-8 pt-2 select-none">
-              <button
-                type="button"
-                disabled={!selectedDate || !selectedSlotId}
-                onClick={() => setCurrentStep(3)}
-                className="w-full py-4 px-6 rounded bg-white text-black font-serif font-bold text-base hover:bg-neutral-200 active:scale-[0.98] transition-all duration-200 shadow-[0_12px_35px_rgba(0,0,0,0.6)] disabled:opacity-40 flex items-center justify-center gap-2 cursor-pointer touch-manipulation"
-              >
-                <span>
-                  {locale === "ru"
-                    ? "Выбрать услугу"
-                    : locale === "hy"
-                      ? "Ընտրել ծառայությունը"
-                      : "Choose a service"}
-                </span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
+            {/* ACTION BUTTON (Only visible when time is selected) */}
+            {selectedSlotId && (
+              <div className="mt-8 pt-4 border-t border-white/[0.08] flex justify-center">
+                <button
+                  type="button"
+                  onClick={() => setCurrentStep(3)}
+                  className="py-2.5 px-6 rounded-full bg-white text-black font-sans font-medium text-sm hover:bg-neutral-200 active:scale-[0.98] transition-all duration-200 shadow-[0_4px_15px_rgba(0,0,0,0.5)] flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <span>
+                    {locale === "ru"
+                      ? "Продолжить"
+                      : locale === "hy"
+                        ? "Շարունակել"
+                        : "Continue"}
+                  </span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+
+
           </div>
         )}
 
-        {/* ================= STEP 2: CHOOSE SERVICE & ADD-ONS ================= */}
+        {/* ================= STEP 1: CHOOSE SERVICE & ADD-ONS ================= */}
         {(!activeBooking && !blockedData?.isBlocked && currentStep === 2) && (
           <div className="flex-1 flex flex-col justify-between space-y-6">
             <div className="space-y-6">
@@ -854,7 +906,7 @@ export function BookingWizard({
 
               <button
                 type="button"
-                onClick={() => setCurrentStep(3)}
+                onClick={() => setCurrentStep(2)}
                 className="w-full py-4 px-6 rounded bg-white text-black font-serif font-bold text-base hover:bg-neutral-200 active:scale-[0.98] transition-all duration-200 shadow-[0_12px_35px_rgba(0,0,0,0.6)] flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>
