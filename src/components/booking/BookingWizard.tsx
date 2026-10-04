@@ -131,8 +131,8 @@ export function BookingWizard({
   // Close month picker is now handled by a full-screen overlay in JSX
 
   // Service & Addon selections
-  const [selectedServiceId, setSelectedServiceId] = useState<string>(initialServiceId || services[0]?.id || "");
-  const [selectedAddonIds, setSelectedAddonIds] = useState<string[]>([]);
+  const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>(initialServiceId ? [initialServiceId] : (services.length > 0 ? [services[0].id] : []));
+  
 
   // User input
   const [guestName, setGuestName] = useState<string>(currentUser?.name || "");
@@ -148,6 +148,11 @@ export function BookingWizard({
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [attemptsLeft, setAttemptsLeft] = useState<number>(3);
   const [isRedirecting, setIsRedirecting] = useState<boolean>(false);
+
+  // Calculations
+  const selectedServicesList = services.filter((s) => selectedServiceIds.includes(s.id));
+  const totalDuration = selectedServicesList.reduce((acc, s) => acc + s.durationMinutes, 0) || 15;
+  const totalPrice = selectedServicesList.reduce((acc, s) => acc + s.priceMinorUnits, 0);
 
   // Check returning visitor appointment & cancellation cooldown
   const checkActiveAppointment = async () => {
@@ -193,7 +198,7 @@ export function BookingWizard({
       const endStr = end.toISOString().split("T")[0];
 
       try {
-        const res = await fetch(`/api/availability/dates?start=${startStr}&end=${endStr}`);
+        const res = await fetch(`/api/availability/dates?start=${startStr}&end=${endStr}&duration=${totalDuration}`);
         const data = await res.json();
         if (data.openDates) {
           setOpenDates(data.openDates);
@@ -204,7 +209,7 @@ export function BookingWizard({
     };
 
     fetchOpenDates();
-  }, []);
+  }, [totalDuration]);
 
   // Generate available months list for the month picker (current + next 5 months)
   const availableMonths = useMemo(() => {
@@ -290,7 +295,7 @@ export function BookingWizard({
       setSelectedSlotId("");
       setIsLoadingSlots(true);
       try {
-        const res = await fetch(`/api/availability/slots?date=${selectedDate}`);
+        const res = await fetch(`/api/availability/slots?date=${selectedDate}&duration=${totalDuration}`);
         const data = await res.json();
         if (data.isOpen && data.slots && data.slots.length > 0) {
           setIsDayClosed(false);
@@ -309,7 +314,7 @@ export function BookingWizard({
     };
 
     fetchSlots();
-  }, [selectedDate]);
+  }, [selectedDate, totalDuration]);
 
   // SMS cooldown timer
   useEffect(() => {
@@ -320,15 +325,7 @@ export function BookingWizard({
     return () => clearInterval(timer);
   }, [resendCooldown]);
 
-  // Calculations
-  const selectedService = services.find((s) => s.id === selectedServiceId) || services[0];
-  const selectedAddonsList = addons.filter((a) => selectedAddonIds.includes(a.id));
-  const totalDuration =
-    (selectedService?.durationMinutes || 0) +
-    selectedAddonsList.reduce((acc, a) => acc + a.durationMinutes, 0);
-  const totalPrice =
-    (selectedService?.priceMinorUnits || 0) +
-    selectedAddonsList.reduce((acc, a) => acc + a.priceMinorUnits, 0);
+
 
   const getServiceName = (s?: ServiceItem) => {
     if (!s) return "";
@@ -341,9 +338,11 @@ export function BookingWizard({
   const getAddonName = (a: AddonItem) =>
     locale === "ru" ? a.nameRu : locale === "en" ? a.nameEn : a.nameHy;
 
-  const toggleAddon = (addonId: string) => {
-    setSelectedAddonIds((prev) =>
-      prev.includes(addonId) ? prev.filter((id) => id !== addonId) : [...prev, addonId]
+  const toggleService = (serviceId: string) => {
+    setSelectedServiceIds((prev) =>
+      prev.includes(serviceId)
+        ? prev.filter((id) => id !== serviceId)
+        : [...prev, serviceId]
     );
   };
 
@@ -367,7 +366,7 @@ export function BookingWizard({
 
   // Submit booking & request SMS OTP
   const handleInitiateBooking = async () => {
-    if (!selectedServiceId || !selectedDate || !selectedSlotId || !guestName || !guestPhone) {
+    if (selectedServiceIds.length === 0 || !selectedDate || !selectedSlotId || !guestName || !guestPhone) {
       setErrorMessage(
         locale === "ru"
           ? "Пожалуйста, заполните все обязательные поля."
@@ -386,8 +385,7 @@ export function BookingWizard({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          serviceId: selectedServiceId,
-          addonIds: selectedAddonIds,
+          serviceIds: selectedServiceIds,
           date: selectedDate,
           slotId: selectedSlotId,
           guestName,
@@ -502,7 +500,7 @@ export function BookingWizard({
       "PRODID:-//Gagik Ghambaryan Barbershop//NONSGML v1.0//EN",
       "BEGIN:VEVENT",
       `SUMMARY:Appointment with Master Barber Gagik Ghambaryan`,
-      `DESCRIPTION:${getServiceName(selectedService)} (Ref: ${createdBookingNumber})`,
+      `DESCRIPTION:${getServiceName(selectedServicesList[0])} (Ref: ${createdBookingNumber})`,
       `LOCATION:19 Bagratunyats St, Yerevan`,
       `DTSTART:${selectedDate.replace(/-/g, "")}T${startHour.replace(/:/g, "")}00`,
       `DTEND:${selectedDate.replace(/-/g, "")}T${endHour.replace(/:/g, "")}00`,
@@ -750,8 +748,8 @@ export function BookingWizard({
               <button
                 type="button"
                 disabled={!selectedDate || !selectedSlotId}
-                onClick={() => setCurrentStep(2)}
-                className="w-full py-4 px-6 rounded-full bg-white text-black font-serif font-bold text-base hover:bg-neutral-200 active:scale-[0.98] transition-all duration-200 shadow-[0_12px_35px_rgba(0,0,0,0.6)] disabled:opacity-40 flex items-center justify-center gap-2 cursor-pointer touch-manipulation"
+                onClick={() => setCurrentStep(3)}
+                className="w-full py-4 px-6 rounded bg-white text-black font-serif font-bold text-base hover:bg-neutral-200 active:scale-[0.98] transition-all duration-200 shadow-[0_12px_35px_rgba(0,0,0,0.6)] disabled:opacity-40 flex items-center justify-center gap-2 cursor-pointer touch-manipulation"
               >
                 <span>
                   {locale === "ru"
@@ -791,11 +789,11 @@ export function BookingWizard({
                 </div>
                 <div className="space-y-2.5">
                   {services.map((s) => {
-                    const isSelected = selectedServiceId === s.id;
+                    const isSelected = selectedServiceIds.includes(s.id);
                     return (
                       <div
                         key={s.id}
-                        onClick={() => setSelectedServiceId(s.id)}
+                        onClick={() => toggleService(s.id)}
                         className={`p-3 rounded-2xl transition-all duration-200 cursor-pointer flex flex-col justify-between select-none border ${isSelected
                             ? "bg-[#cbd5e1]/[0.12] text-white border-[#cbd5e1]/70 backdrop-blur-xl"
                             : "bg-white/[0.04] backdrop-blur-xl text-white hover:bg-white/[0.08] border-white/[0.08]"
@@ -817,7 +815,7 @@ export function BookingWizard({
                             </p>
                           </div>
                           {isSelected && (
-                            <div className="w-5 h-5 rounded-full bg-black text-[#cbd5e1] flex items-center justify-center shrink-0 mt-0.5">
+                            <div className="w-5 h-5 rounded bg-black text-[#cbd5e1] flex items-center justify-center shrink-0 mt-0.5">
                               <Check className="w-3.5 h-3.5 stroke-[3]" />
                             </div>
                           )}
@@ -840,50 +838,6 @@ export function BookingWizard({
                 </div>
               </div>
 
-              {/* Enhancing Add-ons */}
-              {addons.length > 0 && (
-                <div className="space-y-3">
-                  <div className="text-[10px] font-mono tracking-[0.25em] text-neutral-400 font-semibold uppercase">
-                    {locale === "ru"
-                      ? "ДОПОЛНИТЕЛЬНЫЙ УХОД"
-                      : locale === "hy"
-                        ? "ԼՐԱՑՈՒՑԻՉ ԽՆԱՄՔ"
-                        : "ADD-ONS & TREATMENTS"}
-                  </div>
-                  <div className="space-y-2">
-                    {addons.map((a) => {
-                      const isSelected = selectedAddonIds.includes(a.id);
-                      return (
-                        <div
-                          key={a.id}
-                          onClick={() => toggleAddon(a.id)}
-                          className={`p-3 rounded-2xl border cursor-pointer transition-all flex items-center justify-between text-xs select-none ${isSelected
-                              ? "bg-[#cbd5e1]/[0.12] text-white border-[#cbd5e1]/70 backdrop-blur-xl"
-                              : "bg-white/[0.04] backdrop-blur-xl text-white hover:bg-white/[0.08] border-white/[0.08]"
-                            }`}
-                        >
-                          <div className="flex items-center space-x-3">
-                            <div
-                              className={`w-5 h-5 rounded-lg border flex items-center justify-center transition-all ${isSelected
-                                  ? "bg-black border-black text-[#cbd5e1]"
-                                  : "border-white/20 bg-white/[0.03]"
-                                }`}
-                            >
-                              {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
-                            </div>
-                            <span>{getAddonName(a)}</span>
-                          </div>
-                          <span
-                            className={`font-mono font-bold ${"text-[#cbd5e1]"}`}
-                          >
-                            +{formatCurrency(a.priceMinorUnits, locale)}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Total Summary & Button */}
@@ -901,7 +855,7 @@ export function BookingWizard({
               <button
                 type="button"
                 onClick={() => setCurrentStep(3)}
-                className="w-full py-4 px-6 rounded-full bg-white text-black font-serif font-bold text-base hover:bg-neutral-200 active:scale-[0.98] transition-all duration-200 shadow-[0_12px_35px_rgba(0,0,0,0.6)] flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-4 px-6 rounded bg-white text-black font-serif font-bold text-base hover:bg-neutral-200 active:scale-[0.98] transition-all duration-200 shadow-[0_12px_35px_rgba(0,0,0,0.6)] flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>
                   {locale === "ru"
@@ -927,7 +881,7 @@ export function BookingWizard({
                     {locale === "ru" ? "Услуга:" : locale === "hy" ? "Ծառայություն՝" : "Service:"}
                   </span>
                   <span className="text-white font-semibold">
-                    {getServiceName(selectedService)}
+                    {getServiceName(selectedServicesList[0])}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -1037,7 +991,7 @@ export function BookingWizard({
                 type="button"
                 disabled={isSubmitting || !guestName.trim() || !guestPhone.trim() || !guestRealPhone.trim()}
                 onClick={handleInitiateBooking}
-                className="w-full py-4 px-6 rounded-full bg-white text-black font-serif font-bold text-base hover:bg-neutral-200 active:scale-[0.98] transition-all duration-200 shadow-[0_12px_35px_rgba(0,0,0,0.6)] disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-4 px-6 rounded bg-white text-black font-serif font-bold text-base hover:bg-neutral-200 active:scale-[0.98] transition-all duration-200 shadow-[0_12px_35px_rgba(0,0,0,0.6)] disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer"
               >
                 {isSubmitting ? (
                   <span>{dict.verifying}</span>
@@ -1056,7 +1010,7 @@ export function BookingWizard({
         {(!activeBooking && !blockedData?.isBlocked && currentStep === 4) && (
           <div className="flex-1 flex flex-col justify-between space-y-6">
             <div className="space-y-6 text-center">
-              <div className="w-14 h-14 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[#cbd5e1] mx-auto">
+              <div className="w-14 h-14 rounded bg-white/5 border border-white/10 flex items-center justify-center text-[#cbd5e1] mx-auto">
                 <ShieldCheck className="w-7 h-7" />
               </div>
 
@@ -1123,7 +1077,7 @@ export function BookingWizard({
                 type="button"
                 disabled={isSubmitting || smsCode.length !== 4 || isRedirecting}
                 onClick={handleVerifySms}
-                className="w-full py-4 px-6 rounded-full bg-white text-black font-serif font-bold text-base hover:bg-neutral-200 active:scale-[0.98] transition-all duration-200 shadow-[0_12px_35px_rgba(0,0,0,0.6)] disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-4 px-6 rounded bg-white text-black font-serif font-bold text-base hover:bg-neutral-200 active:scale-[0.98] transition-all duration-200 shadow-[0_12px_35px_rgba(0,0,0,0.6)] disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer"
               >
                 {isSubmitting ? (
                   <span>{dict.verifying}</span>
@@ -1142,7 +1096,7 @@ export function BookingWizard({
         {(!activeBooking && !blockedData?.isBlocked && currentStep === 5) && (
           <div className="flex-1 flex flex-col justify-between space-y-6 text-center">
             <div className="space-y-6">
-              <div className="w-16 h-16 rounded-full bg-white text-black flex items-center justify-center mx-auto shadow-[0_0_40px_rgba(255,255,255,0.4)]">
+              <div className="w-16 h-16 rounded bg-white text-black flex items-center justify-center mx-auto shadow-[0_0_40px_rgba(255,255,255,0.4)]">
                 <Check className="w-8 h-8 stroke-[3]" />
               </div>
 
@@ -1168,7 +1122,7 @@ export function BookingWizard({
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-neutral-400">{locale === "ru" ? "Услуга" : locale === "hy" ? "Ծառայություն" : "Service"}</span>
-                  <span className="text-white truncate max-w-[150px]">{getServiceName(selectedService)}</span>
+                  <span className="text-white truncate max-w-[150px]">{getServiceName(selectedServicesList[0])}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-neutral-400">{locale === "ru" ? "Дата и время" : locale === "hy" ? "Օր և Ժամ" : "Date & Time"}</span>
@@ -1185,7 +1139,7 @@ export function BookingWizard({
               <button
                 type="button"
                 onClick={handleDownloadIcs}
-                className="w-full py-4 px-6 rounded-full bg-white text-black font-serif font-bold text-base hover:bg-neutral-200 active:scale-[0.98] transition-all duration-200 shadow-[0_12px_35px_rgba(0,0,0,0.6)] flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-4 px-6 rounded bg-white text-black font-serif font-bold text-base hover:bg-neutral-200 active:scale-[0.98] transition-all duration-200 shadow-[0_12px_35px_rgba(0,0,0,0.6)] flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Download className="w-4 h-4" />
                 <span>{dict.addToCalendar}</span>
@@ -1195,14 +1149,14 @@ export function BookingWizard({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="block w-full py-3 px-6 rounded-full bg-white/[0.05] border border-white/10 text-white font-serif font-medium text-sm hover:bg-white/10 transition-all text-center cursor-pointer"
+                  className="block w-full py-3 px-6 rounded bg-white/[0.05] border border-white/10 text-white font-serif font-medium text-sm hover:bg-white/10 transition-all text-center cursor-pointer"
                 >
                   {dict.returnHome}
                 </button>
               ) : (
                 <Link
                   href={`/${locale}`}
-                  className="block w-full py-3 px-6 rounded-full bg-white/[0.05] border border-white/10 text-white font-serif font-medium text-sm hover:bg-white/10 transition-all text-center"
+                  className="block w-full py-3 px-6 rounded bg-white/[0.05] border border-white/10 text-white font-serif font-medium text-sm hover:bg-white/10 transition-all text-center"
                 >
                   {dict.returnHome}
                 </Link>

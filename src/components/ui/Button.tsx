@@ -17,7 +17,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variantStyles = {
       primary:
-        "bg-white/[0.05] text-white hover:bg-white/[0.1] shadow-[0_4px_25px_rgba(255,255,255,0.08)] hover:shadow-[0_6px_35px_rgba(255,255,255,0.15)] border border-white/[0.15] font-semibold hover:-translate-y-0.5 active:translate-y-0 active:shadow-[0_2px_15px_rgba(255,255,255,0.05)] backdrop-blur-md",
+        "bg-gradient-to-b from-white to-zinc-200 text-zinc-900 hover:from-white hover:to-white shadow-[0_4px_15px_rgba(255,255,255,0.2)] hover:shadow-[0_6px_25px_rgba(255,255,255,0.3)] border border-zinc-300 font-bold hover:-translate-y-0.5 active:translate-y-0",
       secondary:
         "bg-white/[0.02] backdrop-blur-xl text-foreground hover:bg-white/[0.06] border border-white/[0.05] hover:border-white/[0.1] shadow-[0_4px_30px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.03)] hover:shadow-[0_8px_40px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.06)] hover:-translate-y-0.5 active:translate-y-0",
       outline:
@@ -41,8 +41,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         className={clsx(baseStyles, variantStyles[variant], sizeStyles[size], className)}
         {...props}
       >
-        {/* Liquid glass shine overlay for primary & secondary */}
-        {(variant === "primary" || variant === "secondary") && (
+        {/* Light shine overlay for primary */}
+        {variant === "primary" && (
+          <span className="absolute inset-0 rounded-full bg-gradient-to-b from-white/40 via-transparent to-transparent pointer-events-none" />
+        )}
+        {variant === "secondary" && (
           <span className="absolute inset-0 rounded-full bg-gradient-to-b from-white/[0.15] via-transparent to-transparent pointer-events-none" />
         )}
         {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}

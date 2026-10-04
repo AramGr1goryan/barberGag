@@ -13,8 +13,7 @@ export interface CanUserBookParams {
 }
 
 export interface CreateBookingParams {
-  serviceId: string;
-  addonIds: string[];
+  serviceIds: string[];
   date: string;
   slotId: string;
   guestName: string;
@@ -77,25 +76,18 @@ export class BookingService {
    * Prevents double-booking via database transactional checks.
    */
   async createBooking(params: CreateBookingParams) {
-    const { serviceId, addonIds, date, slotId, guestName, guestPhone, guestRealPhone, userId, locale = "hy" } = params;
+    const { serviceIds, date, slotId, guestName, guestPhone, guestRealPhone, userId, locale = "hy" } = params;
 
-    // 1. Fetch and validate Service
-    const service = await prisma.service.findUnique({
-      where: { id: serviceId, active: true },
+    // 1. Fetch and validate Services
+    const services = await prisma.service.findMany({
+      where: { id: { in: serviceIds }, active: true },
     });
-    if (!service) {
+    if (services.length === 0) {
       throw new Error("SELECTED_SERVICE_NOT_FOUND");
     }
 
-    // 2. Fetch and validate Addons
-    const addons = addonIds.length > 0
-      ? await prisma.addon.findMany({
-          where: { id: { in: addonIds }, active: true },
-        })
-      : [];
-
-    const totalDuration = service.durationMinutes + addons.reduce((acc, a) => acc + a.durationMinutes, 0);
-    const totalPrice = service.priceMinorUnits + addons.reduce((acc, a) => acc + a.priceMinorUnits, 0);
+    const totalDuration = services.reduce((acc, s) => acc + s.durationMinutes, 0);
+    const totalPrice = services.reduce((acc, s) => acc + s.priceMinorUnits, 0);
 
     // 3. Check 3-Hour Booking Rule
     const slotRecord = await prisma.availabilitySlot.findUnique({
@@ -144,7 +136,7 @@ export class BookingService {
       // DO NOT mark slot as HELD pending verification
       // The slot will only be reserved and linked when the user enters the correct OTP
 
-      // Create Booking record without locking the slotId yet
+      // Create Booking record without locking the slots yet
       const createdBooking = await tx.booking.create({
         data: {
           bookingNumber,
@@ -160,29 +152,19 @@ export class BookingService {
           totalPriceMinorUnits: totalPrice,
           status: BookingStatus.PENDING_VERIFICATION,
           locale: locale,
-          slotId: null, // Will be linked upon successful OTP verification
           items: {
-            create: [
-              {
-                itemType: "SERVICE",
-                serviceId: service.id,
-                nameSnapshot: service.nameHy,
-                priceSnapshotMinor: service.priceMinorUnits,
-                durationSnapshotMin: service.durationMinutes,
-              },
-              ...addons.map((a) => ({
-                itemType: "ADDON",
-                addonId: a.id,
-                nameSnapshot: a.nameHy,
-                priceSnapshotMinor: a.priceMinorUnits,
-                durationSnapshotMin: a.durationMinutes,
-              })),
-            ],
+            create: services.map(s => ({
+              itemType: "SERVICE",
+              serviceId: s.id,
+              nameSnapshot: s.nameHy,
+              priceSnapshotMinor: s.priceMinorUnits,
+              durationSnapshotMin: s.durationMinutes,
+            })),
           },
         },
         include: {
           items: true,
-          slot: true,
+          slots: true,
         },
       });
 
@@ -211,7 +193,7 @@ export class BookingService {
       },
       include: {
         items: true,
-        slot: true,
+        slots: true,
       },
       orderBy: { createdAt: "desc" },
     });
@@ -237,6 +219,7 @@ export class BookingService {
           { userId: sessionTokenOrUserId },
         ],
       },
+      include: { slots: true },
     });
 
     if (!booking) {
@@ -267,32 +250,63 @@ export class BookingService {
 
     // Transactional slot swap
     return prisma.$transaction(async (tx) => {
-      // Release old slot
-      if (booking.slotId) {
-        await tx.availabilitySlot.update({
-          where: { id: booking.slotId },
+      const slotsNeeded = Math.ceil(booking.totalDurationMinutes / 15);
+      
+      const day = await tx.availabilityDay.findUnique({
+          where: { date: newDate },
+          include: {
+            slots: {
+              where: { status: SlotStatus.AVAILABLE, startTime: { gte: newSlot.startTime } },
+              orderBy: { startTime: 'asc' },
+              take: slotsNeeded
+            }
+          }
+      });
+      
+      if (!day || day.slots.length < slotsNeeded) {
+          throw new Error("NEW_SLOT_UNAVAILABLE");
+      }
+      for (let i = 1; i < slotsNeeded; i++) {
+           const prev = day.slots[i-1].startTime;
+           const curr = day.slots[i].startTime;
+           const [pH, pM] = prev.split(":").map(Number);
+           const [cH, cM] = curr.split(":").map(Number);
+           if (pH * 60 + pM + 15 !== cH * 60 + cM) {
+               throw new Error("NEW_SLOT_UNAVAILABLE");
+           }
+      }
+
+      // Release old slots
+      if (booking.slots && booking.slots.length > 0) {
+        await tx.availabilitySlot.updateMany({
+          where: { id: { in: booking.slots.map(s => s.id) } },
           data: { status: SlotStatus.AVAILABLE },
         });
       }
 
-      // Reserve new slot
-      await tx.availabilitySlot.update({
-        where: { id: newSlotId },
+      // Reserve new slots
+      await tx.availabilitySlot.updateMany({
+        where: { id: { in: day.slots.map(s => s.id) } },
         data: { status: SlotStatus.BOOKED },
       });
+
+      const newEndTime = day.slots[day.slots.length - 1].endTime;
 
       // Update booking
       return tx.booking.update({
         where: { id: booking.id },
         data: {
-          slotId: newSlotId,
+          slots: {
+              disconnect: booking.slots ? booking.slots.map(s => ({ id: s.id })) : [],
+              connect: day.slots.map(s => ({ id: s.id }))
+          },
           date: newDate,
           startTime: newSlot.startTime,
-          endTime: newSlot.endTime,
+          endTime: newEndTime,
         },
         include: {
           items: true,
-          slot: true,
+          slots: true,
         },
       });
     });
@@ -313,6 +327,7 @@ export class BookingService {
           { userId: sessionTokenOrUserId },
         ],
       },
+      include: { slots: true },
     });
 
     if (!booking) {
@@ -320,9 +335,9 @@ export class BookingService {
     }
 
     return prisma.$transaction(async (tx) => {
-      if (booking.slotId) {
-        await tx.availabilitySlot.update({
-          where: { id: booking.slotId },
+      if (booking.slots && booking.slots.length > 0) {
+        await tx.availabilitySlot.updateMany({
+          where: { id: { in: booking.slots.map(s => s.id) } },
           data: { status: SlotStatus.AVAILABLE },
         });
       }
@@ -332,7 +347,7 @@ export class BookingService {
         data: {
           status: BookingStatus.CANCELLED,
           cancellationReason: reason || "User requested cancellation",
-          slotId: null, // Clear slotId so it doesn't block future bookings!
+          slots: { set: [] },
         },
       });
     });

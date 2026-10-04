@@ -105,7 +105,7 @@ export class FinancialAnalyticsService {
         },
         include: {
           items: true,
-          slot: true,
+          slots: true,
         },
         orderBy: { date: "asc" },
       });

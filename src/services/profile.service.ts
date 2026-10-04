@@ -50,7 +50,7 @@ export class ProfileService {
       where: { userId },
       include: {
         items: true,
-        slot: true,
+        slots: true,
       },
       orderBy: { createdAt: "desc" },
     });

@@ -115,7 +115,8 @@ model AvailabilitySlot {
   endTime           String          // e.g. "11:00"
   status            SlotStatus      @default(AVAILABLE)
   version           Int             @default(0)
-  booking           Booking?
+  bookingId         String?
+  booking           Booking?        @relation(fields: [bookingId], references: [id], onDelete: SetNull)
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
 
@@ -140,8 +141,7 @@ model Booking {
   status               BookingStatus     @default(PENDING_VERIFICATION)
   cancellationReason   String?
   locale               String            @default("hy")
-  slotId               String?           @unique
-  slot                 AvailabilitySlot? @relation(fields: [slotId], references: [id], onDelete: SetNull)
+  slots                AvailabilitySlot[]
   items                BookingItem[]
   verification         SmsVerification?
   createdAt            DateTime          @default(now())

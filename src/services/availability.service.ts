@@ -58,7 +58,7 @@ export class AvailabilityService {
       for (let d = 1; d <= daysInMonth; d++) {
         const dStr = `${monthPrefix}-${d.toString().padStart(2, '0')}`;
         if (!existingDates.has(dStr)) {
-          await this.bulkGenerateSlots(dStr, "10:00", "23:00", 60);
+          await this.bulkGenerateSlots(dStr, "10:00", "23:00", 15);
         }
       }
     }
@@ -79,17 +79,16 @@ export class AvailabilityService {
           status: BookingStatus.PENDING_VERIFICATION,
           updatedAt: { lt: tenMinutesAgo },
         },
-        select: { id: true, slotId: true },
+        select: { id: true, slots: { select: { id: true } } },
       });
 
       if (expiredBookings.length > 0) {
         const bookingIds = expiredBookings.map((b) => b.id);
-        const slotIds = expiredBookings.map((b) => b.slotId).filter(Boolean) as string[];
+        const slotIds = expiredBookings.flatMap((b) => b.slots.map(s => s.id));
 
         await prisma.booking.updateMany({
           where: { id: { in: bookingIds } },
           data: {
-            slotId: null,
             status: BookingStatus.CANCELLED,
             cancellationReason: "EXPIRED_VERIFICATION",
           },
@@ -127,7 +126,7 @@ export class AvailabilityService {
    * Public customer query: Returns available slots for a given date.
    * STRICT RULE: Closed by default. If day not explicitly opened, returns empty slots.
    */
-  async getPublicAvailabilityForDate(dateStr: string): Promise<PublicDayAvailability> {
+  async getPublicAvailabilityForDate(dateStr: string, durationMinutes: number = 15): Promise<PublicDayAvailability> {
     await this.ensureCurrentMonthInitialized();
     await this.cleanupExpiredHeldSlots();
 
@@ -168,10 +167,35 @@ export class AvailabilityService {
       return true;
     });
 
+    const slotsNeeded = Math.ceil(durationMinutes / 15);
+    const availableStartSlots = [];
+    
+    for (let i = 0; i <= validSlots.length - slotsNeeded; i++) {
+        let isConsecutive = true;
+        for (let j = 0; j < slotsNeeded; j++) {
+            if (j > 0) {
+                const prev = validSlots[i+j-1].startTime;
+                const curr = validSlots[i+j].startTime;
+                
+                const [pH, pM] = prev.split(":").map(Number);
+                const [cH, cM] = curr.split(":").map(Number);
+                
+                if (pH * 60 + pM + 15 !== cH * 60 + cM) {
+                    isConsecutive = false;
+                    break;
+                }
+            }
+        }
+        
+        if (isConsecutive) {
+            availableStartSlots.push(validSlots[i]);
+        }
+    }
+
     return {
       date: day.date,
       isOpen: true,
-      slots: validSlots.map((s) => ({
+      slots: availableStartSlots.map((s) => ({
         id: s.id,
         startTime: s.startTime,
         endTime: s.endTime,
@@ -184,7 +208,7 @@ export class AvailabilityService {
    * Public query: Returns list of dates that are OPEN in the next N days.
    * Any date not returned is CLOSED by default.
    */
-  async getOpenDates(startDate: string, endDate: string): Promise<string[]> {
+  async getOpenDates(startDate: string, endDate: string, durationMinutes: number = 15): Promise<string[]> {
     await this.ensureCurrentMonthInitialized();
     await this.cleanupExpiredHeldSlots();
 
@@ -209,20 +233,42 @@ export class AvailabilityService {
               select: { id: true, status: true },
             },
           },
+          orderBy: { startTime: "asc" }
         },
       },
       orderBy: { date: "asc" },
     });
 
     const { dateStr: todayYerevanStr, timeStr: currentHourMin } = getYerevanCurrentDateAndTime();
+    const slotsNeeded = Math.ceil(durationMinutes / 15);
 
     return days
       .filter((d) => {
-        return d.slots.some((s) => {
+        const validSlots = d.slots.filter((s) => {
           if (s.booking && s.booking.status !== "CANCELLED") return false;
           if (d.date === todayYerevanStr && s.startTime <= currentHourMin) return false;
           return true;
         });
+        
+        if (validSlots.length < slotsNeeded) return false;
+        
+        for (let i = 0; i <= validSlots.length - slotsNeeded; i++) {
+            let isConsecutive = true;
+            for (let j = 0; j < slotsNeeded; j++) {
+                if (j > 0) {
+                    const prev = validSlots[i+j-1].startTime;
+                    const curr = validSlots[i+j].startTime;
+                    const [pH, pM] = prev.split(":").map(Number);
+                    const [cH, cM] = curr.split(":").map(Number);
+                    if (pH * 60 + pM + 15 !== cH * 60 + cM) {
+                        isConsecutive = false;
+                        break;
+                    }
+                }
+            }
+            if (isConsecutive) return true;
+        }
+        return false;
       })
       .map((d) => d.date);
   }
@@ -330,7 +376,7 @@ export class AvailabilityService {
     dateStr: string,
     startTime: string,
     endTime: string,
-    slotDurationMinutes: number = 60
+    slotDurationMinutes: number = 15
   ) {
     // Ensure the day is registered and open
     const day = await prisma.availabilityDay.upsert({

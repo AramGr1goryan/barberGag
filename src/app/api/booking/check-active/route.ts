@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
         },
         include: {
           items: true,
-          slot: true,
+          slots: true,
         },
         orderBy: { createdAt: "desc" },
       });

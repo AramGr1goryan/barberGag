@@ -91,7 +91,7 @@ export async function GET(req: NextRequest) {
         },
         include: {
           items: true,
-          slot: true,
+          slots: true,
         },
         orderBy: { startTime: "asc" },
       });
@@ -133,7 +133,7 @@ export async function POST(req: NextRequest) {
       const updated = await prisma.booking.update({
         where: { id: bookingId },
         data: { status: newStatus },
-        include: { items: true, slot: true },
+        include: { items: true, slots: true },
       });
 
       await adminService.logAudit({
@@ -188,49 +188,46 @@ export async function POST(req: NextRequest) {
         create: { date: bookingDate, isOpen: true },
       });
 
-      // 2. Check or create slot with BOOKED status
-      const existingSlot = await prisma.availabilitySlot.findUnique({
-        where: {
-          availabilityDayId_startTime: {
-            availabilityDayId: day.id,
-            startTime: startT,
+      const slotsNeeded = Math.ceil(durMin / 15);
+      
+      const createdSlotIds = [];
+      for (let i = 0; i < slotsNeeded; i++) {
+        const currentSlotMinutes = startTotalMin + i * 15;
+        const currentSlotEndMinutes = currentSlotMinutes + 15;
+        
+        const cH = Math.floor(currentSlotMinutes / 60).toString().padStart(2, "0");
+        const cM = (currentSlotMinutes % 60).toString().padStart(2, "0");
+        const cEndH = Math.floor(currentSlotEndMinutes / 60).toString().padStart(2, "0");
+        const cEndM = (currentSlotEndMinutes % 60).toString().padStart(2, "0");
+        
+        const slotStart = `${cH}:${cM}`;
+        const slotEnd = `${cEndH}:${cEndM}`;
+        
+        const slot = await prisma.availabilitySlot.upsert({
+          where: {
+            availabilityDayId_startTime: {
+              availabilityDayId: day.id,
+              startTime: slotStart,
+            }
           },
-        },
-      });
-
-      let slotId = existingSlot?.id;
-      if (existingSlot) {
-        await prisma.availabilitySlot.update({
-          where: { id: existingSlot.id },
-          data: {
+          update: {
             status: SlotStatus.BOOKED,
-            endTime: calculatedEndTime,
+            endTime: slotEnd
           },
-        });
-      } else {
-        const createdSlot = await prisma.availabilitySlot.create({
-          data: {
+          create: {
             availabilityDayId: day.id,
-            startTime: startT,
-            endTime: calculatedEndTime,
-            status: SlotStatus.BOOKED,
-          },
+            startTime: slotStart,
+            endTime: slotEnd,
+            status: SlotStatus.BOOKED
+          }
         });
-        slotId = createdSlot.id;
+        createdSlotIds.push(slot.id);
       }
 
       // 3. Generate Booking Number
       const randomSuffix = Math.floor(1000 + Math.random() * 9000);
       const bookingNumber = `BK-${bookingDate.replace(/-/g, "")}-${randomSuffix}`;
       const priceMinor = Math.round(Number(price) * 100);
-
-      // Disconnect any old booking holding this slotId (prevents unique constraint collision)
-      if (slotId) {
-        await prisma.booking.updateMany({
-          where: { slotId },
-          data: { slotId: null },
-        });
-      }
 
       const finalServiceId = (serviceId && serviceId !== "CUSTOM") ? serviceId : null;
 
@@ -246,7 +243,9 @@ export async function POST(req: NextRequest) {
           totalDurationMinutes: durMin,
           totalPriceMinorUnits: priceMinor,
           status: BookingStatus.CONFIRMED,
-          slotId,
+          slots: {
+            connect: createdSlotIds.map(id => ({ id }))
+          },
           items: {
             create: [
               {
@@ -261,7 +260,7 @@ export async function POST(req: NextRequest) {
         },
         include: {
           items: true,
-          slot: true,
+          slots: true,
         },
       });
 

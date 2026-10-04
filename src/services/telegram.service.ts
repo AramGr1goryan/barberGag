@@ -262,7 +262,7 @@ export class TelegramService {
         where: { id: bookingId },
         include: {
           items: true,
-          slot: true,
+          slots: true,
         },
       });
 

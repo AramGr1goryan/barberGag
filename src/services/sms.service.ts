@@ -487,15 +487,10 @@ export class SmsService {
             data: {
               status: BookingStatus.CANCELLED,
               cancellationReason: "Failed SMS verification 3 times",
-              slotId: null,
+              slots: { set: [] },
             },
           });
-          if (record.booking.slotId) {
-            await tx.availabilitySlot.update({
-              where: { id: record.booking.slotId },
-              data: { status: SlotStatus.AVAILABLE },
-            });
-          }
+          // Note: Slots weren't locked yet, they remain AVAILABLE
         });
 
         return {
@@ -516,17 +511,31 @@ export class SmsService {
     // Code matches! Atomic transaction to confirm booking and mark slot BOOKED
     try {
       await prisma.$transaction(async (tx) => {
-        // Find the slot based on the booking's requested date and time
-        const slot = await tx.availabilitySlot.findFirst({
-          where: {
-            availabilityDay: { date: record.booking.date },
-            startTime: record.booking.startTime,
-            status: SlotStatus.AVAILABLE,
-          },
+        const slotsNeeded = Math.ceil(record.booking.totalDurationMinutes / 15);
+        
+        const day = await tx.availabilityDay.findUnique({
+          where: { date: record.booking.date },
+          include: {
+            slots: {
+              where: { status: SlotStatus.AVAILABLE, startTime: { gte: record.booking.startTime } },
+              orderBy: { startTime: 'asc' },
+              take: slotsNeeded
+            }
+          }
         });
-
-        if (!slot) {
+        
+        if (!day || day.slots.length < slotsNeeded) {
           throw new Error("SLOT_TAKEN");
+        }
+        
+        for (let i = 1; i < slotsNeeded; i++) {
+           const prev = day.slots[i-1].startTime;
+           const curr = day.slots[i].startTime;
+           const [pH, pM] = prev.split(":").map(Number);
+           const [cH, cM] = curr.split(":").map(Number);
+           if (pH * 60 + pM + 15 !== cH * 60 + cM) {
+               throw new Error("SLOT_TAKEN");
+           }
         }
 
         await tx.smsVerification.update({
@@ -538,12 +547,12 @@ export class SmsService {
           where: { id: bookingId },
           data: { 
             status: BookingStatus.CONFIRMED,
-            slotId: slot.id 
+            slots: { connect: day.slots.map(s => ({ id: s.id })) } 
           },
         });
 
-        await tx.availabilitySlot.update({
-          where: { id: slot.id },
+        await tx.availabilitySlot.updateMany({
+          where: { id: { in: day.slots.map(s => s.id) } },
           data: { 
             status: SlotStatus.BOOKED,
             version: { increment: 1 },

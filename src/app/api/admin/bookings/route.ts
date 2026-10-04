@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
       },
       include: {
         items: true,
-        slot: true,
+        slots: true,
       },
       orderBy: [{ date: "desc" }, { startTime: "asc" }],
     });
@@ -50,6 +50,7 @@ export async function PUT(req: NextRequest) {
 
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
+      include: { slots: true },
     });
 
     if (!booking) {
@@ -59,9 +60,9 @@ export async function PUT(req: NextRequest) {
     // Transactional status update
     const updated = await prisma.$transaction(async (tx) => {
       // If cancelling or marking no-show, release the slot back to AVAILABLE
-      if ((status === BookingStatus.CANCELLED || status === BookingStatus.NO_SHOW) && booking.slotId) {
-        await tx.availabilitySlot.update({
-          where: { id: booking.slotId },
+      if ((status === BookingStatus.CANCELLED || status === BookingStatus.NO_SHOW) && booking.slots && booking.slots.length > 0) {
+        await tx.availabilitySlot.updateMany({
+          where: { id: { in: booking.slots.map(s => s.id) } },
           data: { status: SlotStatus.AVAILABLE },
         });
       }
@@ -74,7 +75,7 @@ export async function PUT(req: NextRequest) {
         },
         include: {
           items: true,
-          slot: true,
+          slots: true,
         },
       });
     });
