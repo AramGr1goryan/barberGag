@@ -561,26 +561,94 @@ export function BookingWizard({
         ref={panelRef}
         className={`will-change-transform transform-gpu relative z-30 rounded-t-[40px] lg:rounded-none bg-[#14151a]/85 backdrop-blur-2xl border-t lg:border-t-0 lg:border-l border-white/[0.08] shadow-[0_-10px_40px_rgba(0,0,0,0.45)] lg:shadow-none px-5 sm:px-6 lg:px-10 pt-8 lg:pt-16 pb-10 flex-1 flex flex-col justify-between lg:w-[55%] overflow-y-auto transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] mt-[calc(-20dvh+4.5rem)] lg:mt-0`}
       >
-        {/* Close Button (Inside panel to avoid overlap issues) */}
-        <div className="absolute top-5 right-5 z-[100]">
-          {onClose ? (
-            <button
-              type="button"
-              onClick={onClose}
-              className="p-2 text-white hover:text-neutral-300 transition-colors cursor-pointer"
-              aria-label="Close"
-            >
-              <X className="w-7 h-7 drop-shadow-md" />
-            </button>
-          ) : (
-            <Link
-              href={`/${locale}`}
-              className="p-2 text-white hover:text-neutral-300 transition-colors block"
-              aria-label="Close"
-            >
-              <X className="w-7 h-7 drop-shadow-md" />
-            </Link>
-          )}
+
+        {/* STICKY HEADER */}
+        <div className="sticky top-0 z-[100] bg-[#14151a]/90 backdrop-blur-xl pt-5 pb-4 -mx-5 px-5 sm:-mx-6 sm:px-6 lg:-mx-10 lg:px-10 border-b border-white/[0.05] flex items-center justify-between mb-6 shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+          {/* LEFT: BACK BUTTON */}
+          <div className="w-12 flex justify-start">
+            {(currentStep > 1 && currentStep < 5) && (
+              <button type="button" onClick={() => setCurrentStep(currentStep - 1)} className="p-2 -ml-2 text-white hover:text-neutral-300 transition-colors">
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+            )}
+          </div>
+
+          {/* CENTER: TITLE / MONTH PICKER */}
+          <div className="flex-1 flex justify-center items-center gap-2 select-none relative" ref={monthPickerRef}>
+            {currentStep === 2 ? (
+              <>
+                <h2 className="font-serif text-xl sm:text-2xl font-bold text-white tracking-tight truncate max-w-[200px]">
+                  {currentMonthYear}
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => setShowMonthPicker((prev) => !prev)}
+                  className="p-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08] text-[#cbd5e1] hover:bg-white/[0.08] active:scale-95 transition-all cursor-pointer"
+                >
+                  <CalendarIcon className="w-4 h-4" />
+                </button>
+                {/* Dropdown */}
+                {showMonthPicker && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setShowMonthPicker(false)} onTouchStart={() => setShowMonthPicker(false)} />
+                    <div className="absolute top-full mt-2 z-50 w-56 py-2 rounded-2xl bg-[#14151a]/90 border border-white/[0.1] shadow-[0_20px_60px_rgba(0,0,0,0.9)] backdrop-blur-xl animate-in fade-in slide-in-from-top-2 duration-200">
+                      {availableMonths.map((m) => (
+                      <button
+                        key={m.offset}
+                        type="button"
+                        onClick={() => {
+                          setMonthOffset(m.offset);
+                          setShowMonthPicker(false);
+                        }}
+                        className={`w-full text-left px-5 py-3 text-sm font-medium transition-colors border-l-2 ${
+                          m.offset === monthOffset
+                            ? "border-[#cbd5e1] bg-white/[0.05] text-white"
+                            : "border-transparent text-neutral-400 hover:text-white hover:bg-white/[0.02]"
+                        }`}
+                      >
+                        {m.label}
+                      </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </>
+            ) : currentStep === 1 ? (
+              <h2 className="font-serif text-xl sm:text-2xl font-bold text-white tracking-tight truncate max-w-[200px]">
+                {locale === "ru" ? "Услуги" : locale === "hy" ? "Ծառայություններ" : "Services"}
+              </h2>
+            ) : currentStep === 3 ? (
+              <h2 className="font-serif text-xl sm:text-2xl font-bold text-white tracking-tight truncate max-w-[200px]">
+                {locale === "ru" ? "Детали" : locale === "hy" ? "Տվյալներ" : "Details"}
+              </h2>
+            ) : currentStep === 4 ? (
+               <h2 className="font-serif text-xl sm:text-2xl font-bold text-white tracking-tight truncate max-w-[200px]">
+                 OTP
+               </h2>
+            ) : null}
+          </div>
+
+          {/* RIGHT: CLOSE BUTTON */}
+          <div className="w-12 flex justify-end">
+            {onClose ? (
+              <button
+                type="button"
+                onClick={onClose}
+                className="p-2 -mr-2 text-white hover:text-neutral-300 transition-colors cursor-pointer"
+                aria-label="Close"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            ) : (
+              <Link
+                href={`/${locale}`}
+                className="p-2 -mr-2 text-white hover:text-neutral-300 transition-colors block"
+                aria-label="Close"
+              >
+                <X className="w-6 h-6" />
+              </Link>
+            )}
+          </div>
         </div>
 
         {(!isCheckingActive && blockedData?.isBlocked) && (
@@ -794,7 +862,7 @@ export function BookingWizard({
 
             {/* ACTION BUTTON (Only visible when time is selected) */}
             {selectedSlotId && (
-              <div className="mt-8 pt-4 border-t border-white/[0.08] flex justify-center">
+              <div className="sticky bottom-0 bg-[#14151a]/95 backdrop-blur-md pt-4 pb-4 -mx-5 px-5 sm:-mx-6 sm:px-6 lg:-mx-10 lg:px-10 border-t border-white/[0.08] z-50 flex justify-center shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
                 <button
                   type="button"
                   onClick={() => setCurrentStep(3)}
@@ -893,7 +961,7 @@ export function BookingWizard({
             </div>
 
             {/* Total Summary & Button */}
-            <div className="pt-4 border-t border-white/[0.08] space-y-4">
+            <div className="sticky bottom-0 bg-[#14151a]/95 backdrop-blur-md pt-4 pb-4 -mx-5 px-5 sm:-mx-6 sm:px-6 lg:-mx-10 lg:px-10 border-t border-white/[0.08] z-50 space-y-4 shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
               <div className="flex items-center justify-between text-xs font-mono">
                 <span className="text-neutral-400">
                   {locale === "ru" ? "Итого:" : locale === "hy" ? "Ընդհանուր՝" : "Total:"} (
