@@ -178,7 +178,8 @@ export async function POST(req: NextRequest) {
     if (action === "blockRange") {
       const date = body.date;
       const startTime = body.startTime;
-      const endTime = body.endTime;
+      let endTime = body.endTime;
+      if (endTime === "00:00") endTime = "24:00";
 
       if (!date || !startTime || !endTime) {
         return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
@@ -188,13 +189,12 @@ export async function POST(req: NextRequest) {
       const day = await prisma.availabilityDay.findUnique({ where: { date } });
       if (!day) return NextResponse.json({ error: "Day not found" }, { status: 404 });
 
-      await prisma.availabilitySlot.updateMany({
+      await prisma.availabilitySlot.deleteMany({
         where: {
           availabilityDayId: day.id,
           startTime: { gte: startTime, lt: endTime },
           status: "AVAILABLE",
-        },
-        data: { status: "BLOCKED" },
+        }
       });
 
       await adminService.logAudit({
