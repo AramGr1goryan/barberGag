@@ -646,7 +646,7 @@ export function BookingWizard({
       {/* FLOATING BOTTOM SHEET — full width on mobile, right 55% on desktop */}
       <div
         ref={panelRef}
-        className={`will-change-transform transform-gpu relative z-30 rounded-t-[40px] lg:rounded-none bg-[#14151a]/85 backdrop-blur-2xl border-t lg:border-t-0 lg:border-l border-white/[0.08] shadow-[0_-10px_40px_rgba(0,0,0,0.45)] lg:shadow-none px-5 sm:px-6 lg:px-10 pt-6 lg:pt-24 pb-10 flex-1 flex flex-col justify-between lg:w-[55%] overflow-y-auto transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] mt-[calc(-20dvh+4.5rem)] lg:mt-0`}
+        className={`will-change-transform transform-gpu relative z-30 rounded-t-[40px] lg:rounded-none bg-[#14151a]/85 backdrop-blur-2xl border-t lg:border-t-0 lg:border-l border-white/[0.08] shadow-[0_-10px_40px_rgba(0,0,0,0.45)] lg:shadow-none px-5 sm:px-6 lg:px-10 pt-6 lg:pt-24 pb-32 flex-1 flex flex-col justify-between lg:w-[55%] overflow-y-auto transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] mt-[calc(-20dvh+4.5rem)] lg:mt-0`}
       >
         {(!isCheckingActive && blockedData?.isBlocked) && (
           <div className="flex-1">
@@ -867,16 +867,6 @@ export function BookingWizard({
         {(!activeBooking && !blockedData?.isBlocked && currentStep === 1) && (
           <div className="flex-1 flex flex-col justify-between space-y-6">
             <div className="space-y-6">
-              {/* Selected Date & Time Pill Header */}
-              <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-between text-xs font-mono">
-                <span className="text-[#cbd5e1] font-semibold">
-                  📅 {selectedDate} • ⏰ {selectedSlot?.startTime}
-                </span>
-                <span className="text-neutral-400 truncate max-w-[140px]">
-                  ✂️ {masterBarberName}
-                </span>
-              </div>
-
               {/* Primary Services */}
               <div className="space-y-3">
                 <div className="text-[10px] font-mono tracking-[0.25em] text-neutral-400 font-semibold uppercase">
@@ -1058,24 +1048,6 @@ export function BookingWizard({
               )}
             </div>
 
-            {/* Confirm & Verify Button */}
-            <div className="pt-4 border-t border-white/[0.08]">
-              <button
-                type="button"
-                disabled={isSubmitting || !guestName.trim() || !guestPhone.trim() || !guestRealPhone.trim()}
-                onClick={handleInitiateBooking}
-                className="w-full py-4 px-6 rounded bg-white text-black font-serif font-bold text-base hover:bg-neutral-200 active:scale-[0.98] transition-all duration-200 shadow-[0_12px_35px_rgba(0,0,0,0.6)] disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer"
-              >
-                {isSubmitting ? (
-                  <span>{dict.verifying}</span>
-                ) : (
-                  <>
-                    <span>{dict.confirmBooking}</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </>
-                )}
-              </button>
-            </div>
           </div>
         )}
 
@@ -1238,6 +1210,25 @@ export function BookingWizard({
           </div>
         )}
       </div>
+
+      {/* FIXED BOTTOM CTA — outside scroll panel, visible only when a selection exists */}
+      {!activeBooking && !blockedData?.isBlocked && ((currentStep === 1 && selectedServiceIds.length > 0) || (currentStep === 2 && !!selectedSlotId) || currentStep === 3) && (
+        <div className="fixed bottom-0 left-0 right-0 lg:left-[45%] z-[100] px-5 pt-8 pb-[calc(1.25rem+env(safe-area-inset-bottom))] bg-gradient-to-t from-[#14151a] via-[#14151a]/90 to-transparent pointer-events-none animate-in fade-in slide-in-from-bottom-3 duration-300">
+          <button
+            type="button"
+            disabled={currentStep === 3 && (isSubmitting || !guestName.trim() || !guestPhone.trim() || !guestRealPhone.trim())}
+            onClick={() => (currentStep === 1 ? setCurrentStep(2) : currentStep === 2 ? setCurrentStep(3) : handleInitiateBooking())}
+            className="pointer-events-auto mx-auto flex items-center justify-center gap-2 w-full max-w-xs h-11 rounded-full bg-[#e9edf2]/95 text-[#14151a] text-[13px] font-semibold tracking-wide backdrop-blur-xl shadow-[0_10px_30px_-10px_rgba(203,213,225,0.35)] hover:bg-white active:scale-[0.97] transition-all duration-200 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+          >
+            <span>
+              {currentStep === 3
+                ? (isSubmitting ? dict.verifying : dict.confirmBooking)
+                : locale === "ru" ? "Продолжить" : locale === "hy" ? "Շարունակել" : "Continue"}
+            </span>
+            {!isSubmitting && <ArrowRight className="w-3.5 h-3.5" />}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
