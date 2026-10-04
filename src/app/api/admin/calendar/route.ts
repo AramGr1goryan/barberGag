@@ -174,6 +174,41 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, slot });
     }
 
+    
+    if (action === "blockRange") {
+      const date = body.date;
+      const startTime = body.startTime;
+      const endTime = body.endTime;
+
+      if (!date || !startTime || !endTime) {
+        return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
+      }
+
+      const { prisma } = await import("@/lib/prisma");
+      const day = await prisma.availabilityDay.findUnique({ where: { date } });
+      if (!day) return NextResponse.json({ error: "Day not found" }, { status: 404 });
+
+      await prisma.availabilitySlot.updateMany({
+        where: {
+          availabilityDayId: day.id,
+          startTime: { gte: startTime, lt: endTime },
+          status: "AVAILABLE",
+        },
+        data: { status: "BLOCKED" },
+      });
+
+      await adminService.logAudit({
+        actorId: session.userId,
+        actorEmail: session.phone,
+        action: "BLOCK_RANGE",
+        entity: "AvailabilityDay",
+        entityId: day.id,
+        metadata: { date, startTime, endTime },
+      });
+
+      return NextResponse.json({ success: true });
+    }
+
     if (action === "deleteSlot") {
       const { slotId } = body;
       await availabilityService.deleteSlot(slotId);
