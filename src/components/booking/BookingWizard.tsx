@@ -613,7 +613,7 @@ export function BookingWizard({
           </div>
         )}
 
-        {(!activeBooking && !blockedData?.isBlocked && currentStep === 1) && (
+        {(!activeBooking && !blockedData?.isBlocked && currentStep === 2) && (
           <div className="flex-1 flex flex-col justify-between">
             <div>
               {/* Month & Year Title with Calendar Picker */}
@@ -704,7 +704,7 @@ export function BookingWizard({
                 </div>
 
                 {isLoadingSlots ? (
-                  <div className="grid grid-cols-4 gap-2 sm:gap-2.5 py-2 overflow-hidden">
+                  <div className="grid grid-cols-3 gap-2 sm:gap-2.5 py-2 overflow-hidden">
                     {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
                       <div
                         key={i}
@@ -723,7 +723,7 @@ export function BookingWizard({
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-4 max-h-[30vh] sm:max-h-[35vh] lg:max-h-[40vh] overflow-y-auto overflow-x-hidden pb-2 scrollbar-none select-none px-1">
+                  <div className="space-y-4 pb-4 select-none">
                     {/* Morning */}
                     {availableSlots.some(s => s.startTime < "12:00") && (
                       <div className="space-y-2">
@@ -732,7 +732,7 @@ export function BookingWizard({
                           <ChevronDown className={`w-4 h-4 transition-transform ${showMorning ? "rotate-180" : ""}`} />
                         </button>
                         {showMorning && (
-                          <div className="grid grid-cols-4 gap-2 sm:gap-2.5">
+                          <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
                             {availableSlots.filter(s => s.startTime < "12:00").map(slot => {
                               const isSelected = selectedSlotId === slot.id;
                               return (
@@ -753,7 +753,7 @@ export function BookingWizard({
                           <ChevronDown className={`w-4 h-4 transition-transform ${showAfternoon ? "rotate-180" : ""}`} />
                         </button>
                         {showAfternoon && (
-                          <div className="grid grid-cols-4 gap-2 sm:gap-2.5">
+                          <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
                             {availableSlots.filter(s => s.startTime >= "12:00" && s.startTime < "17:00").map(slot => {
                               const isSelected = selectedSlotId === slot.id;
                               return (
@@ -774,7 +774,7 @@ export function BookingWizard({
                           <ChevronDown className={`w-4 h-4 transition-transform ${showEvening ? "rotate-180" : ""}`} />
                         </button>
                         {showEvening && (
-                          <div className="grid grid-cols-4 gap-2 sm:gap-2.5">
+                          <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
                             {availableSlots.filter(s => s.startTime >= "17:00").map(slot => {
                               const isSelected = selectedSlotId === slot.id;
                               return (
@@ -817,7 +817,7 @@ export function BookingWizard({
         )}
 
         {/* ================= STEP 1: CHOOSE SERVICE & ADD-ONS ================= */}
-        {(!activeBooking && !blockedData?.isBlocked && currentStep === 2) && (
+        {(!activeBooking && !blockedData?.isBlocked && currentStep === 1) && (
           <div className="flex-1 flex flex-col justify-between space-y-6">
             <div className="space-y-6">
               {/* Selected Date & Time Pill Header */}
