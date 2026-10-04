@@ -857,19 +857,7 @@ export function BookingWizard({
               </div>
             </div>
 
-            {/* Minimalist Floating Action Button for Date & Time */}
-            {selectedSlotId && (
-              <div className="fixed bottom-0 left-0 right-0 lg:left-[45%] z-[100] w-full pointer-events-auto bg-[#14151a]/95 backdrop-blur-2xl border-t border-white/[0.08] px-6 py-4 flex items-center justify-center shadow-[0_-20px_40px_rgba(0,0,0,0.8)] transition-all animate-in slide-in-from-bottom-8 fade-in">
-                <button
-                  type="button"
-                  onClick={() => setCurrentStep(3)}
-                  className="w-full py-2.5 px-8 rounded-xl bg-white text-black font-sans font-semibold text-xs hover:bg-neutral-200 active:scale-[0.96] transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md"
-                >
-                  <span>{locale === "ru" ? "Продолжить" : locale === "hy" ? "Շարունակել" : "Continue"}</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            )}
+
 
 
           </div>
@@ -951,23 +939,7 @@ export function BookingWizard({
 
             </div>
 
-            {/* Minimalist Floating Action Button for Services */}
-            {selectedServiceIds.length > 0 && (
-              <div className="fixed bottom-0 left-0 right-0 lg:left-[45%] z-[100] w-full pointer-events-auto bg-[#14151a]/95 backdrop-blur-2xl border-t border-white/[0.08] px-6 py-4 flex items-center justify-between shadow-[0_-20px_40px_rgba(0,0,0,0.8)] transition-all animate-in slide-in-from-bottom-8 fade-in">
-                 <div className="flex flex-col items-start select-none">
-                   <span className="text-[14px] font-bold text-white tracking-wider">{formatCurrency(totalPrice)}</span>
-                   <span className="text-[11px] text-neutral-400 font-medium">{totalDuration} {locale === "ru" ? "мин" : locale === "hy" ? "րոպե" : "min"}</span>
-                 </div>
-                 <button
-                   type="button"
-                   onClick={() => setCurrentStep(2)}
-                   className="py-2.5 px-8 rounded-xl bg-white text-black font-sans font-semibold text-xs hover:bg-neutral-200 active:scale-[0.96] transition-all flex items-center gap-2 cursor-pointer shadow-md"
-                 >
-                   <span>{locale === "ru" ? "Продолжить" : locale === "hy" ? "Շարունակել" : "Continue"}</span>
-                   <ArrowRight className="w-3.5 h-3.5" />
-                 </button>
-              </div>
-            )}
+
           </div>
         )}
 
