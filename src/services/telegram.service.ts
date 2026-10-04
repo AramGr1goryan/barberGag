@@ -223,7 +223,7 @@ export class TelegramService {
 
         return [
           `${marker} <b>${b.startTime} - ${b.endTime}</b> — <b>${escapeHtml(b.guestName)}</b> (№ <code>${escapeHtml(b.bookingNumber)}</code>)${tag}`,
-          `  💈 ${services} • 📞 <code>${escapeHtml(b.guestPhone)}</code>`,
+          `  💈 ${services} • 📞 <code>${escapeHtml((b as any).guestRealPhone || b.guestPhone)}</code>`,
         ].join("\n");
       });
 
@@ -284,7 +284,8 @@ export class TelegramService {
         `✂️ <b>ՆՈՐ ԱՄՐԱԳՐՈՒՄ!</b>`,
         `━━━━━━━━━━━━━━━━━━━━`,
         `👤 <b>Հաճախորդ՝</b> ${escapeHtml(booking.guestName)}`,
-        `📞 <b>Հեռախոսահամար՝</b> <code>${escapeHtml(booking.guestPhone)}</code>`,
+        `📞 <b>Հեռախոսահամար՝</b> <code>${escapeHtml((booking as any).guestRealPhone || booking.guestPhone)}</code>`,
+        `📧 <b>Էլ. փոստ՝</b> <code>${escapeHtml(booking.guestPhone)}</code>`,
         `📅 <b>Ամսաթիվ՝</b> ${booking.date}`,
         `⏰ <b>Ժամ՝</b> ${booking.startTime} - ${booking.endTime}`,
         `🔖 <b>Ամրագրման համար՝</b> <code>${escapeHtml(booking.bookingNumber)}</code>`,
@@ -334,7 +335,7 @@ export class TelegramService {
         `❌ <b>ԱՄՐԱԳՐՈՒՄԸ ՉԵՂԱՐԿՎԵԼ Է!</b>`,
         `━━━━━━━━━━━━━━━━━━━━`,
         `👤 <b>Հաճախորդ՝</b> ${escapeHtml(booking.guestName)}`,
-        `📞 <b>Հեռախոսահամար՝</b> <code>${escapeHtml(booking.guestPhone)}</code>`,
+        `📞 <b>Հեռախոսահամար՝</b> <code>${escapeHtml((booking as any).guestRealPhone || booking.guestPhone)}</code>`,
         `📅 <b>Չեղարկված ամսաթիվ՝</b> ${booking.date}`,
         `⏰ <b>Ժամ՝</b> ${booking.startTime} - ${booking.endTime}`,
         `🔖 <b>Ամրագրման համար՝</b> <code>${escapeHtml(booking.bookingNumber)}</code>`,
