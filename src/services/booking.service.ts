@@ -77,7 +77,7 @@ export class BookingService {
    * Prevents double-booking via database transactional checks.
    */
   async createBooking(params: CreateBookingParams) {
-    const { serviceId, addonIds, date: bookingDate, slotId, guestName, guestPhone, guestRealPhone, userId, locale = "hy" } = params;
+    const { serviceId, addonIds, date, slotId, guestName, guestPhone, guestRealPhone, userId, locale = "hy" } = params;
 
     // 1. Fetch and validate Service
     const service = await prisma.service.findUnique({
