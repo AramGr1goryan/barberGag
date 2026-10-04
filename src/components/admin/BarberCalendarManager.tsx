@@ -94,6 +94,33 @@ export function BarberCalendarManager() {
     } catch { fetchData(selectedDate, true); }
   };
 
+  const handleAddOpenSlot = async () => {
+    const time = window.prompt(locale === "ru" ? "Введите время (например, 14:00):" : "Enter time (e.g. 14:00):", "12:00");
+    if (!time) return;
+    if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(time.trim())) {
+      alert(locale === "ru" ? "Неверный формат времени (нужно ЧЧ:ММ)" : "Invalid time format (HH:MM)");
+      return;
+    }
+    try {
+      setIsLoading(true);
+      const res = await fetch("/api/admin/calendar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "createSlot", date: selectedDate, startTime: time.trim(), durationMinutes: 60 })
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(()=>({}));
+        alert((locale === "ru" ? "Ошибка: " : "Error: ") + (err.error || "Failed"));
+      } else {
+        fetchData(selectedDate, true);
+      }
+    } catch {
+      alert(locale === "ru" ? "Ошибка сети" : "Network error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleServiceChange = (e: any) => {
     const val = e.target.value;
     setSelectedServiceId(val);
@@ -242,6 +269,7 @@ export function BarberCalendarManager() {
         {/* Action Buttons moved to the bottom */}
         <div className="mt-6 pt-4 border-t border-white/10 flex flex-col sm:flex-row gap-2 shrink-0">
           <Button variant="primary" size="lg" onClick={() => openForm()} className="w-full sm:flex-1 gap-2 font-bold shadow-[0_0_20px_rgba(197,168,128,0.2)]"><Plus className="w-4 h-4"/> {t.barberCalendar.addClient || (locale==="ru"?"Записать клиента":"Book Client")}</Button>
+          <Button variant="outline" size="lg" onClick={handleAddOpenSlot} className="w-full sm:w-auto px-6 border-white/20 hover:bg-white/5 font-bold"><Plus className="w-4 h-4 mr-2"/> {locale==="ru"?"Открыть час":"Open Hour"}</Button>
           {isDayOpen ? (
             <Button variant="danger" size="lg" onClick={() => handleToggleDay(false)} className="w-full sm:w-auto px-6">{locale==="ru"?"Закрыть день":"Close Day"}</Button>
           ) : (
