@@ -4,67 +4,83 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useAdminI18n } from "@/context/AdminI18nContext";
 import { Button } from "@/components/ui/Button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { Plus, Check, X, ArrowLeft, Sunrise, Sun, Moon, Trash2, ChevronDown } from "lucide-react";
+import { Plus, Check, X, ArrowLeft, Sunrise, Sun, Moon, Trash2, ChevronDown, Edit2 } from "lucide-react";
+import { motion, useAnimation } from "framer-motion";
 import Link from "next/link";
 
 
-function SwipeToDeleteBooking({ task, isDone, locale, onToggleTask, onDelete }: any) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const deletingRef = useRef(false);
+function SwipeBooking({ task, isDone, locale, onToggleTask, onDelete, onEdit }: any) {
+  const controls = useAnimation();
+  const [isDeleting, setIsDeleting] = React.useState(false);
+  const [isEditing, setIsEditing] = React.useState(false);
+  const swipeThreshold = 80;
 
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const el = e.currentTarget;
-    if (el.scrollLeft > 140 && !deletingRef.current) {
-      deletingRef.current = true;
-      if (confirm(locale === "ru" ? "Удалить запись?" : "Delete booking?")) {
-        onDelete(task.id, true);
-      } else {
-        el.scrollTo({ left: 0, behavior: 'smooth' });
-        setTimeout(() => { deletingRef.current = false; }, 300);
-      }
+  const handleDrag = (e: any, info: any) => {
+    if (info.offset.x < -swipeThreshold) {
+      setIsDeleting(true);
+      setIsEditing(false);
+    } else if (info.offset.x > swipeThreshold) {
+      setIsEditing(true);
+      setIsDeleting(false);
+    } else {
+      setIsDeleting(false);
+      setIsEditing(false);
     }
   };
 
+  const handleDragEnd = async (e: any, info: any) => {
+    if (info.offset.x < -swipeThreshold) {
+      if (confirm(locale === "ru" ? "Удалить запись?" : "Delete booking?")) {
+        onDelete(task.id, true);
+      } else {
+        controls.start({ x: 0 });
+      }
+    } else if (info.offset.x > swipeThreshold) {
+      onEdit(task);
+      controls.start({ x: 0 });
+    } else {
+      controls.start({ x: 0 });
+    }
+    setIsDeleting(false);
+    setIsEditing(false);
+  };
+
   return (
-    <div className="relative overflow-hidden rounded-xl border border-white/10 bg-red-600 group">
-      <div className="absolute inset-y-0 right-0 flex items-center justify-end pr-6 text-white font-bold w-full h-full pointer-events-none">
-        <Trash2 className="w-5 h-5 animate-pulse" />
+    <div className="relative overflow-hidden rounded-xl border border-white/10 group bg-zinc-800">
+      <div className="absolute inset-y-0 left-0 flex items-center justify-start pl-6 text-white font-bold w-1/2 h-full bg-blue-600 pointer-events-none">
+        <Edit2 className={`w-5 h-5 ${isEditing ? 'animate-bounce' : ''}`} />
       </div>
-      <div 
-        ref={scrollRef}
-        onScroll={handleScroll}
-        className="relative flex overflow-x-auto snap-x snap-mandatory no-scrollbar" 
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      <div className="absolute inset-y-0 right-0 flex items-center justify-end pr-6 text-white font-bold w-1/2 h-full bg-red-600 pointer-events-none">
+        <Trash2 className={`w-5 h-5 ${isDeleting ? 'animate-pulse' : ''}`} />
+      </div>
+
+      <motion.div
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0.2}
+        onDrag={handleDrag}
+        onDragEnd={handleDragEnd}
+        animate={controls}
+        className={`relative z-10 w-full flex items-center justify-between p-3 transition-colors ${isDone ? "bg-[#14281e] border-emerald-500/20" : "bg-[#1d202c]"}`}
       >
-        <div className={`w-full shrink-0 snap-center flex items-center justify-between p-3 transition-colors ${isDone ? "bg-[#14281e] border-emerald-500/20" : "bg-[#1d202c]"}`}>
-          <div className="flex items-center gap-3 w-full pr-2">
-            <button onClick={() => onToggleTask(task)} className={`shrink-0 w-6 h-6 rounded flex items-center justify-center border transition-colors ${isDone ? "bg-emerald-500 border-emerald-500 text-black" : "border-white/30"}`}>
-              <Check className="w-4 h-4" />
-            </button>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2 truncate">
-                <span className="text-xs font-bold text-blue-300 shrink-0">{task.startTime}-{task.endTime}</span>
-                <span className={`text-[16px] font-bold truncate ${isDone ? "line-through text-muted" : "text-white"}`}>{task.guestName}</span>
-              </div>
-              <div className="text-xs text-muted font-mono truncate">{task.guestRealPhone && <a href={`tel:${task.guestRealPhone}`} className="text-primary">📞 {task.guestRealPhone} • </a>}{task.guestPhone} • {task.items.map((i: any) => i.nameSnapshot).join("+")}</div>
-              {task.notes && (
-                <div className="text-[11px] text-zinc-400 mt-1 bg-white/5 rounded px-2 py-1 leading-tight border border-white/10 whitespace-pre-wrap">
-                  📝 {task.notes}
-                </div>
-              )}
+        <div className="flex items-center gap-3 w-full pr-2">
+          <button onClick={() => onToggleTask(task)} className={`shrink-0 w-6 h-6 rounded flex items-center justify-center border transition-colors ${isDone ? "bg-emerald-500 border-emerald-500 text-black" : "border-white/30"}`}>
+            <Check className="w-4 h-4" />
+          </button>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 truncate">
+              <span className="text-xs font-bold text-blue-300 shrink-0">{task.startTime}-{task.endTime}</span>
+              <span className={`text-[16px] font-bold truncate ${isDone ? "line-through text-muted" : "text-white"}`}>{task.guestName}</span>
             </div>
+            <div className="text-xs text-muted font-mono truncate">{task.guestRealPhone && <a href={`tel:${task.guestRealPhone}`} className="text-primary">📞 {task.guestRealPhone} • </a>}{task.guestPhone} • {task.items.map((i: any) => i.nameSnapshot).join("+")}</div>
+            {task.notes && (
+              <div className="text-[11px] text-zinc-400 mt-1 bg-white/5 rounded px-2 py-1 leading-tight border border-white/10 whitespace-pre-wrap">
+                📝 {task.notes}
+              </div>
+            )}
           </div>
         </div>
-        <div className="w-[80px] shrink-0 snap-center flex items-center justify-center bg-red-500 z-10 shadow-lg">
-          <button onClick={() => onDelete(task.id, false)} className="w-full h-full text-white font-bold flex flex-col items-center justify-center cursor-pointer hover:bg-red-600 transition-colors">
-            <Trash2 className="w-4 h-4 mb-0.5" />
-            <span className="text-[10px] uppercase">{locale === "ru" ? "Удал" : "Del"}</span>
-          </button>
-        </div>
-        <div className="w-[50vw] shrink-0 snap-end flex items-center justify-start bg-red-600 pl-8 pointer-events-none">
-          <span className="text-white font-bold text-sm tracking-widest">{locale === "ru" ? "УДАЛЕНИЕ..." : "DELETING..."}</span>
-        </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
@@ -91,6 +107,11 @@ export function BarberCalendarManager() {
   const [isLoading, setIsLoading] = useState(false);
 
   const [isManualBookingOpen, setIsManualBookingOpen] = useState(false);
+  const [editingBookingId, setEditingBookingId] = useState<string | null>(null);
+  const [guestName, setGuestName] = useState("");
+  const [guestPhone, setGuestPhone] = useState("+374 ");
+  const [customServiceName, setCustomServiceName] = useState("");
+  const [customServicePrice, setCustomServicePrice] = useState("");
   const [bookingTime, setBookingTime] = useState("");
   const [bookingDuration, setBookingDuration] = useState(0);
   const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>([]);
@@ -278,7 +299,8 @@ export function BarberCalendarManager() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          action: "createManualBooking",
+          action: editingBookingId ? "editManualBooking" : "createManualBooking",
+          bookingId: editingBookingId,
           date: selectedDate,
           startTime: bookingTime,
           durationMinutes: bookingDuration,
@@ -307,7 +329,36 @@ export function BarberCalendarManager() {
 
   const availableSlots = daySlots.filter(s => s.status === "AVAILABLE");
 
+  const openFormForEdit = (task: any) => {
+    setEditingBookingId(task.id);
+    setBookingTime(task.startTime);
+    setBookingDuration(task.totalDurationMinutes);
+    setGuestName(task.guestName);
+    setGuestPhone(task.guestPhone);
+    if (task.items && task.items[0]) {
+      const item = task.items[0];
+      if (item.serviceId) {
+        setIsCustomService(false);
+        setSelectedServiceIds([item.serviceId]);
+        setCustomServiceName("");
+        setCustomServicePrice("");
+      } else {
+        setIsCustomService(true);
+        setSelectedServiceIds([]);
+        setCustomServiceName(item.nameSnapshot);
+        setCustomServicePrice(String(item.priceSnapshotMinor / 100));
+      }
+      setDefaultPrice(String(item.priceSnapshotMinor / 100));
+    }
+    setIsManualBookingOpen(true);
+  };
+
   const openForm = (time: string = "") => {
+    setEditingBookingId(null);
+    setGuestName("");
+    setGuestPhone("+374 ");
+    setCustomServiceName("");
+    setCustomServicePrice("");
     setBookingTime(time);
     setSelectedServiceIds([]);
     setIsCustomService(false);
@@ -360,7 +411,7 @@ export function BarberCalendarManager() {
                   {dayBookings.filter(b => b.status !== "CANCELLED").map(task => {
                     const isDone = task.status === "COMPLETED";
                     return (
-                      <SwipeToDeleteBooking 
+                      <SwipeBooking onEdit={openFormForEdit} 
                         key={task.id} 
                         task={task} 
                         isDone={isDone} 
@@ -506,14 +557,14 @@ export function BarberCalendarManager() {
 
               {isCustomService && (
                 <div className="grid grid-cols-2 gap-2 animate-in fade-in zoom-in-95 duration-150">
-                  <input name="cService" type="text" placeholder={locale === "ru" ? "Название" : "Name"} className="w-full bg-[#16161c]/50 backdrop-blur-md border border-white/10 rounded-lg px-3 py-2 text-[16px] text-white focus:border-blue-400 outline-none transition-colors" />
-                  <input name="cPrice" type="number" placeholder={locale === "ru" ? "Цена" : "Price"} className="w-full bg-[#16161c]/50 backdrop-blur-md border border-white/10 rounded-lg px-3 py-2 text-[16px] text-white focus:border-blue-400 outline-none transition-colors" />
+                  <input name="cService" type="text" value={customServiceName} onChange={e => setCustomServiceName(e.target.value)} placeholder={locale === "ru" ? "Название" : "Name"} className="w-full bg-[#16161c]/50 backdrop-blur-md border border-white/10 rounded-lg px-3 py-2 text-[16px] text-white focus:border-blue-400 outline-none transition-colors" />
+                  <input name="cPrice" type="number" value={customServicePrice} onChange={e => setCustomServicePrice(e.target.value)} placeholder={locale === "ru" ? "Цена" : "Price"} className="w-full bg-[#16161c]/50 backdrop-blur-md border border-white/10 rounded-lg px-3 py-2 text-[16px] text-white focus:border-blue-400 outline-none transition-colors" />
                 </div>
               )}
 
               <div className="grid grid-cols-2 gap-2 pt-1">
-                <input name="cName" type="text" placeholder={locale === "ru" ? "Имя" : "Name"} className="w-full bg-[#16161c]/50 backdrop-blur-md border border-white/10 rounded-lg px-3 py-2 text-[16px] text-white focus:border-blue-400 outline-none transition-colors" />
-                <input name="cPhone" type="tel" placeholder={locale === "ru" ? "Телефон" : "Phone"} defaultValue="+374 " className="w-full bg-[#16161c]/50 backdrop-blur-md border border-white/10 rounded-lg px-3 py-2 text-[16px] text-white focus:border-blue-400 outline-none transition-colors" />
+                <input name="cName" type="text" value={guestName} onChange={e => setGuestName(e.target.value)} placeholder={locale === "ru" ? "Имя" : "Name"} className="w-full bg-[#16161c]/50 backdrop-blur-md border border-white/10 rounded-lg px-3 py-2 text-[16px] text-white focus:border-blue-400 outline-none transition-colors" />
+                <input name="cPhone" type="tel" value={guestPhone} onChange={e => setGuestPhone(e.target.value)} placeholder={locale === "ru" ? "Телефон" : "Phone"} className="w-full bg-[#16161c]/50 backdrop-blur-md border border-white/10 rounded-lg px-3 py-2 text-[16px] text-white focus:border-blue-400 outline-none transition-colors" />
               </div>
 
               {!isCustomService && selectedServiceIds.length > 0 && <input type="hidden" name="cPrice" value={defaultPrice} />}

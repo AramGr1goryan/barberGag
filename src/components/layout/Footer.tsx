@@ -99,12 +99,7 @@ export function Footer({ locale, dict }: FooterProps) {
                   {dict.contact.phoneVal}
                 </a>
               </li>
-              <li className="flex items-center space-x-2.5">
-                <Mail className="w-4 h-4 text-accent shrink-0" />
-                <a href={`mailto:${dict.contact.emailVal}`} className="hover:text-accent transition-colors">
-                  {dict.contact.emailVal}
-                </a>
-              </li>
+
               <li className="flex items-start space-x-2.5">
                 <Clock className="w-4 h-4 text-accent shrink-0 mt-0.5" />
                 <span>{dict.contact.hoursVal}</span>

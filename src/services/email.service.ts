@@ -18,7 +18,7 @@ export class EmailService {
       },
     });
     this.from = process.env.SMTP_FROM || '"Gagik Ghambaryan" <barbergagik@gmail.com>';
-    this.appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://barbergagik.com";
+    this.appUrl = "https://barber-gag.vercel.app";
   }
 
   /**

@@ -347,24 +347,35 @@ export class AvailabilityService {
     const endM = (endMinutes % 60).toString().padStart(2, "0");
     const endTime = `${endH}:${endM}`;
 
-    const slot = await prisma.availabilitySlot.upsert({
+    const existingSlot = await prisma.availabilitySlot.findUnique({
       where: {
         availabilityDayId_startTime: {
           availabilityDayId: day.id,
           startTime,
         },
       },
-      update: {
-        endTime,
-        status: SlotStatus.AVAILABLE,
-      },
-      create: {
-        availabilityDayId: day.id,
-        startTime,
-        endTime,
-        status: SlotStatus.AVAILABLE,
-      },
     });
+
+    let slot;
+    if (existingSlot) {
+      if (existingSlot.status === SlotStatus.AVAILABLE) {
+        slot = await prisma.availabilitySlot.update({
+          where: { id: existingSlot.id },
+          data: { endTime },
+        });
+      } else {
+        slot = existingSlot;
+      }
+    } else {
+      slot = await prisma.availabilitySlot.create({
+        data: {
+          availabilityDayId: day.id,
+          startTime,
+          endTime,
+          status: SlotStatus.AVAILABLE,
+        },
+      });
+    }
 
     return { day, slot };
   }
@@ -407,24 +418,35 @@ export class AvailabilityService {
       const slotEndM = (slotEndMinutes % 60).toString().padStart(2, "0");
       const slotEnd = `${slotEndH}:${slotEndM}`;
 
-      const slot = await prisma.availabilitySlot.upsert({
+      const existingSlot = await prisma.availabilitySlot.findUnique({
         where: {
           availabilityDayId_startTime: {
             availabilityDayId: day.id,
             startTime: slotStart,
           },
         },
-        update: {
-          endTime: slotEnd,
-          status: SlotStatus.AVAILABLE,
-        },
-        create: {
-          availabilityDayId: day.id,
-          startTime: slotStart,
-          endTime: slotEnd,
-          status: SlotStatus.AVAILABLE,
-        },
       });
+
+      let slot;
+      if (existingSlot) {
+        if (existingSlot.status === SlotStatus.AVAILABLE) {
+          slot = await prisma.availabilitySlot.update({
+            where: { id: existingSlot.id },
+            data: { endTime: slotEnd },
+          });
+        } else {
+          slot = existingSlot;
+        }
+      } else {
+        slot = await prisma.availabilitySlot.create({
+          data: {
+            availabilityDayId: day.id,
+            startTime: slotStart,
+            endTime: slotEnd,
+            status: SlotStatus.AVAILABLE,
+          },
+        });
+      }
 
       createdSlots.push(slot);
       currentMinutes += slotDurationMinutes;

@@ -133,23 +133,7 @@ export default async function ContactPage({
                 </div>
               </div>
 
-              {/* Email */}
-              <div className="flex items-start space-x-4 group">
-                <div className="w-12 h-12 rounded-2xl bg-accent/15 border border-accent/30 flex items-center justify-center text-accent shrink-0 group-hover:bg-accent group-hover:text-accent-foreground transition-all duration-300 shadow-md">
-                  <Mail className="w-5 h-5" />
-                </div>
-                <div>
-                  <span className="text-xs uppercase font-mono tracking-wider text-muted block">
-                    {dict.contact.email}
-                  </span>
-                  <a
-                    href={`mailto:${dict.contact.emailVal}`}
-                    className="text-sm text-foreground hover:text-accent mt-1 block font-mono transition-colors"
-                  >
-                    {dict.contact.emailVal}
-                  </a>
-                </div>
-              </div>
+
 
               {/* Hours */}
               <div className="flex items-start space-x-4 group">
