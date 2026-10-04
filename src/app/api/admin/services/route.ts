@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authService } from "@/services/auth.service";
 import { adminService } from "@/services/admin.service";
+import { revalidateTag } from "next/cache";
 
 export async function GET() {
   try {
@@ -47,6 +48,7 @@ export async function POST(req: NextRequest) {
         entityId: service.id,
       });
 
+      revalidateTag("active-services");
       return NextResponse.json({ success: true, service });
     }
 
@@ -71,6 +73,7 @@ export async function POST(req: NextRequest) {
         entityId: addon.id,
       });
 
+      revalidateTag("active-addons");
       return NextResponse.json({ success: true, addon });
     }
 
@@ -112,6 +115,7 @@ export async function PUT(req: NextRequest) {
         entityId: id,
       });
 
+      revalidateTag("active-services");
       return NextResponse.json({ success: true, updated });
     }
 
@@ -137,6 +141,7 @@ export async function PUT(req: NextRequest) {
         entityId: id,
       });
 
+      revalidateTag("active-addons");
       return NextResponse.json({ success: true, updated });
     }
 
@@ -171,6 +176,9 @@ export async function DELETE(req: NextRequest) {
       entity: type === "service" ? "Service" : "Addon",
       entityId: id,
     });
+
+    if (type === "service") revalidateTag("active-services");
+    else if (type === "addon") revalidateTag("active-addons");
 
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
