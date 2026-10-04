@@ -246,6 +246,8 @@ export async function POST(req: NextRequest) {
         });
       }
 
+      const finalServiceId = (serviceId && serviceId !== "CUSTOM") ? serviceId : null;
+
       // 4. Create Booking
       const booking = await prisma.booking.create({
         data: {
@@ -266,7 +268,7 @@ export async function POST(req: NextRequest) {
                 priceSnapshotMinor: priceMinor,
                 durationSnapshotMin: durMin,
                 itemType: "SERVICE",
-                serviceId: serviceId || null,
+                serviceId: finalServiceId,
               },
             ],
           },

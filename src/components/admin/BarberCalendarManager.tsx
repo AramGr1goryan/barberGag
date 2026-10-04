@@ -109,7 +109,7 @@ export function BarberCalendarManager() {
     const price = Number(cPrice) || 0;
 
     try {
-      await fetch("/api/admin/barber-calendar", {
+      const res = await fetch("/api/admin/barber-calendar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -124,9 +124,18 @@ export function BarberCalendarManager() {
           price
         })
       });
+      
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        alert((locale === "ru" ? "Ошибка: " : "Error: ") + (errData.error || "Failed to create booking"));
+        return;
+      }
+
       setIsManualBookingOpen(false);
       fetchData(selectedDate);
-    } catch {} finally {
+    } catch (e) {
+      alert(locale === "ru" ? "Ошибка сети" : "Network error");
+    } finally {
       setIsSubmitting(false);
     }
   };
