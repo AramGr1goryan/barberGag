@@ -155,8 +155,8 @@ export function HeroSection({
       <div 
         className={`fixed inset-0 z-50 bg-[#14151a] transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] ${
           isBookingOpen 
-            ? "opacity-100 pointer-events-auto translate-y-0" 
-            : "opacity-0 pointer-events-none translate-y-[10px]"
+            ? "visible opacity-100 pointer-events-auto translate-y-0" 
+            : "invisible opacity-0 pointer-events-none translate-y-[10px]"
         }`}
       >
         {services && addons && bookingDict && (

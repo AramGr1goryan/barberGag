@@ -22,6 +22,7 @@ export const createBookingSchema = z.object({
   guestName: z.string().min(2, "Name must have at least 2 characters").max(60),
   guestPhone: z.string().email("Invalid email address"),
   guestRealPhone: z.string().min(5, "Phone number must have at least 5 characters").max(20),
+  notes: z.string().trim().max(300).optional(),
 });
 
 export const verifySmsSchema = z.object({

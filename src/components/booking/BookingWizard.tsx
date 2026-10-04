@@ -139,6 +139,7 @@ export function BookingWizard({
 
   // User input
   const [guestName, setGuestName] = useState<string>(currentUser?.name || "");
+  const [guestNotes, setGuestNotes] = useState<string>("");
   const [guestPhone, setGuestPhone] = useState<string>("");
   const [guestRealPhone, setGuestRealPhone] = useState<string>("");
 
@@ -394,6 +395,7 @@ export function BookingWizard({
           guestName,
           guestPhone,
           guestRealPhone,
+          notes: guestNotes.trim() || undefined,
         }),
       });
 
@@ -682,7 +684,7 @@ export function BookingWizard({
           <div className="flex-1 flex flex-col justify-between">
             <div>
               {/* Month & Year Title with Calendar Picker */}
-              <div className="flex items-center justify-between mb-6 select-none relative" ref={monthPickerRef}>
+              <div className="hidden">
                 <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight">
                   {currentMonthYear}
                 </h2>
@@ -797,7 +799,7 @@ export function BookingWizard({
                           <ChevronDown className={`w-4 h-4 transition-transform ${showMorning ? "rotate-180" : ""}`} />
                         </button>
                         {showMorning && (
-                          <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
+                          <div className="grid grid-cols-3 sm:grid-cols-4 xl:grid-cols-6 gap-2 sm:gap-2.5">
                             {availableSlots.filter(s => s.startTime < "12:00").map(slot => {
                               const isSelected = selectedSlotId === slot.id;
                               return (
@@ -818,7 +820,7 @@ export function BookingWizard({
                           <ChevronDown className={`w-4 h-4 transition-transform ${showAfternoon ? "rotate-180" : ""}`} />
                         </button>
                         {showAfternoon && (
-                          <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
+                          <div className="grid grid-cols-3 sm:grid-cols-4 xl:grid-cols-6 gap-2 sm:gap-2.5">
                             {availableSlots.filter(s => s.startTime >= "12:00" && s.startTime < "17:00").map(slot => {
                               const isSelected = selectedSlotId === slot.id;
                               return (
@@ -839,7 +841,7 @@ export function BookingWizard({
                           <ChevronDown className={`w-4 h-4 transition-transform ${showEvening ? "rotate-180" : ""}`} />
                         </button>
                         {showEvening && (
-                          <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
+                          <div className="grid grid-cols-3 sm:grid-cols-4 xl:grid-cols-6 gap-2 sm:gap-2.5">
                             {availableSlots.filter(s => s.startTime >= "17:00").map(slot => {
                               const isSelected = selectedSlotId === slot.id;
                               return (
@@ -1039,6 +1041,20 @@ export function BookingWizard({
                     </span>
                   </p>
                 </div>
+
+                <div>
+                  <label className="block text-[11px] font-mono tracking-wider text-neutral-300 font-semibold uppercase mb-1.5">
+                    {locale === "ru" ? "Примечание" : locale === "hy" ? "Նշումներ" : "Notes"}
+                  </label>
+                  <textarea
+                    rows={2}
+                    maxLength={300}
+                    value={guestNotes}
+                    onChange={(e) => setGuestNotes(e.target.value)}
+                    placeholder="Քո ընկեր Սպայդեռմեն"
+                    className="w-full resize-none bg-white/[0.04] backdrop-blur-xl border border-white/[0.08] focus:border-white focus:ring-1 focus:ring-white rounded-2xl px-4 py-3 text-[16px] text-white placeholder-neutral-500 focus:outline-none transition-all"
+                  />
+                </div>
               </div>
 
               {errorMessage && (
@@ -1225,7 +1241,7 @@ export function BookingWizard({
                 ? (isSubmitting ? dict.verifying : dict.confirmBooking)
                 : locale === "ru" ? "Продолжить" : locale === "hy" ? "Շարունակել" : "Continue"}
             </span>
-            {!isSubmitting && <ArrowRight className="w-3.5 h-3.5" />}
+            {!isSubmitting && <ArrowRight className="w-3.5 h-3.5 animate-arrow-nudge" />}
           </button>
         </div>
       )}

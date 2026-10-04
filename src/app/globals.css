@@ -165,3 +165,13 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
   filter: invert(77%) sepia(21%) saturate(786%) hue-rotate(355deg) brightness(91%) contrast(89%);
   transform: scale(1.15);
 }
+
+/* Booking CTA arrow nudge */
+@keyframes arrow-nudge {
+  0%, 100% { transform: translateX(0); opacity: 1; }
+  50% { transform: translateX(4px); opacity: 0.6; }
+}
+.animate-arrow-nudge {
+  animation: arrow-nudge 1.4s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+

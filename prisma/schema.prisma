@@ -132,6 +132,7 @@ model Booking {
   guestName            String
   guestPhone           String            // We use this as Email
   guestRealPhone       String?
+  notes                String?
   sessionTokenHash     String?
   date                 String            // YYYY-MM-DD
   startTime            String            // HH:mm

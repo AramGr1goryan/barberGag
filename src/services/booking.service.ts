@@ -19,6 +19,7 @@ export interface CreateBookingParams {
   guestName: string;
   guestPhone: string;
   guestRealPhone: string;
+  notes?: string;
   userId?: string;
   locale?: string;
 }
@@ -76,7 +77,7 @@ export class BookingService {
    * Prevents double-booking via database transactional checks.
    */
   async createBooking(params: CreateBookingParams) {
-    const { serviceIds, date, slotId, guestName, guestPhone, guestRealPhone, userId, locale = "hy" } = params;
+    const { serviceIds, date, slotId, guestName, guestPhone, guestRealPhone, notes, userId, locale = "hy" } = params;
 
     // 1. Fetch and validate Services
     const services = await prisma.service.findMany({
@@ -178,6 +179,7 @@ export class BookingService {
           guestName,
           guestPhone,
           guestRealPhone,
+          notes: notes || null,
           sessionTokenHash,
           date: bookingDate,
           startTime: currentSlot.startTime,
