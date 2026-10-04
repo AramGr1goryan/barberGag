@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { adminService } from "@/services/admin.service";
 
@@ -15,6 +15,13 @@ export const metadata: Metadata = {
     locale: "hy_AM",
     type: "website",
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 import { RouteProgressLoader } from "@/components/ui/RouteProgressLoader";

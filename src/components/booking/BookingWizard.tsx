@@ -18,7 +18,7 @@ import {
   ArrowRight,
   Download,
   X,
-} from "lucide-react";
+  Sunrise, Sun, Moon } from "lucide-react";
 
 export interface ServiceItem {
   id: string;
@@ -648,7 +648,7 @@ export function BookingWizard({
       {/* FLOATING BOTTOM SHEET — full width on mobile, right 55% on desktop */}
       <div
         ref={panelRef}
-        className={`will-change-transform transform-gpu relative z-30 rounded-t-[40px] lg:rounded-none bg-[#14151a]/85 backdrop-blur-2xl border-t lg:border-t-0 lg:border-l border-white/[0.08] shadow-[0_-10px_40px_rgba(0,0,0,0.45)] lg:shadow-none px-5 sm:px-6 lg:px-10 pt-6 lg:pt-24 pb-32 flex-1 flex flex-col justify-between lg:w-[55%] overflow-y-auto transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] mt-[calc(-20dvh+4.5rem)] lg:mt-0`}
+        className={`will-change-transform transform-gpu relative z-30 rounded-t-[40px] lg:rounded-none bg-[#14151a]/85 backdrop-blur-2xl border-t lg:border-t-0 lg:border-l border-white/[0.08] shadow-[0_-10px_40px_rgba(0,0,0,0.45)] lg:shadow-none px-5 sm:px-6 lg:px-10 pt-6 lg:pt-24 pb-8 flex-1 flex flex-col justify-start lg:w-[55%] overflow-y-auto transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] mt-[calc(-20dvh+4.5rem)] lg:mt-0`}
       >
         {(!isCheckingActive && blockedData?.isBlocked) && (
           <div className="flex-1">
@@ -795,7 +795,7 @@ export function BookingWizard({
                     {availableSlots.some(s => s.startTime < "12:00") && (
                       <div className="space-y-2">
                         <button type="button" onClick={() => setShowMorning(!showMorning)} className="flex items-center justify-between w-full py-1 text-xs text-neutral-400 font-semibold tracking-wider">
-                          <span>{locale === "ru" ? "УТРО" : locale === "hy" ? "ԱՌԱՎՈՏ" : "MORNING"}</span>
+                          <span className="flex items-center gap-2 text-[11px]"><Sunrise className="w-3.5 h-3.5" />{locale === "ru" ? "УТРО" : locale === "hy" ? "ԱՌԱՎՈՏ" : "MORNING"}</span>
                           <ChevronDown className={`w-4 h-4 transition-transform ${showMorning ? "rotate-180" : ""}`} />
                         </button>
                         {showMorning && (
@@ -816,7 +816,7 @@ export function BookingWizard({
                     {availableSlots.some(s => s.startTime >= "12:00" && s.startTime < "17:00") && (
                       <div className="space-y-2">
                         <button type="button" onClick={() => setShowAfternoon(!showAfternoon)} className="flex items-center justify-between w-full py-1 text-xs text-neutral-400 font-semibold tracking-wider">
-                          <span>{locale === "ru" ? "ДЕНЬ" : locale === "hy" ? "ԿԵՍՕՐ" : "AFTERNOON"}</span>
+                          <span className="flex items-center gap-2 text-[11px]"><Sun className="w-3.5 h-3.5" />{locale === "ru" ? "ДЕНЬ" : locale === "hy" ? "ԿԵՍՕՐ" : "AFTERNOON"}</span>
                           <ChevronDown className={`w-4 h-4 transition-transform ${showAfternoon ? "rotate-180" : ""}`} />
                         </button>
                         {showAfternoon && (
@@ -837,7 +837,7 @@ export function BookingWizard({
                     {availableSlots.some(s => s.startTime >= "17:00") && (
                       <div className="space-y-2">
                         <button type="button" onClick={() => setShowEvening(!showEvening)} className="flex items-center justify-between w-full py-1 text-xs text-neutral-400 font-semibold tracking-wider">
-                          <span>{locale === "ru" ? "ВЕЧЕР" : locale === "hy" ? "ԵՐԵԿՈ" : "EVENING"}</span>
+                          <span className="flex items-center gap-2 text-[11px]"><Moon className="w-3.5 h-3.5" />{locale === "ru" ? "ВЕЧЕР" : locale === "hy" ? "ԵՐԵԿՈ" : "EVENING"}</span>
                           <ChevronDown className={`w-4 h-4 transition-transform ${showEvening ? "rotate-180" : ""}`} />
                         </button>
                         {showEvening && (
@@ -1138,7 +1138,7 @@ export function BookingWizard({
                 type="button"
                 disabled={isSubmitting || smsCode.length !== 4 || isRedirecting}
                 onClick={handleVerifySms}
-                className="w-full py-4 px-6 rounded bg-white text-black font-serif font-bold text-base hover:bg-neutral-200 active:scale-[0.98] transition-all duration-200 shadow-[0_12px_35px_rgba(0,0,0,0.6)] disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer"
+                className="mx-auto flex items-center justify-center gap-2 w-auto min-w-[160px] px-6 h-10 rounded-full bg-white/[0.85] text-black text-[12px] font-medium tracking-wide backdrop-blur-2xl shadow-[0_8px_30px_rgba(255,255,255,0.15)] border border-white/40 hover:bg-white active:scale-[0.97] transition-all duration-200 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
               >
                 {isSubmitting ? (
                   <span>{dict.verifying}</span>
@@ -1200,7 +1200,7 @@ export function BookingWizard({
               <button
                 type="button"
                 onClick={handleDownloadIcs}
-                className="w-full py-4 px-6 rounded bg-white text-black font-serif font-bold text-base hover:bg-neutral-200 active:scale-[0.98] transition-all duration-200 shadow-[0_12px_35px_rgba(0,0,0,0.6)] flex items-center justify-center gap-2 cursor-pointer"
+                className="mx-auto flex items-center justify-center gap-2 w-auto min-w-[160px] px-6 h-10 rounded-full bg-white/[0.85] text-black text-[12px] font-medium tracking-wide backdrop-blur-2xl shadow-[0_8px_30px_rgba(255,255,255,0.15)] border border-white/40 hover:bg-white active:scale-[0.97] transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Download className="w-4 h-4" />
                 <span>{dict.addToCalendar}</span>
@@ -1210,14 +1210,14 @@ export function BookingWizard({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="block w-full py-3 px-6 rounded bg-white/[0.05] border border-white/10 text-white font-serif font-medium text-sm hover:bg-white/10 transition-all text-center cursor-pointer"
+                  className="mx-auto block w-auto min-w-[160px] px-6 h-10 leading-10 rounded-full bg-white/[0.05] border border-white/10 text-white text-[12px] font-medium tracking-wide hover:bg-white/10 transition-all text-center cursor-pointer"
                 >
                   {dict.returnHome}
                 </button>
               ) : (
                 <Link
                   href={`/${locale}`}
-                  className="block w-full py-3 px-6 rounded bg-white/[0.05] border border-white/10 text-white font-serif font-medium text-sm hover:bg-white/10 transition-all text-center"
+                  className="mx-auto block w-auto min-w-[160px] px-6 h-10 leading-10 rounded-full bg-white/[0.05] border border-white/10 text-white text-[12px] font-medium tracking-wide hover:bg-white/10 transition-all text-center cursor-pointer"
                 >
                   {dict.returnHome}
                 </Link>
@@ -1225,6 +1225,8 @@ export function BookingWizard({
             </div>
           </div>
         )}
+        {/* Robust bottom spacer to ensure mobile scroll clears the fixed CTA and keyboard */}
+        <div className="h-40 w-full shrink-0 pointer-events-none" />
       </div>
 
       {/* FIXED BOTTOM CTA — outside scroll panel, visible only when a selection exists */}
@@ -1234,7 +1236,7 @@ export function BookingWizard({
             type="button"
             disabled={currentStep === 3 && (isSubmitting || !guestName.trim() || !guestPhone.trim() || !guestRealPhone.trim())}
             onClick={() => (currentStep === 1 ? setCurrentStep(2) : currentStep === 2 ? setCurrentStep(3) : handleInitiateBooking())}
-            className="pointer-events-auto mx-auto flex items-center justify-center gap-2 w-full max-w-xs h-11 rounded-full bg-[#e9edf2]/95 text-[#14151a] text-[13px] font-semibold tracking-wide backdrop-blur-xl shadow-[0_10px_30px_-10px_rgba(203,213,225,0.35)] hover:bg-white active:scale-[0.97] transition-all duration-200 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+            className="pointer-events-auto mx-auto flex items-center justify-center gap-2 w-auto min-w-[140px] px-6 h-10 rounded-full bg-white/[0.85] text-black text-[12px] font-medium tracking-wide backdrop-blur-2xl shadow-[0_8px_30px_rgba(255,255,255,0.15)] border border-white/40 hover:bg-white active:scale-[0.97] transition-all duration-200 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
           >
             <span>
               {currentStep === 3

@@ -147,6 +147,45 @@ export async function POST(req: NextRequest) {
 
       return NextResponse.json({ success: true, booking: updated });
     }
+    // 1.5. Cancel Booking
+    if (action === "cancelBooking") {
+      const { bookingId } = body;
+      if (!bookingId) return NextResponse.json({ error: "Missing bookingId" }, { status: 400 });
+      
+      const booking = await prisma.booking.findUnique({
+        where: { id: bookingId },
+        include: { slots: true }
+      });
+      if (!booking) return NextResponse.json({ error: "Booking not found" }, { status: 404 });
+
+      // Cancel booking and free slots
+      await prisma.$transaction(async (tx) => {
+        await tx.booking.update({
+          where: { id: bookingId },
+          data: { status: BookingStatus.CANCELLED }
+        });
+        
+        if (booking.slots && booking.slots.length > 0) {
+          await tx.availabilitySlot.updateMany({
+            where: {
+              id: { in: booking.slots.map(s => s.id) }
+            },
+            data: { status: SlotStatus.AVAILABLE }
+          });
+        }
+      });
+
+      await adminService.logAudit({
+        actorId: session.userId,
+        actorEmail: session.phone,
+        action: "BOOKING_CANCELLED",
+        entity: "Booking",
+        entityId: bookingId,
+        metadata: { status: "CANCELLED" },
+      });
+
+      return NextResponse.json({ success: true });
+    }
 
     // 2. Manual Client Booking by Barber
     if (action === "createManualBooking") {
