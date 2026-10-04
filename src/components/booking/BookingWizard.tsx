@@ -556,101 +556,98 @@ export function BookingWizard({
         </div>
       </div>
 
+      
+      {/* GLOBAL HEADER FOR BOOKING WIZARD */}
+      <div className="absolute top-0 left-0 right-0 lg:left-[45%] h-[4.5rem] z-[100] flex items-center justify-between px-5 lg:px-10 pointer-events-none drop-shadow-md">
+        <div className="w-12 flex justify-start pointer-events-auto">
+          {(currentStep > 1 && currentStep < 5) && (
+            <button type="button" onClick={() => setCurrentStep(currentStep - 1)} className="p-2 -ml-2 text-white/90 hover:text-white transition-colors">
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+          )}
+        </div>
+
+        <div className="flex-1 flex justify-center items-center gap-2 select-none relative pointer-events-auto" ref={monthPickerRef}>
+          {currentStep === 2 ? (
+            <>
+              <h2 className="font-serif text-lg sm:text-xl font-bold text-white tracking-wide truncate max-w-[200px]">
+                {currentMonthYear}
+              </h2>
+              <button
+                type="button"
+                onClick={() => setShowMonthPicker((prev) => !prev)}
+                className="p-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08] text-[#cbd5e1] hover:bg-white/[0.08] active:scale-95 transition-all cursor-pointer"
+              >
+                <CalendarIcon className="w-4 h-4" />
+              </button>
+              {/* Dropdown */}
+              {showMonthPicker && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowMonthPicker(false)} onTouchStart={() => setShowMonthPicker(false)} />
+                  <div className="absolute top-full mt-2 z-50 w-56 py-2 rounded-2xl bg-[#14151a]/95 border border-white/[0.1] shadow-[0_20px_60px_rgba(0,0,0,0.9)] backdrop-blur-xl animate-in fade-in slide-in-from-top-2 duration-200">
+                    {availableMonths.map((m) => (
+                    <button
+                      key={m.offset}
+                      type="button"
+                      onClick={() => {
+                        setMonthOffset(m.offset);
+                        setShowMonthPicker(false);
+                      }}
+                      className={`w-full text-left px-5 py-3 text-sm font-medium transition-colors border-l-2 ${
+                        m.offset === monthOffset
+                          ? "border-[#cbd5e1] bg-white/[0.05] text-white"
+                          : "border-transparent text-neutral-400 hover:text-white hover:bg-white/[0.02]"
+                      }`}
+                    >
+                      {m.label}
+                    </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </>
+          ) : currentStep === 1 ? (
+            <h2 className="font-serif text-lg sm:text-xl font-bold text-white tracking-wide truncate max-w-[200px]">
+              {locale === "ru" ? "Услуги" : locale === "hy" ? "Ծառայություններ" : "Services"}
+            </h2>
+          ) : currentStep === 3 ? (
+            <h2 className="font-serif text-lg sm:text-xl font-bold text-white tracking-wide truncate max-w-[200px]">
+              {locale === "ru" ? "Детали" : locale === "hy" ? "Տվյալներ" : "Details"}
+            </h2>
+          ) : currentStep === 4 ? (
+             <h2 className="font-serif text-lg sm:text-xl font-bold text-white tracking-wide truncate max-w-[200px]">
+               OTP
+             </h2>
+          ) : null}
+        </div>
+
+        <div className="w-12 flex justify-end pointer-events-auto">
+          {onClose ? (
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-2 -mr-2 text-white/90 hover:text-white transition-colors cursor-pointer"
+              aria-label="Close"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          ) : (
+            <Link
+              href={`/${locale}`}
+              className="p-2 -mr-2 text-white/90 hover:text-white transition-colors block"
+              aria-label="Close"
+            >
+              <X className="w-6 h-6" />
+            </Link>
+          )}
+        </div>
+      </div>
+
       {/* FLOATING BOTTOM SHEET — full width on mobile, right 55% on desktop */}
       <div
         ref={panelRef}
-        className={`will-change-transform transform-gpu relative z-30 rounded-t-[40px] lg:rounded-none bg-[#14151a]/85 backdrop-blur-2xl border-t lg:border-t-0 lg:border-l border-white/[0.08] shadow-[0_-10px_40px_rgba(0,0,0,0.45)] lg:shadow-none px-5 sm:px-6 lg:px-10 pt-8 lg:pt-16 pb-10 flex-1 flex flex-col justify-between lg:w-[55%] overflow-y-auto transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] mt-[calc(-20dvh+4.5rem)] lg:mt-0`}
+        className={`will-change-transform transform-gpu relative z-30 rounded-t-[40px] lg:rounded-none bg-[#14151a]/85 backdrop-blur-2xl border-t lg:border-t-0 lg:border-l border-white/[0.08] shadow-[0_-10px_40px_rgba(0,0,0,0.45)] lg:shadow-none px-5 sm:px-6 lg:px-10 pt-6 lg:pt-24 pb-10 flex-1 flex flex-col justify-between lg:w-[55%] overflow-y-auto transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] mt-[calc(-20dvh+4.5rem)] lg:mt-0`}
       >
-
-        {/* STICKY HEADER */}
-        <div className="sticky top-0 z-[100] bg-[#14151a]/90 backdrop-blur-xl pt-5 pb-4 -mx-5 px-5 sm:-mx-6 sm:px-6 lg:-mx-10 lg:px-10 border-b border-white/[0.05] flex items-center justify-between mb-6 shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
-          {/* LEFT: BACK BUTTON */}
-          <div className="w-12 flex justify-start">
-            {(currentStep > 1 && currentStep < 5) && (
-              <button type="button" onClick={() => setCurrentStep(currentStep - 1)} className="p-2 -ml-2 text-white hover:text-neutral-300 transition-colors">
-                <ChevronLeft className="w-6 h-6" />
-              </button>
-            )}
-          </div>
-
-          {/* CENTER: TITLE / MONTH PICKER */}
-          <div className="flex-1 flex justify-center items-center gap-2 select-none relative" ref={monthPickerRef}>
-            {currentStep === 2 ? (
-              <>
-                <h2 className="font-serif text-xl sm:text-2xl font-bold text-white tracking-tight truncate max-w-[200px]">
-                  {currentMonthYear}
-                </h2>
-                <button
-                  type="button"
-                  onClick={() => setShowMonthPicker((prev) => !prev)}
-                  className="p-1.5 rounded-lg bg-white/[0.04] border border-white/[0.08] text-[#cbd5e1] hover:bg-white/[0.08] active:scale-95 transition-all cursor-pointer"
-                >
-                  <CalendarIcon className="w-4 h-4" />
-                </button>
-                {/* Dropdown */}
-                {showMonthPicker && (
-                  <>
-                    <div className="fixed inset-0 z-40" onClick={() => setShowMonthPicker(false)} onTouchStart={() => setShowMonthPicker(false)} />
-                    <div className="absolute top-full mt-2 z-50 w-56 py-2 rounded-2xl bg-[#14151a]/90 border border-white/[0.1] shadow-[0_20px_60px_rgba(0,0,0,0.9)] backdrop-blur-xl animate-in fade-in slide-in-from-top-2 duration-200">
-                      {availableMonths.map((m) => (
-                      <button
-                        key={m.offset}
-                        type="button"
-                        onClick={() => {
-                          setMonthOffset(m.offset);
-                          setShowMonthPicker(false);
-                        }}
-                        className={`w-full text-left px-5 py-3 text-sm font-medium transition-colors border-l-2 ${
-                          m.offset === monthOffset
-                            ? "border-[#cbd5e1] bg-white/[0.05] text-white"
-                            : "border-transparent text-neutral-400 hover:text-white hover:bg-white/[0.02]"
-                        }`}
-                      >
-                        {m.label}
-                      </button>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </>
-            ) : currentStep === 1 ? (
-              <h2 className="font-serif text-xl sm:text-2xl font-bold text-white tracking-tight truncate max-w-[200px]">
-                {locale === "ru" ? "Услуги" : locale === "hy" ? "Ծառայություններ" : "Services"}
-              </h2>
-            ) : currentStep === 3 ? (
-              <h2 className="font-serif text-xl sm:text-2xl font-bold text-white tracking-tight truncate max-w-[200px]">
-                {locale === "ru" ? "Детали" : locale === "hy" ? "Տվյալներ" : "Details"}
-              </h2>
-            ) : currentStep === 4 ? (
-               <h2 className="font-serif text-xl sm:text-2xl font-bold text-white tracking-tight truncate max-w-[200px]">
-                 OTP
-               </h2>
-            ) : null}
-          </div>
-
-          {/* RIGHT: CLOSE BUTTON */}
-          <div className="w-12 flex justify-end">
-            {onClose ? (
-              <button
-                type="button"
-                onClick={onClose}
-                className="p-2 -mr-2 text-white hover:text-neutral-300 transition-colors cursor-pointer"
-                aria-label="Close"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            ) : (
-              <Link
-                href={`/${locale}`}
-                className="p-2 -mr-2 text-white hover:text-neutral-300 transition-colors block"
-                aria-label="Close"
-              >
-                <X className="w-6 h-6" />
-              </Link>
-            )}
-          </div>
-        </div>
-
         {(!isCheckingActive && blockedData?.isBlocked) && (
           <div className="flex-1">
             <BlockedBookingCard
@@ -860,23 +857,19 @@ export function BookingWizard({
               </div>
             </div>
 
-            {/* ACTION BUTTON (Only visible when time is selected) */}
+            {/* Minimalist Floating Action Button for Date & Time */}
             {selectedSlotId && (
-              <div className="sticky bottom-0 bg-[#14151a]/95 backdrop-blur-md pt-4 pb-4 -mx-5 px-5 sm:-mx-6 sm:px-6 lg:-mx-10 lg:px-10 border-t border-white/[0.08] z-50 flex justify-center shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
-                <button
-                  type="button"
-                  onClick={() => setCurrentStep(3)}
-                  className="py-2.5 px-6 rounded-full bg-white text-black font-sans font-medium text-sm hover:bg-neutral-200 active:scale-[0.98] transition-all duration-200 shadow-[0_4px_15px_rgba(0,0,0,0.5)] flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <span>
-                    {locale === "ru"
-                      ? "Продолжить"
-                      : locale === "hy"
-                        ? "Շարունակել"
-                        : "Continue"}
-                  </span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
+              <div className="fixed bottom-8 left-0 right-0 z-[100] flex justify-center pointer-events-none px-4">
+                <div className="bg-[#14151a]/85 backdrop-blur-2xl border border-white/[0.08] rounded-full p-1.5 shadow-[0_20px_40px_rgba(0,0,0,0.8)] pointer-events-auto transition-all animate-in slide-in-from-bottom-8 fade-in">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentStep(3)}
+                    className="py-2.5 px-8 rounded-full bg-white text-black font-sans font-semibold text-xs hover:bg-neutral-200 active:scale-[0.96] transition-all flex items-center gap-2 cursor-pointer shadow-md"
+                  >
+                    <span>{locale === "ru" ? "Продолжить" : locale === "hy" ? "Շարունակել" : "Continue"}</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
             )}
 
@@ -960,33 +953,25 @@ export function BookingWizard({
 
             </div>
 
-            {/* Total Summary & Button */}
-            <div className="sticky bottom-0 bg-[#14151a]/95 backdrop-blur-md pt-4 pb-4 -mx-5 px-5 sm:-mx-6 sm:px-6 lg:-mx-10 lg:px-10 border-t border-white/[0.08] z-50 space-y-4 shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
-              <div className="flex items-center justify-between text-xs font-mono">
-                <span className="text-neutral-400">
-                  {locale === "ru" ? "Итого:" : locale === "hy" ? "Ընդհանուր՝" : "Total:"} (
-                  {totalDuration} {locale === "hy" ? "ր" : "min"})
-                </span>
-                <span className="text-[#cbd5e1] font-bold text-base">
-                  {formatCurrency(totalPrice, locale)}
-                </span>
+            {/* Minimalist Floating Action Button for Services */}
+            {selectedServiceIds.length > 0 && (
+              <div className="fixed bottom-8 left-0 right-0 z-[100] flex justify-center pointer-events-none px-4">
+                <div className="bg-[#14151a]/85 backdrop-blur-2xl border border-white/[0.08] rounded-full p-1.5 flex items-center gap-5 shadow-[0_20px_40px_rgba(0,0,0,0.8)] pointer-events-auto transition-all animate-in slide-in-from-bottom-8 fade-in">
+                   <div className="pl-4 flex flex-col items-start select-none">
+                     <span className="text-[12px] font-bold text-white tracking-wider">{formatCurrency(totalPrice)}</span>
+                     <span className="text-[10px] text-neutral-400 font-medium">{totalDuration} {locale === "ru" ? "мин" : locale === "hy" ? "րոպե" : "min"}</span>
+                   </div>
+                   <button
+                     type="button"
+                     onClick={() => setCurrentStep(2)}
+                     className="py-2.5 px-6 rounded-full bg-white text-black font-sans font-semibold text-xs hover:bg-neutral-200 active:scale-[0.96] transition-all flex items-center gap-2 cursor-pointer shadow-md"
+                   >
+                     <span>{locale === "ru" ? "Продолжить" : locale === "hy" ? "Շարունակել" : "Continue"}</span>
+                     <ArrowRight className="w-3.5 h-3.5" />
+                   </button>
+                </div>
               </div>
-
-              <button
-                type="button"
-                onClick={() => setCurrentStep(2)}
-                className="w-full py-4 px-6 rounded bg-white text-black font-serif font-bold text-base hover:bg-neutral-200 active:scale-[0.98] transition-all duration-200 shadow-[0_12px_35px_rgba(0,0,0,0.6)] flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <span>
-                  {locale === "ru"
-                    ? "Продолжить к данным"
-                    : locale === "hy"
-                      ? "Լրացնել տվյալները"
-                      : "Continue to Details"}
-                </span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
+            )}
           </div>
         )}
 
