@@ -16,7 +16,12 @@ function SwipeToDeleteBooking({ task, isDone, locale, onToggleTask, onDelete }: 
     const el = e.currentTarget;
     if (el.scrollLeft > 140 && !deletingRef.current) {
       deletingRef.current = true;
-      onDelete(task.id, true); // true = force delete without confirm
+      if (confirm(locale === "ru" ? "Удалить запись?" : "Delete booking?")) {
+        onDelete(task.id, true);
+      } else {
+        el.scrollTo({ left: 0, behavior: 'smooth' });
+        setTimeout(() => { deletingRef.current = false; }, 300);
+      }
     }
   };
 
