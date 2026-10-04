@@ -684,19 +684,19 @@ export function BookingWizard({
                         key={item.dateStr}
                         type="button"
                         onClick={() => setSelectedDate(item.dateStr)}
-                        className={`min-w-[56px] h-[64px] lg:min-w-[60px] lg:h-[70px] rounded-[14px] flex flex-col items-center justify-center transition-all duration-200 shrink-0 lg:shrink select-none cursor-pointer border ${isSelected
-                            ? "bg-white text-black border-white scale-[1.03]"
-                            : "bg-[#20222a] text-white hover:bg-[#282a34] border-white/[0.04] hover:border-white/20"
+                        className={`min-w-[48px] h-[56px] rounded-[12px] flex flex-col items-center justify-center transition-all duration-200 shrink-0 select-none cursor-pointer border ${isSelected
+                            ? "bg-[#c5a880] text-black border-[#c5a880] scale-[1.03]"
+                            : "bg-[#20222a] text-white hover:bg-[#282a34] border-white/[0.04]"
                           }`}
                       >
                         <span
-                          className={`text-xl lg:text-2xl font-bold font-sans tracking-tight leading-none ${isSelected ? "text-black" : "text-white"
+                          className={`text-lg font-bold font-sans tracking-tight leading-none ${isSelected ? "text-black" : "text-white"
                             }`}
                         >
                           {item.dayNum}
                         </span>
                         <span
-                          className={`text-[10px] font-bold tracking-wider uppercase mt-1.5 ${isSelected ? "text-neutral-800" : "text-neutral-400"
+                          className={`text-[9px] font-bold tracking-wider uppercase mt-1 ${isSelected ? "text-black/80" : "text-neutral-400"
                             }`}
                         >
                           {item.dayName}
@@ -741,9 +741,9 @@ export function BookingWizard({
                           key={slot.id}
                           type="button"
                           onClick={() => setSelectedSlotId(slot.id)}
-                          className={`w-full py-2.5 rounded-[12px] text-[15px] sm:text-[15px] font-bold tracking-wider transition-all duration-200 select-none cursor-pointer flex items-center justify-center touch-manipulation border ${isSelected
-                              ? "bg-white text-black border-white scale-[1.03] z-10"
-                              : "bg-[#20222a] text-white hover:bg-[#282a34] border-white/[0.04] hover:border-white/20"
+                          className={`w-full py-2 rounded-[10px] text-[13px] font-bold tracking-wider transition-all duration-200 select-none cursor-pointer flex items-center justify-center touch-manipulation border ${isSelected
+                              ? "bg-[#c5a880] text-black border-[#c5a880] scale-[1.03] z-10"
+                              : "bg-[#20222a] text-white hover:bg-[#282a34] border-white/[0.04]"
                             }`}
                         >
                           {slot.startTime}
@@ -807,39 +807,39 @@ export function BookingWizard({
                       <div
                         key={s.id}
                         onClick={() => setSelectedServiceId(s.id)}
-                        className={`p-4 rounded-2xl transition-all duration-200 cursor-pointer flex flex-col justify-between select-none border ${isSelected
-                            ? "bg-[#c5a880]/10 border-[#c5a880] text-white"
-                            : "bg-[#20222a] text-white hover:bg-[#282a34] border-white/[0.04] hover:border-white/10"
+                        className={`p-3 rounded-2xl transition-all duration-200 cursor-pointer flex flex-col justify-between select-none border ${isSelected
+                            ? "bg-[#c5a880] border-[#c5a880] text-black"
+                            : "bg-[#20222a] text-white hover:bg-[#282a34] border-white/[0.04]"
                           }`}
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div>
                             <h4
-                              className={`font-serif font-bold text-sm sm:text-base ${isSelected ? "text-[#c5a880]" : "text-white"
+                              className={`font-serif font-bold text-sm sm:text-base ${isSelected ? "text-black" : "text-white"
                                 }`}
                             >
                               {getServiceName(s)}
                             </h4>
                             <p
-                              className={`text-xs mt-1 leading-relaxed ${isSelected ? "text-neutral-300" : "text-neutral-400"
+                              className={`text-xs mt-1 leading-relaxed ${isSelected ? "text-black/80" : "text-neutral-400"
                                 }`}
                             >
                               {getServiceDesc(s)}
                             </p>
                           </div>
                           {isSelected && (
-                            <div className="w-5 h-5 rounded-full bg-[#c5a880] text-black flex items-center justify-center shrink-0 mt-0.5">
+                            <div className="w-5 h-5 rounded-full bg-black text-[#c5a880] flex items-center justify-center shrink-0 mt-0.5">
                               <Check className="w-3.5 h-3.5 stroke-[3]" />
                             </div>
                           )}
                         </div>
 
-                        <div className="mt-3 pt-2.5 border-t border-white/10 flex items-center justify-between text-xs font-mono">
-                          <span className={isSelected ? "text-neutral-300" : "text-neutral-400"}>
+                        <div className="mt-3 pt-2.5 border-t border-black/10 flex items-center justify-between text-xs font-mono">
+                          <span className={isSelected ? "text-black/80" : "text-neutral-400"}>
                             {s.durationMinutes} {locale === "hy" ? "րոպե" : "мин"}
                           </span>
                           <span
-                            className={`font-bold ${isSelected ? "text-[#c5a880] text-sm" : "text-[#c5a880] text-sm"
+                            className={`font-bold ${isSelected ? "text-black text-sm" : "text-[#c5a880] text-sm"
                               }`}
                           >
                             {formatCurrency(s.priceMinorUnits, locale)}
@@ -868,15 +868,15 @@ export function BookingWizard({
                         <div
                           key={a.id}
                           onClick={() => toggleAddon(a.id)}
-                          className={`p-3.5 rounded-2xl border cursor-pointer transition-all flex items-center justify-between text-xs select-none ${isSelected
-                              ? "bg-[#c5a880]/10 border-[#c5a880] text-white"
+                          className={`p-3 rounded-2xl border cursor-pointer transition-all flex items-center justify-between text-xs select-none ${isSelected
+                              ? "bg-[#c5a880] border-[#c5a880] text-black"
                               : "bg-[#20222a] text-white border-white/[0.04] hover:bg-[#282a34]"
                             }`}
                         >
                           <div className="flex items-center space-x-3">
                             <div
                               className={`w-5 h-5 rounded-lg border flex items-center justify-center transition-all ${isSelected
-                                  ? "bg-[#c5a880] border-[#c5a880] text-black"
+                                  ? "bg-black border-black text-[#c5a880]"
                                   : "border-white/20 bg-white/[0.03]"
                                 }`}
                             >
@@ -885,7 +885,7 @@ export function BookingWizard({
                             <span>{getAddonName(a)}</span>
                           </div>
                           <span
-                            className="font-mono font-bold text-[#c5a880]"
+                            className={`font-mono font-bold ${isSelected ? "text-black" : "text-[#c5a880]"}`}
                           >
                             +{formatCurrency(a.priceMinorUnits, locale)}
                           </span>
@@ -1077,11 +1077,19 @@ export function BookingWizard({
                 </h3>
                 <p className="text-xs text-neutral-400 mt-2 max-w-xs mx-auto leading-relaxed">
                   {locale === "ru"
-                    ? `Введите 4-значный проверочный код, отправленный на ${guestPhone}`
+                    ? `Введите 4-значный проверочный код, отправленный на `
                     : locale === "hy"
-                      ? `Մուտքագրեք 4-նիշ կոդը, որն ուղարկվել է ${guestPhone}`
-                      : `Enter the 4-digit code sent to ${guestPhone}`}
+                      ? `Մուտքագրեք 4-նիշ կոդը, որն ուղարկվել է `
+                      : `Enter the 4-digit code sent to `}
+                  <span className="text-white font-medium">{guestPhone}</span>
                 </p>
+                <button
+                  type="button"
+                  onClick={() => setCurrentStep(3)}
+                  className="text-[#c5a880] text-xs font-mono font-medium underline underline-offset-2 mt-2 hover:text-white transition-colors"
+                >
+                  {locale === "ru" ? "Изменить Email" : locale === "hy" ? "Փոխել Էլ․ փոստը" : "Change Email"}
+                </button>
               </div>
 
               {/* 4-digit code input */}
@@ -1194,12 +1202,22 @@ export function BookingWizard({
                 <span>{dict.addToCalendar}</span>
               </button>
 
-              <Link
-                href={`/${locale}`}
-                className="block w-full py-3 px-6 rounded-full bg-white/[0.05] border border-white/10 text-white font-serif font-medium text-sm hover:bg-white/10 transition-all text-center"
-              >
-                {dict.returnHome}
-              </Link>
+              {onClose ? (
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="block w-full py-3 px-6 rounded-full bg-white/[0.05] border border-white/10 text-white font-serif font-medium text-sm hover:bg-white/10 transition-all text-center cursor-pointer"
+                >
+                  {dict.returnHome}
+                </button>
+              ) : (
+                <Link
+                  href={`/${locale}`}
+                  className="block w-full py-3 px-6 rounded-full bg-white/[0.05] border border-white/10 text-white font-serif font-medium text-sm hover:bg-white/10 transition-all text-center"
+                >
+                  {dict.returnHome}
+                </Link>
+              )}
             </div>
           </div>
         )}
