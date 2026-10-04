@@ -48,8 +48,8 @@ export function ServicesManager() {
   const [descHy, setDescHy] = useState("");
   const [descRu, setDescRu] = useState("");
   const [descEn, setDescEn] = useState("");
-  const [duration, setDuration] = useState(45);
-  const [price, setPrice] = useState(7000);
+  const [duration, setDuration] = useState<string>("45");
+  const [price, setPrice] = useState<string>("7000");
   const [isSaving, setIsSaving] = useState(false);
   const [notification, setNotification] = useState("");
 
@@ -78,7 +78,7 @@ export function ServicesManager() {
     setEditingId(null);
     setNameHy(""); setNameRu(""); setNameEn("");
     setDescHy(""); setDescRu(""); setDescEn("");
-    setDuration(45); setPrice(7000);
+    setDuration("45"); setPrice("");
     setIsModalOpen(true);
   };
 
@@ -91,8 +91,8 @@ export function ServicesManager() {
     setDescHy(item.descriptionHy || "");
     setDescRu(item.descriptionRu || "");
     setDescEn(item.descriptionEn || "");
-    setDuration(item.durationMinutes);
-    setPrice(item.priceMinorUnits);
+    setDuration(String(item.durationMinutes));
+    setPrice(String(item.priceMinorUnits));
     setIsModalOpen(true);
   };
 
@@ -107,8 +107,8 @@ export function ServicesManager() {
         descriptionHy: descHy || "",
         descriptionRu: descRu || "",
         descriptionEn: descEn || "",
-        durationMinutes: duration,
-        priceMinorUnits: price,
+        durationMinutes: Number(duration) || 0,
+        priceMinorUnits: Number(price) || 0,
         category: "HAIRCUT",
       };
 
@@ -181,22 +181,22 @@ export function ServicesManager() {
         <div className="flex space-x-3">
           <Button
             size="sm"
-            variant="primary"
-            className="gap-2 rounded-full shadow-[0_4px_25px_rgba(255,255,255,0.1)]"
+            variant="ghost"
+            className="gap-2 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10 transition-all font-medium"
             onClick={() => openCreateModal("service")}
           >
-            <Plus className="w-3.5 h-3.5" />
-            <span>{t.services.addNewService}</span>
+            <Plus className="w-3.5 h-3.5 text-blue-200" />
+            <span className="text-white/80">{t.services.addNewService}</span>
           </Button>
 
           <Button
             size="sm"
-            variant="secondary"
-            className="gap-2 rounded-full border-white/10"
+            variant="ghost"
+            className="gap-2 rounded-2xl bg-white/[0.02] border border-white/[0.05] hover:bg-white/5 hover:border-white/10 transition-all font-medium"
             onClick={() => openCreateModal("addon")}
           >
             <Plus className="w-3.5 h-3.5 text-blue-200" />
-            <span>{t.services.addNewAddon}</span>
+            <span className="text-white/80">{t.services.addNewAddon}</span>
           </Button>
         </div>
       </div>
@@ -384,7 +384,7 @@ export function ServicesManager() {
               type="number"
               required
               value={duration}
-              onChange={(e) => setDuration(Number(e.target.value))}
+              onChange={(e) => setDuration(e.target.value)}
             />
 
             <Input
@@ -392,15 +392,15 @@ export function ServicesManager() {
               type="number"
               required
               value={price}
-              onChange={(e) => setPrice(Number(e.target.value))}
+              onChange={(e) => setPrice(e.target.value)}
             />
           </div>
 
           <div className="pt-4 flex justify-end space-x-3">
-            <Button variant="ghost" type="button" onClick={() => setIsModalOpen(false)}>
+            <Button variant="ghost" type="button" onClick={() => setIsModalOpen(false)} className="rounded-2xl hover:bg-white/5 text-white/60">
               {t.common.cancel}
             </Button>
-            <Button variant="primary" type="submit" isLoading={isSaving}>
+            <Button variant="ghost" type="submit" isLoading={isSaving} className="rounded-2xl bg-white/10 border border-white/5 hover:bg-white/15 hover:border-white/10 text-white font-medium transition-all">
               {t.common.save}
             </Button>
           </div>
