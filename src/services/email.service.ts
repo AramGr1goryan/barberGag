@@ -106,36 +106,36 @@ export class EmailService {
 
     const dict = i18n[locale as keyof typeof i18n] || i18n.hy;
 
-    const contentHtml = \`
+    const contentHtml = `
       <div style="background: rgba(0,0,0,0.2); border-radius: 16px; padding: 25px; border: 1px solid rgba(197, 168, 128, 0.15);">
         <table width="100%" cellpadding="0" cellspacing="0">
           <tr>
             <td style="padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.05);">
-              <span style="font-size: 11px; color: #8e8e9c; text-transform: uppercase; letter-spacing: 1px;">\${dict.date}</span><br>
-              <span style="font-size: 16px; color: #ffffff; font-weight: 500;">\${date}</span>
+              <span style="font-size: 11px; color: #8e8e9c; text-transform: uppercase; letter-spacing: 1px;">${dict.date}</span><br>
+              <span style="font-size: 16px; color: #ffffff; font-weight: 500;">${date}</span>
             </td>
           </tr>
           <tr>
             <td style="padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
-              <span style="font-size: 11px; color: #8e8e9c; text-transform: uppercase; letter-spacing: 1px;">\${dict.time}</span><br>
-              <span style="font-size: 18px; color: #c5a880; font-weight: 600;">\${startTime} - \${endTime}</span>
+              <span style="font-size: 11px; color: #8e8e9c; text-transform: uppercase; letter-spacing: 1px;">${dict.time}</span><br>
+              <span style="font-size: 18px; color: #c5a880; font-weight: 600;">${startTime} - ${endTime}</span>
             </td>
           </tr>
           <tr>
             <td style="padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
-              <span style="font-size: 11px; color: #8e8e9c; text-transform: uppercase; letter-spacing: 1px;">\${dict.service}</span><br>
-              <span style="font-size: 15px; color: #ffffff; line-height: 1.5;">\${services}</span>
+              <span style="font-size: 11px; color: #8e8e9c; text-transform: uppercase; letter-spacing: 1px;">${dict.service}</span><br>
+              <span style="font-size: 15px; color: #ffffff; line-height: 1.5;">${services}</span>
             </td>
           </tr>
           <tr>
             <td style="padding-top: 15px;">
-              <span style="font-size: 11px; color: #8e8e9c; text-transform: uppercase; letter-spacing: 1px;">\${dict.ref}</span><br>
-              <span style="font-size: 13px; color: #ffffff; font-family: monospace;">\${bookingNumber}</span>
+              <span style="font-size: 11px; color: #8e8e9c; text-transform: uppercase; letter-spacing: 1px;">${dict.ref}</span><br>
+              <span style="font-size: 13px; color: #ffffff; font-family: monospace;">${bookingNumber}</span>
             </td>
           </tr>
         </table>
       </div>
-    \`;
+    `;
 
     const html = this.getPremiumTemplate(dict.title, dict.subtitle, contentHtml);
 
@@ -161,30 +161,30 @@ export class EmailService {
     const i18n = {
       hy: {
         title: "Հիշեցում",
-        subtitle: \`Ձեր այցին մնացել է ~20 րոպե (\${startTime})\`,
+        subtitle: `Ձեր այցին մնացել է ~20 րոպե (${startTime})`,
         text: "Խնդրում ենք չուշանալ, որպեսզի մենք կարողանանք լիարժեք սպասարկել Ձեզ:"
       },
       ru: {
         title: "Напоминание",
-        subtitle: \`До вашего визита осталось ~20 минут (\${startTime})\`,
+        subtitle: `До вашего визита осталось ~20 минут (${startTime})`,
         text: "Пожалуйста, не опаздывайте, чтобы мы могли предоставить вам полноценную услугу."
       },
       en: {
         title: "Reminder",
-        subtitle: \`Your appointment is in ~20 mins (\${startTime})\`,
+        subtitle: `Your appointment is in ~20 mins (${startTime})`,
         text: "Please arrive on time so we can provide you with the full experience."
       }
     };
 
     const dict = i18n[locale as keyof typeof i18n] || i18n.hy;
 
-    const contentHtml = \`
+    const contentHtml = `
       <div style="background: rgba(197, 168, 128, 0.05); border-radius: 16px; padding: 25px; border: 1px solid rgba(197, 168, 128, 0.2); text-align: center;">
         <p style="font-size: 16px; color: #ffffff; line-height: 1.6; margin: 0;">
-          \${dict.text}
+          ${dict.text}
         </p>
       </div>
-    \`;
+    `;
 
     const html = this.getPremiumTemplate(dict.title, dict.subtitle, contentHtml);
 
