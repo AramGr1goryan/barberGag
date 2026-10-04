@@ -120,16 +120,20 @@ export function ServicesManager() {
           body: JSON.stringify({ type: itemType, id: editingId, data: payload }),
         });
       } else {
-        const endpoint = itemType === "service" ? "/api/admin/services" : "/api/admin/addons";
-        res = await fetch(endpoint, {
+        res = await fetch("/api/admin/services", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ type: itemType, data: payload }),
         });
       }
 
-      if (res.ok) {
-        setNotification(t.common.success);
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        alert(errorData.error || "Failed to save item");
+        return;
+      }
+
+      setNotification(t.common.success);
         setTimeout(() => setNotification(""), 3500);
         setIsModalOpen(false);
         setEditingId(null);
@@ -147,8 +151,7 @@ export function ServicesManager() {
   const handleDelete = async (type: "service" | "addon", id: string) => {
     if (!confirm(t.services.confirmDeleteService)) return;
     try {
-      const endpoint = type === "service" ? `/api/admin/services?id=${id}` : `/api/admin/addons?id=${id}`;
-      const res = await fetch(endpoint, { method: "DELETE" });
+      const res = await fetch(`/api/admin/services?id=${id}&type=${type}`, { method: "DELETE" });
       if (res.ok) {
         setNotification(t.common.success);
         setTimeout(() => setNotification(""), 3500);
