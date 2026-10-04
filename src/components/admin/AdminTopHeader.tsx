@@ -48,7 +48,7 @@ export function AdminTopHeader() {
   const currentTitle = currentLink ? currentLink.label : t.nav.adminConsole;
 
   // Fully isolate barber-calendar to prevent any header loading
-  if (pathname === "/admin/barber-calendar") {
+  if (pathname.includes("/admin/barber-calendar")) {
     return null;
   }
 
@@ -140,7 +140,7 @@ export function AdminTopHeader() {
               <nav className="py-4 space-y-1.5 overflow-y-auto max-h-[calc(100vh-280px)]">
                 {navLinks.map((link) => {
                   const Icon = link.icon;
-                  const isActive = pathname === link.href;
+                  const isActive = pathname === link.href || (link.href !== "/admin" && pathname.startsWith(link.href));
                   return (
                     <Link
                       key={link.href}

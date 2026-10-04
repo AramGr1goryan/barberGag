@@ -11,6 +11,7 @@ export function BarberCalendarManager() {
   const { t, locale } = useAdminI18n();
   const todayStr = new Date().toISOString().split("T")[0];
   const [selectedDate, setSelectedDate] = useState<string>(todayStr);
+  const hasFetchedFullDays = useRef(false);
 
   const [openDays, setOpenDays] = useState<any[]>([]);
   const [services, setServices] = useState<any[]>([]);
@@ -22,7 +23,7 @@ export function BarberCalendarManager() {
   const [isManualBookingOpen, setIsManualBookingOpen] = useState(false);
   const [bookingTime, setBookingTime] = useState("12:00");
   const [bookingDuration, setBookingDuration] = useState(60);
-  const [selectedServiceId, setSelectedServiceId] = useState("");
+  const [selectedServiceId, setSelectedServiceId] = useState("CUSTOM");
   const [defaultPrice, setDefaultPrice] = useState("0");
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -32,12 +33,17 @@ export function BarberCalendarManager() {
     setIsLoading(true);
     try {
       // If we already have openDays, we don't need to re-fetch the entire 60 days on every click.
-      const isLite = openDays.length > 0 && !forceFull;
-      const res = await fetch(`/api/admin/barber-calendar?date=${date}${isLite ? "&lite=true" : ""}`);
+      const isLite = hasFetchedFullDays.current && !forceFull;
+      const res = await fetch(`/api/admin/barber-calendar?date=${date}${isLite ? "&lite=true" : ""}&_t=${Date.now()}`, {
+        cache: 'no-store'
+      });
       if (!res.ok) throw new Error("");
       const data = await res.json();
       
-      if (data.openDays && data.openDays.length > 0) setOpenDays(data.openDays);
+      if (data.openDays && data.openDays.length > 0) {
+        setOpenDays(data.openDays);
+        hasFetchedFullDays.current = true;
+      }
       if (data.services && data.services.length > 0) setServices(data.services);
       
       if (data.selectedDayDetails) {
@@ -48,7 +54,7 @@ export function BarberCalendarManager() {
     } catch {} finally {
       setIsLoading(false);
     }
-  }, [openDays.length]);
+  }, []);
 
   useEffect(() => { fetchData(selectedDate); }, [selectedDate, fetchData]);
 
@@ -148,19 +154,20 @@ export function BarberCalendarManager() {
 
   const openForm = (time: string = "12:00") => {
     setBookingTime(time);
-    setSelectedServiceId("");
+    setSelectedServiceId("CUSTOM");
     setIsManualBookingOpen(true);
     if (formRef.current) formRef.current.reset();
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-4 pb-20 pt-2">
-      <div className="mb-1">
-        <Link href="/admin/analytics" className="inline-flex items-center gap-1.5 text-xs font-mono text-muted hover:text-white transition-colors bg-white/5 px-3 py-1.5 rounded-lg border border-white/10">
-          <ArrowLeft className="w-3.5 h-3.5" />
-          {locale === "ru" ? "В основную админку" : "To Main Admin"}
-        </Link>
-      </div>
+    <div className="fixed inset-0 z-[100] bg-[#14161f] overflow-y-auto">
+      <div className="max-w-4xl mx-auto space-y-4 pb-20 pt-4 px-4 sm:px-6 min-h-screen">
+        <div className="mb-2">
+          <Link href="/admin/analytics" className="inline-flex items-center gap-1.5 text-xs font-mono text-muted hover:text-white transition-colors bg-white/5 px-3 py-1.5 rounded-lg border border-white/10">
+            <ArrowLeft className="w-3.5 h-3.5" />
+            {locale === "ru" ? "В основную админку" : "To Main Admin"}
+          </Link>
+        </div>
 
       <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-2">
         {openDays.map(d => {
@@ -244,7 +251,7 @@ export function BarberCalendarManager() {
       </div>
 
       {/* Permanently rendered, CSS-toggled Modal for INSTANT loading */}
-      <div className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-150 ${isManualBookingOpen ? "opacity-100 pointer-events-auto bg-black/85" : "opacity-0 pointer-events-none bg-black/0"}`}>
+      <div className={`fixed inset-0 flex items-center justify-center p-4 transition-all duration-150 ${isManualBookingOpen ? "z-50 opacity-100 pointer-events-auto bg-black/85" : "z-[-1] opacity-0 pointer-events-none bg-black/0"}`}>
         <div className={`relative w-full max-w-md max-h-[95vh] overflow-y-auto bg-[#1c1f2b] p-5 sm:p-6 rounded-3xl border border-white/10 shadow-2xl transition-transform duration-200 ${isManualBookingOpen ? "scale-100 translate-y-0" : "scale-95 translate-y-8"}`}>
           <button type="button" onClick={() => setIsManualBookingOpen(false)} className="absolute top-4 right-4 p-2 bg-white/5 rounded-full hover:bg-white/10 text-white transition-colors"><X className="w-4 h-4"/></button>
           
@@ -288,6 +295,7 @@ export function BarberCalendarManager() {
             </div>
           </form>
         </div>
+      </div>
       </div>
     </div>
   );

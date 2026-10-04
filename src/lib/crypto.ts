@@ -15,7 +15,7 @@ export interface UserSessionPayload {
  * Generate cryptographically secure 6-digit numeric OTP code.
  */
 export function generateVerificationCode(): string {
-  const num = crypto.randomInt(100000, 999999);
+  const num = crypto.randomInt(1000, 9999);
   return num.toString();
 }
 

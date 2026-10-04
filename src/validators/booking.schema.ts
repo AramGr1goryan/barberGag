@@ -3,6 +3,7 @@ import { z } from "zod";
 /**
  * Normalizes Armenian and international phone numbers into standard format: +374XXXXXXXX
  */
+// Normalization function kept for legacy or other models if needed, but not used for guestEmail
 export function normalizePhoneNumber(phone: string): string {
   const cleaned = phone.replace(/[^\d+]/g, "");
   if (cleaned.startsWith("0") && cleaned.length === 9) {
@@ -20,16 +21,12 @@ export const createBookingSchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (YYYY-MM-DD)"),
   slotId: z.string().min(1, "Slot selection is required"),
   guestName: z.string().min(2, "Name must have at least 2 characters").max(60),
-  guestPhone: z
-    .string()
-    .min(8, "Phone number is too short")
-    .max(20)
-    .transform((val) => normalizePhoneNumber(val)),
+  guestPhone: z.string().email("Invalid email address"),
 });
 
 export const verifySmsSchema = z.object({
   bookingId: z.string().min(1),
-  code: z.string().length(6, "Verification code must be 6 digits").regex(/^\d+$/, "Code must contain numbers only"),
+  code: z.string().length(4, "Verification code must be 4 digits").regex(/^\d+$/, "Code must contain numbers only"),
 });
 
 export const rescheduleBookingSchema = z.object({

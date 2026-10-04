@@ -3,13 +3,14 @@ import { generateSalt, generateVerificationCode, hashVerificationCode } from "@/
 import { BookingStatus, SlotStatus } from "@prisma/client";
 import fs from "fs";
 import path from "path";
+import nodemailer from "nodemailer";
 
 export interface SmsProvider {
-  sendSms(to: string, message: string): Promise<boolean>;
+  sendSms(to: string, message: string, bookingDetails?: any): Promise<boolean>;
 }
 
 export class ConsoleSmsProvider implements SmsProvider {
-  async sendSms(to: string, message: string): Promise<boolean> {
+  async sendSms(to: string, message: string, bookingDetails?: any): Promise<boolean> {
     console.log("==================================================");
     console.log(`[SMS DEV MODE] Sent to: ${to}`);
     console.log(`[SMS DEV MODE] Message: ${message}`);
@@ -204,8 +205,98 @@ export class GenericHttpSmsProvider implements SmsProvider {
   }
 }
 
+/**
+ * Nodemailer Premium Email Provider (Default fallback if configured)
+ */
+export class EmailSmsProvider implements SmsProvider {
+  private transporter: any;
+  private from: string;
+
+  constructor() {
+    this.transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST || "smtp.gmail.com",
+      port: Number(process.env.SMTP_PORT) || 465,
+      secure: process.env.SMTP_SECURE === "true" || true,
+      auth: {
+        user: process.env.SMTP_USER || "barbergagik@gmail.com", // Fallback to avoid crashes
+        pass: process.env.SMTP_PASS || "", 
+      },
+    });
+    this.from = process.env.SMTP_FROM || '"Gagik Ghambaryan" <barbergagik@gmail.com>';
+  }
+
+  async sendSms(to: string, message: string, bookingDetails?: any): Promise<boolean> {
+    if (!to.includes("@")) {
+      console.warn("Attempted to send Email to a non-email address:", to);
+      return false;
+    }
+
+    try {
+      const codeMatch = message.match(/\d{4}/);
+      const code = codeMatch ? codeMatch[0] : "0000";
+
+      const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>Booking Verification</title>
+      </head>
+      <body style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #0d0d0f; color: #f4f4f6; margin: 0; padding: 40px 20px;">
+        <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-w-600px; max-width: 600px; background: linear-gradient(145deg, #16161a 0%, #1f1f24 100%); border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); overflow: hidden; border: 1px solid #2a2a32;">
+          <tr>
+            <td align="center" style="padding: 40px 0 20px 0;">
+              <h1 style="color: #c5a880; font-size: 14px; text-transform: uppercase; letter-spacing: 4px; margin: 0; font-weight: 600;">Gagik Ghambaryan</h1>
+              <p style="color: #8e8e9c; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; margin: 5px 0 0 0;">Bespoke Barber</p>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding: 0 40px 30px 40px;">
+              <h2 style="color: #fff; font-size: 24px; font-weight: 300; margin: 0 0 20px 0;">Verify your booking</h2>
+              <p style="color: #8e8e9c; font-size: 14px; line-height: 1.6; margin: 0 0 30px 0;">Please use the following verification code to confirm your appointment. This code will expire in 10 minutes.</p>
+              
+              <div style="background-color: rgba(197, 168, 128, 0.1); border: 1px solid rgba(197, 168, 128, 0.3); border-radius: 12px; padding: 25px; margin: 0 auto; width: fit-content;">
+                <span style="font-size: 36px; font-weight: 700; color: #c5a880; letter-spacing: 12px; font-family: monospace;">${code}</span>
+              </div>
+              
+              <p style="color: #8e8e9c; font-size: 12px; line-height: 1.6; margin: 30px 0 0 0;">If you did not request this booking, please ignore this email.</p>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding: 20px 40px; border-top: 1px solid rgba(255,255,255,0.05);">
+              <p style="color: #8e8e9c; font-size: 11px; margin: 0;">&copy; ${new Date().getFullYear()} Barber Gagik Ghambaryan. All rights reserved.</p>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+      `;
+
+      await this.transporter.sendMail({
+        from: this.from,
+        to,
+        subject: "Your Booking Verification Code",
+        text: message,
+        html,
+      });
+
+      console.log(`[Email OTP] Sent to ${to}`);
+      return true;
+    } catch (error) {
+      console.error("Email send error:", error);
+      // Fallback to true if SMTP is not configured properly in dev
+      return process.env.NODE_ENV === 'development';
+    }
+  }
+}
+
 export function getSmsProvider(): SmsProvider {
-  const providerType = (process.env.SMS_PROVIDER || "console").toLowerCase();
+  const providerType = (process.env.SMS_PROVIDER || "email").toLowerCase();
+
+  // Primary: Email
+  if (providerType === "email" || process.env.SMTP_USER) {
+    return new EmailSmsProvider();
+  }
 
   // 1. Nikita Mobile Armenia
   if (
@@ -375,7 +466,7 @@ export class SmsService {
 
     const text = messagesByLocale[locale] || messagesByLocale.hy;
 
-    // 1. Send SMS through configured cellular SMS gateway
+    // 1. Send SMS through configured gateway (now defaults to Email)
     const activeProvider = await this.getEffectiveProvider();
     const sent = await activeProvider.sendSms(phone, text);
 

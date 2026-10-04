@@ -626,34 +626,43 @@ export function BookingWizard({
 
         {/* Top Header Bar */}
         <div className="absolute top-0 left-0 right-0 z-30 pt-24 px-5 flex items-start justify-between">
-          {/* Back Chevron */}
+          {/* Premium Back Button */}
           {currentStep === 1 ? (
             onClose ? (
               <button
                 type="button"
                 onClick={onClose}
-                className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/90 hover:text-white hover:bg-black/60 active:scale-95 transition-all shadow-lg cursor-pointer"
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-black/40 backdrop-blur-xl border border-white/10 text-white/90 hover:text-white hover:bg-black/60 active:scale-95 transition-all shadow-[0_4px_20px_rgba(0,0,0,0.5)] cursor-pointer group"
                 aria-label="Back to Home"
               >
-                <ChevronLeft className="w-5 h-5 -ml-0.5" />
+                <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+                <span className="text-[10px] font-mono font-bold tracking-[0.2em] uppercase">
+                  {locale === "ru" ? "Закрыть" : locale === "hy" ? "Փակել" : "Close"}
+                </span>
               </button>
             ) : (
               <Link
                 href={`/${locale}`}
-                className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/90 hover:text-white hover:bg-black/60 active:scale-95 transition-all shadow-lg"
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-black/40 backdrop-blur-xl border border-white/10 text-white/90 hover:text-white hover:bg-black/60 active:scale-95 transition-all shadow-[0_4px_20px_rgba(0,0,0,0.5)] group"
                 aria-label="Back to Home"
               >
-                <ChevronLeft className="w-5 h-5 -ml-0.5" />
+                <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+                <span className="text-[10px] font-mono font-bold tracking-[0.2em] uppercase">
+                  {locale === "ru" ? "Главная" : locale === "hy" ? "Գլխավոր" : "Home"}
+                </span>
               </Link>
             )
           ) : (
             <button
               type="button"
               onClick={() => setCurrentStep((prev) => Math.max(1, prev - 1))}
-              className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/90 hover:text-white hover:bg-black/60 active:scale-95 transition-all shadow-lg cursor-pointer"
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-black/40 backdrop-blur-xl border border-white/10 text-white/90 hover:text-white hover:bg-black/60 active:scale-95 transition-all shadow-[0_4px_20px_rgba(0,0,0,0.5)] cursor-pointer group"
               aria-label="Back"
             >
-              <ChevronLeft className="w-5 h-5 -ml-0.5" />
+              <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+              <span className="text-[10px] font-mono font-bold tracking-[0.2em] uppercase">
+                {locale === "ru" ? "Назад" : locale === "hy" ? "Հետ" : "Back"}
+              </span>
             </button>
           )}
         </div>
@@ -684,10 +693,15 @@ export function BookingWizard({
       >
         {/* Mobile Drag Handle */}
         <div
-          className="absolute top-0 left-0 right-0 h-14 flex justify-center items-center lg:hidden cursor-pointer z-30 touch-none"
+          className="absolute top-0 left-0 right-0 h-16 flex flex-col justify-center items-center lg:hidden cursor-pointer z-30 active:bg-white/5 rounded-t-[40px] transition-colors"
           onClick={() => setIsPanelLowered(!isPanelLowered)}
         >
-          <div className="w-12 h-1.5 bg-white/20 rounded-full transition-colors hover:bg-white/40 active:bg-white/50" />
+          <div className="w-16 h-1.5 bg-white/30 rounded-full mb-1 shadow-[0_2px_10px_rgba(0,0,0,0.5)]" />
+          <span className="text-[9px] font-mono tracking-widest text-white/50 uppercase font-bold">
+            {isPanelLowered 
+              ? (locale === "ru" ? "Развернуть" : locale === "hy" ? "Բացել" : "Expand") 
+              : (locale === "ru" ? "Свернуть" : locale === "hy" ? "Փակել" : "Collapse")}
+          </span>
         </div>
         {/* ================= STEP 1: DATE & TIME ================= */}
         {currentStep === 1 && (
@@ -1056,29 +1070,29 @@ export function BookingWizard({
 
                 <div>
                   <label className="block text-[11px] font-mono tracking-wider text-neutral-300 font-semibold uppercase mb-1.5">
-                    {dict.guestPhone} *
+                    Email *
                   </label>
                   <div className="relative">
                     <input
-                      type="tel"
+                      type="email"
                       required
                       value={guestPhone}
                       onChange={(e) => setGuestPhone(e.target.value)}
-                      placeholder="+374 91 000000"
+                      placeholder="aram@example.com"
                       className="w-full bg-[#20222a] border border-white/[0.08] focus:border-white focus:ring-1 focus:ring-white rounded-2xl px-4 py-3.5 text-sm text-white placeholder-neutral-500 focus:outline-none transition-all"
                     />
                     <div className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none">
-                      <Phone className="w-4 h-4" />
+                      <span className="font-serif italic text-lg">@</span>
                     </div>
                   </div>
                   <p className="text-[11px] text-neutral-400 mt-1.5 flex items-center gap-1.5">
                     <ShieldCheck className="w-3.5 h-3.5 text-[#c5a880]" />
                     <span>
                       {locale === "ru"
-                        ? "Код подтверждения будет отправлен по SMS на этот номер"
+                        ? "Код подтверждения будет отправлен на этот email"
                         : locale === "hy"
-                          ? "Հաստատման կոդն ուղարկվելու է նշված համարին (SMS)"
-                          : "Verification code will be sent via SMS to this number"}
+                          ? "Հաստատման կոդն ուղարկվելու է այս էլ․ փոստին"
+                          : "Verification code will be sent to this email"}
                     </span>
                   </p>
                 </div>
@@ -1122,26 +1136,26 @@ export function BookingWizard({
 
               <div>
                 <h3 className="font-serif text-xl sm:text-2xl font-bold text-white tracking-tight">
-                  {dict.smsVerificationTitle}
+                  {locale === "ru" ? "Подтверждение Email" : locale === "hy" ? "Էլ․ փոստի հաստատում" : "Email Verification"}
                 </h3>
                 <p className="text-xs text-neutral-400 mt-2 max-w-xs mx-auto leading-relaxed">
                   {locale === "ru"
-                    ? `Введите 6-значный проверочный код, отправленный на номер ${guestPhone}`
+                    ? `Введите 4-значный проверочный код, отправленный на ${guestPhone}`
                     : locale === "hy"
-                      ? `Մուտքագրեք 6-նիշ հաստատման կոդը, որն ուղարկվել է ${guestPhone} համարին`
-                      : `Enter the 6-digit code sent to ${guestPhone}`}
+                      ? `Մուտքագրեք 4-նիշ կոդը, որն ուղարկվել է ${guestPhone}`
+                      : `Enter the 4-digit code sent to ${guestPhone}`}
                 </p>
               </div>
 
-              {/* 6-digit code input */}
-              <div className="max-w-xs mx-auto">
+              {/* 4-digit code input */}
+              <div className="max-w-[200px] mx-auto">
                 <input
                   type="text"
-                  maxLength={6}
+                  maxLength={4}
                   value={smsCode}
                   onChange={(e) => setSmsCode(e.target.value.replace(/[^0-9]/g, ""))}
-                  placeholder="••••••"
-                  className="w-full text-center tracking-[0.4em] font-mono text-2xl py-3.5 rounded-2xl bg-[#20222a] border border-white/10 focus:border-white focus:ring-1 focus:ring-white text-white focus:outline-none transition-all"
+                  placeholder="••••"
+                  className="w-full text-center tracking-[0.8em] font-mono text-3xl py-3.5 rounded-2xl bg-[#20222a] border border-white/10 focus:border-white focus:ring-1 focus:ring-white text-white focus:outline-none transition-all shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]"
                 />
               </div>
 
@@ -1173,7 +1187,7 @@ export function BookingWizard({
             <div className="pt-4 border-t border-white/[0.08]">
               <button
                 type="button"
-                disabled={isSubmitting || smsCode.length !== 6 || isRedirecting}
+                disabled={isSubmitting || smsCode.length !== 4 || isRedirecting}
                 onClick={handleVerifySms}
                 className="w-full py-4 px-6 rounded-full bg-white text-black font-serif font-bold text-base hover:bg-neutral-200 active:scale-[0.98] transition-all duration-200 shadow-[0_12px_35px_rgba(0,0,0,0.6)] disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer"
               >
