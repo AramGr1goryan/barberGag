@@ -147,7 +147,7 @@ export function HeroSection({
           >
             <Calendar className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
             <span className="uppercase">{dict.bookNow}</span>
-            <ArrowRight className="w-4 h-4 sm:w-4.5 sm:h-4.5 animate-[ping-pong_1.5s_ease-in-out_infinite]" />
+            <ArrowRight className="w-4 h-4 sm:w-4.5 sm:h-4.5 animate-ping-pong" />
           </Button>
         </motion.div>
       </motion.div>
