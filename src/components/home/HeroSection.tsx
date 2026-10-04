@@ -109,7 +109,7 @@ export function HeroSection({
       */}
       <motion.div
         style={{ y: contentScrollY, opacity: contentOpacity }}
-        className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-24"
+        className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center pt-[32rem] pb-24"
       >
         {/* Luxury Badge - Hidden on mobile, visible on sm and up */}
         <motion.div
