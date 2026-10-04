@@ -105,6 +105,7 @@ export function CalendarManager() {
 
   // Filter slots
   const [slotFilter, setSlotFilter] = useState<"ALL" | "AVAILABLE" | "BOOKED" | "BLOCKED">("ALL");
+  const [openDayDuration, setOpenDayDuration] = useState<number>(60);
 
   const showNotification = (msg: string) => {
     setNotification(msg);
@@ -215,7 +216,7 @@ export function CalendarManager() {
   };
 
   // Toggle Day Open / Closed
-  const handleToggleDay = async (open: boolean) => {
+  const handleToggleDay = async (open: boolean, duration?: number) => {
     try {
       const res = await fetch("/api/admin/calendar", {
         method: "POST",
@@ -224,6 +225,7 @@ export function CalendarManager() {
           action: "toggleDay",
           date: selectedDate,
           isOpen: open,
+          duration: open ? duration : undefined,
         }),
       });
 
@@ -844,15 +846,27 @@ export function CalendarManager() {
                     <span>{t.calendar.deleteDay}</span>
                   </Button>
                 ) : (
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    className="gap-2 rounded-xl"
-                    onClick={() => handleToggleDay(true)}
-                  >
-                    <Unlock className="w-3.5 h-3.5" />
-                    <span>{t.calendar.openNewDate}</span>
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={openDayDuration}
+                      onChange={(e) => setOpenDayDuration(Number(e.target.value))}
+                      className="bg-[#16161c] border border-white/25 hover:border-accent/60 focus:border-accent focus:ring-1 focus:ring-accent/30 text-white rounded-xl px-2 py-1 text-xs font-mono transition-all [color-scheme:dark]"
+                    >
+                      <option value={30}>30 {locale === "ru" ? "мин" : "min"}</option>
+                      <option value={45}>45 {locale === "ru" ? "мин" : "min"}</option>
+                      <option value={60}>60 {locale === "ru" ? "мин" : "min"}</option>
+                      <option value={90}>90 {locale === "ru" ? "мин" : "min"}</option>
+                    </select>
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      className="gap-2 rounded-xl"
+                      onClick={() => handleToggleDay(true, openDayDuration)}
+                    >
+                      <Unlock className="w-3.5 h-3.5" />
+                      <span>{t.calendar.openNewDate}</span>
+                    </Button>
+                  </div>
                 )}
               </div>
             </div>

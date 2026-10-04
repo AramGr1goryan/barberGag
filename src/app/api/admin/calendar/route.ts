@@ -60,6 +60,7 @@ export async function POST(req: NextRequest) {
       const date = body.date;
       const isOpen = Boolean(body.isOpen);
       const notes = body.notes;
+      const duration = body.duration ? Number(body.duration) : null;
 
       if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
         return NextResponse.json({ error: "Invalid date format" }, { status: 400 });
@@ -67,13 +68,17 @@ export async function POST(req: NextRequest) {
 
       const day = await availabilityService.setDayOpenStatus(date, isOpen, notes);
 
+      if (isOpen && duration) {
+        await availabilityService.bulkGenerateSlots(date, "10:00", "23:00", duration);
+      }
+
       await adminService.logAudit({
         actorId: session.userId,
         actorEmail: session.phone,
         action: isOpen ? "OPEN_DAY" : "CLOSE_DAY",
         entity: "AvailabilityDay",
         entityId: day.id,
-        metadata: { date },
+        metadata: { date, duration },
       });
 
       return NextResponse.json({ success: true, day });
