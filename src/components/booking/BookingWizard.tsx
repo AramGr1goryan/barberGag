@@ -546,28 +546,6 @@ export function BookingWizard({
         <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-transparent to-transparent pointer-events-none" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#14151a] via-[#14151a]/60 to-transparent lg:bg-gradient-to-r lg:from-transparent lg:via-transparent lg:to-[#14151a] pointer-events-none" />
 
-        {/* Top Header Bar */}
-        <div className="absolute top-5 right-5 z-[100]">
-          {onClose ? (
-            <button
-              type="button"
-              onClick={onClose}
-              className="p-2 text-white hover:text-neutral-300 transition-colors cursor-pointer"
-              aria-label="Close"
-            >
-              <X className="w-8 h-8 drop-shadow-md" />
-            </button>
-          ) : (
-            <Link
-              href={`/${locale}`}
-              className="p-2 text-white hover:text-neutral-300 transition-colors block"
-              aria-label="Close"
-            >
-              <X className="w-8 h-8 drop-shadow-md" />
-            </Link>
-          )}
-        </div>
-
         {/* Desktop: centered branding at bottom */}
         <div className="hidden lg:flex absolute bottom-10 left-0 right-0 z-20 flex-col items-center gap-2">
           <div className="w-16 h-px bg-gradient-to-r from-transparent via-[#c5a880]/50 to-transparent" />
@@ -577,15 +555,32 @@ export function BookingWizard({
         </div>
       </div>
 
-      {/* 
-        FLOATING BOTTOM SHEET / LUXURY CARD
-        Rounded top corners overlapping the photo with exact Bulgakov UI styling
-      */}
       {/* FLOATING BOTTOM SHEET — full width on mobile, right 55% on desktop */}
       <div
         ref={panelRef}
-        className={`will-change-transform transform-gpu relative z-20 rounded-t-[40px] lg:rounded-none bg-[#14151a] border-t lg:border-t-0 lg:border-l border-white/[0.08] shadow-[0_-25px_60px_rgba(0,0,0,0.95)] lg:shadow-none px-5 sm:px-6 lg:px-10 pt-8 lg:pt-10 pb-10 flex-1 flex flex-col justify-between lg:w-[55%] overflow-y-auto transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] mt-[-55dvh] lg:mt-0`}
+        className={`will-change-transform transform-gpu relative z-30 rounded-t-[40px] lg:rounded-none bg-[#14151a] border-t lg:border-t-0 lg:border-l border-white/[0.08] shadow-[0_-25px_60px_rgba(0,0,0,0.95)] lg:shadow-none px-5 sm:px-6 lg:px-10 pt-8 lg:pt-10 pb-10 flex-1 flex flex-col justify-between lg:w-[55%] overflow-y-auto transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] mt-[-25dvh] lg:mt-0`}
       >
+        {/* Close Button (Inside panel to avoid overlap issues) */}
+        <div className="absolute top-5 right-5 z-[100]">
+          {onClose ? (
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-2 text-white hover:text-neutral-300 transition-colors cursor-pointer"
+              aria-label="Close"
+            >
+              <X className="w-7 h-7 drop-shadow-md" />
+            </button>
+          ) : (
+            <Link
+              href={`/${locale}`}
+              className="p-2 text-white hover:text-neutral-300 transition-colors block"
+              aria-label="Close"
+            >
+              <X className="w-7 h-7 drop-shadow-md" />
+            </Link>
+          )}
+        </div>
 
         {(!isCheckingActive && blockedData?.isBlocked) && (
           <div className="flex-1">
