@@ -181,7 +181,7 @@ export function BookingWizard({
 
   // User input
   const [guestName, setGuestName] = useState<string>(currentUser?.name || "");
-  const [guestPhone, setGuestPhone] = useState<string>(currentUser?.phone || "");
+  const [guestPhone, setGuestPhone] = useState<string>("");
 
   // SMS verification & booking result
   const [createdBookingId, setCreatedBookingId] = useState<string>("");
@@ -463,7 +463,7 @@ export function BookingWizard({
 
   // Verify SMS OTP
   const handleVerifySms = async () => {
-    if (smsCode.length !== 6 || isRedirecting) return;
+    if (smsCode.length !== 4 || isRedirecting) return;
 
     setIsSubmitting(true);
     setErrorMessage("");
