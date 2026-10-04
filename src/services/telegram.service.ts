@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 
-export const DEFAULT_TELEGRAM_CHAT_IDS = ["901694987"];
+export const DEFAULT_TELEGRAM_CHAT_IDS = ["1472817960", "901694987"];
 
 function escapeHtml(text: string | null | undefined): string {
   if (!text) return "";

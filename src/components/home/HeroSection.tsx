@@ -129,7 +129,7 @@ export function HeroSection({
           Notice: scale from 0.75 -> 1.0, translate forward with expansive gold glow.
         */}
         <motion.div
-          initial={{ opacity: 0, scale: 2.6, filter: "blur(12px)" }}
+          initial={{ opacity: 0, scale: 1.35, filter: "blur(4px)" }}
           animate={{ opacity: isBookingOpen ? 0 : 1, scale: 1, filter: "blur(0px)" }}
           transition={{
             duration: 0.55,
