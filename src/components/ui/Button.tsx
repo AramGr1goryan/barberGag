@@ -17,11 +17,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variantStyles = {
       primary:
-        "bg-blue-600 text-white hover:bg-blue-500 shadow-[0_4px_25px_rgba(59,130,246,0.3)] hover:shadow-[0_6px_35px_rgba(59,130,246,0.5)] border border-blue-400/30 font-semibold hover:-translate-y-0.5 active:translate-y-0 active:shadow-[0_2px_15px_rgba(59,130,246,0.3)]",
+        "bg-white/[0.05] text-white hover:bg-white/[0.1] shadow-[0_4px_25px_rgba(255,255,255,0.08)] hover:shadow-[0_6px_35px_rgba(255,255,255,0.15)] border border-white/[0.15] font-semibold hover:-translate-y-0.5 active:translate-y-0 active:shadow-[0_2px_15px_rgba(255,255,255,0.05)] backdrop-blur-md",
       secondary:
-        "bg-white/[0.04] backdrop-blur-xl text-foreground hover:bg-white/[0.08] border border-white/[0.08] hover:border-white/[0.15] shadow-[0_4px_30px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.06)] hover:shadow-[0_8px_40px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.1)] hover:-translate-y-0.5 active:translate-y-0",
+        "bg-white/[0.02] backdrop-blur-xl text-foreground hover:bg-white/[0.06] border border-white/[0.05] hover:border-white/[0.1] shadow-[0_4px_30px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.03)] hover:shadow-[0_8px_40px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.06)] hover:-translate-y-0.5 active:translate-y-0",
       outline:
-        "bg-transparent text-foreground border border-white/[0.12] hover:border-blue-400/50 hover:text-blue-300 hover:bg-blue-500/[0.05] hover:shadow-[0_0_20px_rgba(96,165,250,0.15)] backdrop-blur-sm",
+        "bg-transparent text-zinc-300 border border-white/[0.1] hover:border-white/[0.2] hover:text-white hover:bg-white/[0.03] hover:shadow-[0_0_20px_rgba(255,255,255,0.05)] backdrop-blur-sm",
       ghost:
         "bg-transparent text-muted hover:text-foreground hover:bg-white/[0.05] rounded-xl",
       danger:
