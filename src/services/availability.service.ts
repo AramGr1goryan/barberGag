@@ -406,7 +406,10 @@ export class AvailabilityService {
       include: { booking: true },
     });
 
-    if (slot?.booking) {
+    if (
+      slot?.booking &&
+      !["CANCELLED", "COMPLETED", "NO_SHOW"].includes(slot.booking.status)
+    ) {
       throw new Error("Cannot delete a slot with an active booking. Cancel the booking first.");
     }
 
