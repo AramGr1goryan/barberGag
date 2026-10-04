@@ -47,6 +47,11 @@ function SwipeToDeleteBooking({ task, isDone, locale, onToggleTask, onDelete }: 
                 <span className={`text-[16px] font-bold truncate ${isDone ? "line-through text-muted" : "text-white"}`}>{task.guestName}</span>
               </div>
               <div className="text-xs text-muted font-mono truncate">{task.guestRealPhone && <a href={`tel:${task.guestRealPhone}`} className="text-primary">📞 {task.guestRealPhone} • </a>}{task.guestPhone} • {task.items.map((i: any) => i.nameSnapshot).join("+")}</div>
+              {task.notes && (
+                <div className="text-[11px] text-zinc-400 mt-1 bg-white/5 rounded px-2 py-1 leading-tight border border-white/10 whitespace-pre-wrap">
+                  📝 {task.notes}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -86,8 +91,8 @@ export function BarberCalendarManager() {
   const [isLoading, setIsLoading] = useState(false);
 
   const [isManualBookingOpen, setIsManualBookingOpen] = useState(false);
-  const [bookingTime, setBookingTime] = useState("12:00");
-  const [bookingDuration, setBookingDuration] = useState(60);
+  const [bookingTime, setBookingTime] = useState("");
+  const [bookingDuration, setBookingDuration] = useState(0);
   const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>([]);
   const [isCustomService, setIsCustomService] = useState(false);
   const [defaultPrice, setDefaultPrice] = useState("0");
@@ -302,11 +307,11 @@ export function BarberCalendarManager() {
 
   const availableSlots = daySlots.filter(s => s.status === "AVAILABLE");
 
-  const openForm = (time: string = "12:00") => {
+  const openForm = (time: string = "") => {
     setBookingTime(time);
     setSelectedServiceIds([]);
-    setIsCustomService(true);
-    setBookingDuration(60);
+    setIsCustomService(false);
+    setBookingDuration(0);
     setDefaultPrice("0");
     setIsManualBookingOpen(true);
     if (formRef.current) formRef.current.reset();
@@ -470,12 +475,14 @@ export function BarberCalendarManager() {
             <form ref={formRef} onSubmit={onSubmitBooking} className="space-y-3">
               <div className="grid grid-cols-2 gap-2">
                 <input type="time" required value={bookingTime} onChange={e => setBookingTime(e.target.value)} className="w-full bg-[#16161c]/50 backdrop-blur-md border border-white/10 rounded-lg px-3 py-2 text-[16px] text-white focus:border-blue-400 outline-none transition-colors" />
-                <select value={bookingDuration} onChange={e => setBookingDuration(Number(e.target.value))} className="w-full bg-[#16161c]/50 backdrop-blur-md border border-white/10 rounded-lg px-3 py-2 text-[16px] text-white focus:border-blue-400 outline-none transition-colors">
+                <select required value={bookingDuration} onChange={e => setBookingDuration(Number(e.target.value))} className="w-full bg-[#16161c]/50 backdrop-blur-md border border-white/10 rounded-lg px-3 py-2 text-[16px] text-white focus:border-blue-400 outline-none transition-colors">
+                  <option value={0} disabled>{locale === "ru" ? "Длительность" : "Duration"}</option>
                   <option value={15}>15 {locale === "ru" ? "мин" : "min"}</option>
                   <option value={30}>30 {locale === "ru" ? "мин" : "min"}</option>
                   <option value={45}>45 {locale === "ru" ? "мин" : "min"}</option>
                   <option value={60}>60 {locale === "ru" ? "мин" : "min"}</option>
                   <option value={90}>90 {locale === "ru" ? "мин" : "min"}</option>
+                  <option value={120}>120 {locale === "ru" ? "мин" : "min"}</option>
                 </select>
               </div>
 

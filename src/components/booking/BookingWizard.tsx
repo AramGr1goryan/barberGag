@@ -134,7 +134,7 @@ export function BookingWizard({
   // Close month picker is now handled by a full-screen overlay in JSX
 
   // Service & Addon selections
-  const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>(initialServiceId ? [initialServiceId] : (services.length > 0 ? [services[0].id] : []));
+  const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>(initialServiceId ? [initialServiceId] : []);
   
 
   // User input
@@ -304,7 +304,7 @@ export function BookingWizard({
         if (data.isOpen && data.slots && data.slots.length > 0) {
           setIsDayClosed(false);
           setAvailableSlots(data.slots);
-          setSelectedSlotId(data.slots[0].id);
+          setSelectedSlotId("");
         } else {
           setIsDayClosed(true);
           setAvailableSlots([]);
