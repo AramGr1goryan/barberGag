@@ -16,7 +16,7 @@ export function MobileBottomNav({ locale, user }: MobileBottomNavProps) {
 
   const isHome = pathname === `/${locale}`;
   const isPortfolio = pathname === `/${locale}/portfolio`;
-  const isBooking = pathname === `/${locale}/booking`;
+  const isBooking = pathname === `/${locale}` && searchParams.get("book") === "true";
   const isShop = pathname === `/${locale}/shop`;
   const isProfile = pathname.includes("/profile") || pathname.includes("/login") || pathname.includes("/admin");
 
@@ -77,7 +77,7 @@ export function MobileBottomNav({ locale, user }: MobileBottomNavProps) {
 
         {/* 3. Center Elevated Quick-Book Action (The Thumb Prime Spot) */}
         <Link
-          href={`/${locale}/booking`}
+          href={`/${locale}?book=true`}
           className="relative -top-4 flex flex-col items-center justify-center group focus:outline-none"
           aria-label={labels.booking}
         >

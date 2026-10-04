@@ -5,9 +5,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Button } from "@/components/ui/Button";
-import { CallbackModal } from "@/components/callback/CallbackModal";
+import { BookingWizard, ServiceItem, AddonItem } from "@/components/booking/BookingWizard";
 import { Locale } from "@/i18n/config";
 import { Calendar, PhoneCall } from "lucide-react";
+
+import { useSearchParams } from "next/navigation";
 
 export interface HeroSectionProps {
   locale: Locale;
@@ -19,28 +21,32 @@ export interface HeroSectionProps {
     bookNow: string;
     requestCallback: string;
   };
-  callbackDict: {
-    title: string;
-    description: string;
-    name: string;
-    phone: string;
-    preferredTime: string;
-    message: string;
-    submit: string;
-    sending: string;
-    success: string;
-    close: string;
-  };
+  services?: ServiceItem[];
+  addons?: AddonItem[];
+  bookingDict?: any;
+  currentUser?: { name: string; phone: string } | null;
+  initialServiceId?: string;
 }
 
 export function HeroSection({
   locale,
   barberPhotoUrl = "/images/gagik-barber.jpg",
   dict,
-  callbackDict,
+  services,
+  addons,
+  bookingDict,
+  currentUser,
+  initialServiceId,
 }: HeroSectionProps) {
-  const [isCallbackOpen, setIsCallbackOpen] = useState(false);
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get("book") === "true") {
+      setIsBookingOpen(true);
+    }
+  }, [searchParams]);
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -124,44 +130,51 @@ export function HeroSection({
         */}
         <motion.div
           initial={{ opacity: 0, scale: 0.75, y: 45 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
+          animate={{ opacity: isBookingOpen ? 0 : 1, scale: 1, y: 0 }}
           transition={{
             duration: 1.1,
             delay: 0.75,
             ease: [0.16, 1, 0.3, 1],
           }}
-          className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4"
+          className={`mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 transition-all duration-300 ${isBookingOpen ? "pointer-events-none" : ""}`}
         >
-          <Link href={`/${locale}/booking`} className="w-full max-w-xs sm:max-w-none sm:w-auto">
-            <Button
-              size="md"
-              variant="primary"
-              className="w-full sm:w-auto py-2.5 px-6 sm:py-3 sm:px-7 text-xs tracking-wider gap-2 sm:gap-2.5 shadow-[0_0_25px_rgba(197,168,128,0.3)] hover:shadow-[0_0_45px_rgba(197,168,128,0.55)] transition-all duration-300 transform hover:-translate-y-0.5"
-            >
-              <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-              <span>{dict.bookNow}</span>
-            </Button>
-          </Link>
-
           <Button
             size="md"
-            variant="secondary"
-            onClick={() => setIsCallbackOpen(true)}
-            className="w-full max-w-xs sm:max-w-none sm:w-auto py-2.5 px-6 sm:py-3 sm:px-7 text-xs tracking-wider gap-2 sm:gap-2.5 bg-surface/90 backdrop-blur-md border border-accent/40 shadow-[0_6px_20px_rgba(0,0,0,0.4)] hover:border-accent hover:shadow-[0_0_25px_rgba(197,168,128,0.25)] transition-all duration-300 transform hover:-translate-y-0.5"
+            variant="primary"
+            onClick={() => setIsBookingOpen(true)}
+            className="w-full sm:w-auto py-2.5 px-6 sm:py-3 sm:px-7 text-xs tracking-wider gap-2 sm:gap-2.5 shadow-[0_0_25px_rgba(197,168,128,0.3)] hover:shadow-[0_0_45px_rgba(197,168,128,0.55)] transition-all duration-300 transform hover:-translate-y-0.5"
           >
-            <PhoneCall className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-accent" />
-            <span>{dict.requestCallback}</span>
+            <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <span>{dict.bookNow}</span>
           </Button>
         </motion.div>
       </motion.div>
 
-
-      {/* Callback Request Modal */}
-      <CallbackModal
-        isOpen={isCallbackOpen}
-        onClose={() => setIsCallbackOpen(false)}
-        dict={callbackDict}
-      />
+      {/* Sliding Pre-rendered Booking Flow Overlay */}
+      <div 
+        className={`fixed inset-0 z-50 bg-[#14151a] transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${
+          isBookingOpen 
+            ? "opacity-100 pointer-events-auto translate-y-0" 
+            : "opacity-0 pointer-events-none translate-y-[20px]"
+        }`}
+      >
+        {services && addons && bookingDict && (
+          <BookingWizard
+            locale={locale}
+            services={services}
+            addons={addons}
+            initialServiceId={initialServiceId}
+            dict={bookingDict}
+            currentUser={currentUser}
+            onClose={() => {
+              setIsBookingOpen(false);
+              if (searchParams.get("book")) {
+                window.history.replaceState({}, '', `/${locale}`);
+              }
+            }}
+          />
+        )}
+      </div>
     </section>
   );
 }

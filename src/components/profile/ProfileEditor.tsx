@@ -120,8 +120,8 @@ export function ProfileEditor({
   );
 
   const directBookingUrl = matchedService
-    ? `/${locale}/booking?serviceId=${matchedService.id}`
-    : `/${locale}/booking`;
+    ? `/${locale}?book=true&serviceId=${matchedService.id}`
+    : `/${locale}?book=true`;
 
   const getServiceName = (s: ProfileServiceItem) => {
     if (locale === "ru") return s.nameRu;

@@ -81,6 +81,7 @@ export interface BookingWizardProps {
     returnHome: string;
   };
   currentUser?: { name: string; phone: string } | null;
+  onClose?: () => void;
 }
 
 export function BookingWizard({
@@ -90,6 +91,7 @@ export function BookingWizard({
   initialServiceId,
   dict,
   currentUser,
+  onClose,
 }: BookingWizardProps) {
   // Returning visitor state - if active booking exists, ONLY allow reschedule/cancel
   const [activeBooking, setActiveBooking] = useState<ReturningBookingData | null>(null);
@@ -626,13 +628,24 @@ export function BookingWizard({
         <div className="absolute top-0 left-0 right-0 z-30 pt-24 px-5 flex items-start justify-between">
           {/* Back Chevron */}
           {currentStep === 1 ? (
-            <Link
-              href={`/${locale}`}
-              className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/90 hover:text-white hover:bg-black/60 active:scale-95 transition-all shadow-lg"
-              aria-label="Back to Home"
-            >
-              <ChevronLeft className="w-5 h-5 -ml-0.5" />
-            </Link>
+            onClose ? (
+              <button
+                type="button"
+                onClick={onClose}
+                className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/90 hover:text-white hover:bg-black/60 active:scale-95 transition-all shadow-lg cursor-pointer"
+                aria-label="Back to Home"
+              >
+                <ChevronLeft className="w-5 h-5 -ml-0.5" />
+              </button>
+            ) : (
+              <Link
+                href={`/${locale}`}
+                className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/90 hover:text-white hover:bg-black/60 active:scale-95 transition-all shadow-lg"
+                aria-label="Back to Home"
+              >
+                <ChevronLeft className="w-5 h-5 -ml-0.5" />
+              </Link>
+            )
           ) : (
             <button
               type="button"

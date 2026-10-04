@@ -61,7 +61,7 @@ export function Footer({ locale, dict }: FooterProps) {
             </h4>
             <ul className="space-y-2.5 text-xs">
               <li>
-                <Link href={`/${locale}/booking`} className="hover:text-accent transition-colors">
+                <Link href={`/${locale}?book=true`} className="hover:text-accent transition-colors">
                   {dict.nav.booking}
                 </Link>
               </li>

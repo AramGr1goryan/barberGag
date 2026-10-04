@@ -88,7 +88,7 @@ export function ServicesSection({ locale, services, dict }: ServicesSectionProps
                   {formatCurrency(service.priceMinorUnits, locale)}
                 </span>
 
-                <Link href={`/${locale}/booking?serviceId=${service.id}`}>
+                <Link href={`/${locale}?book=true&serviceId=${service.id}`}>
                   <Button variant="ghost" size="sm" className="gap-1.5 group-hover:text-accent">
                     <span>Գրանցվել</span>
                     <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
@@ -101,7 +101,7 @@ export function ServicesSection({ locale, services, dict }: ServicesSectionProps
 
         {/* All Treatments CTA */}
         <div className="mt-16 text-center">
-          <Link href={`/${locale}/booking`}>
+          <Link href={`/${locale}?book=true`}>
             <Button size="lg" variant="primary">
               Դիտել բոլոր ծառայությունները և ամրագրել
             </Button>

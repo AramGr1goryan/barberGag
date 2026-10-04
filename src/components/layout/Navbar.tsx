@@ -38,10 +38,11 @@ export function Navbar({ locale, dict, user }: NavbarProps) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const isBooking = pathname?.includes("/booking");
+  const searchParams = useSearchParams();
+  const isBooking = pathname === `/${locale}` && searchParams.get("book") === "true";
 
   const navLinks = [
-    { href: `/${locale}/booking`, label: dict.booking },
+    { href: `/${locale}?book=true`, label: dict.booking },
     { href: `/${locale}/about`, label: dict.about },
     { href: `/${locale}/portfolio`, label: dict.portfolio },
     { href: `/${locale}/contact`, label: dict.contact },
@@ -130,7 +131,7 @@ export function Navbar({ locale, dict, user }: NavbarProps) {
             </>
           )}
 
-          <Link href={`/${locale}/booking`}>
+          <Link href={`/${locale}?book=true`}>
             <Button size="sm" variant="primary">
               {dict.booking}
             </Button>
@@ -209,7 +210,7 @@ export function Navbar({ locale, dict, user }: NavbarProps) {
                   </>
                 )}
 
-                <Link href={`/${locale}/booking`} onClick={() => setIsMobileMenuOpen(false)}>
+                <Link href={`/${locale}?book=true`} onClick={() => setIsMobileMenuOpen(false)}>
                   <Button className="w-full py-3" variant="primary">
                     {dict.booking}
                   </Button>
