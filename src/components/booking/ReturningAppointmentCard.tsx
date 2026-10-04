@@ -227,7 +227,7 @@ export function ReturningAppointmentCard({
               value={newDate}
               min={new Date().toISOString().split("T")[0]}
               onChange={(e) => handleDateChange(e.target.value)}
-              className="w-full bg-[#16161c] border border-white/25 hover:border-accent/60 focus:border-accent focus:ring-1 focus:ring-accent/30 rounded-2xl px-4 py-2.5 text-sm font-mono text-white transition-all [color-scheme:dark]"
+              className="w-full bg-[#16161c] border border-white/10 hover:border-[#c5a880]/50 focus:border-[#c5a880] focus:ring-1 focus:ring-[#c5a880]/30 rounded-2xl px-5 py-4 text-sm font-mono text-white transition-all duration-300 [color-scheme:dark] shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] cursor-pointer"
             />
           </div>
 
@@ -246,10 +246,10 @@ export function ReturningAppointmentCard({
                     <button
                       key={slot.id}
                       onClick={() => setSelectedNewSlotId(slot.id)}
-                      className={`p-2.5 text-xs font-mono rounded-xl border transition-all ${
+                      className={`py-3.5 px-2 rounded-2xl text-[13px] font-mono font-medium transition-all duration-300 transform border shadow-sm ${
                         selectedNewSlotId === slot.id
-                          ? "bg-accent text-accent-foreground border-accent font-bold shadow-md"
-                          : "bg-white/[0.03] border-white/10 text-foreground hover:border-accent"
+                          ? "bg-[#c5a880] text-black border-[#c5a880] shadow-[0_0_20px_rgba(197,168,128,0.4)] scale-[1.02]"
+                          : "bg-white/[0.03] text-white/90 border-white/10 hover:border-[#c5a880]/50 hover:bg-white/[0.06] hover:scale-[1.02]"
                       }`}
                     >
                       {slot.startTime}

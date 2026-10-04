@@ -518,41 +518,7 @@ export function BookingWizard({
     document.body.removeChild(link);
   };
 
-  // Blocked due to cancellation cooldown
-  if (!isCheckingActive && blockedData?.isBlocked) {
-    return (
-      <div className="max-w-md sm:max-w-lg mx-auto pt-16 px-4">
-        <BlockedBookingCard
-          locale={locale}
-          blockedUntil={blockedData.blockedUntil}
-          initialSeconds={blockedData.remainingSeconds}
-          cooldownHours={blockedData.cooldownHours}
-        />
-      </div>
-    );
-  }
 
-  // Returning visitor active appointment
-  if (!isCheckingActive && activeBooking) {
-    return (
-      <div className="max-w-md sm:max-w-lg mx-auto pt-16 px-4">
-        <ReturningAppointmentCard
-          locale={locale}
-          booking={activeBooking}
-          dict={{
-            existingAppointmentTitle: dict.existingAppointmentTitle,
-            existingAppointmentDesc: dict.existingAppointmentDesc,
-            changeAppointment: dict.changeAppointment,
-            cancelAppointment: dict.cancelAppointment,
-            bookingRef: dict.bookingRef,
-            duration: "min",
-          }}
-          onRescheduleSuccess={() => checkActiveAppointment()}
-          onCancelSuccess={() => checkActiveAppointment()}
-        />
-      </div>
-    );
-  }
 
   return (
     <div className="w-full mx-auto h-[100dvh] flex flex-col lg:flex-row relative bg-[#14151a] overflow-hidden">
@@ -640,8 +606,37 @@ export function BookingWizard({
         className={`will-change-transform transform-gpu relative z-20 rounded-t-[40px] lg:rounded-none bg-[#14151a] border-t lg:border-t-0 lg:border-l border-white/[0.08] shadow-[0_-25px_60px_rgba(0,0,0,0.95)] lg:shadow-none px-5 sm:px-6 lg:px-10 pt-8 lg:pt-10 pb-10 flex-1 flex flex-col justify-between lg:w-[55%] overflow-y-auto transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] mt-[-35dvh] lg:mt-0`}
       >
 
-        {/* ================= STEP 1: DATE & TIME ================= */}
-        {currentStep === 1 && (
+        {(!isCheckingActive && blockedData?.isBlocked) && (
+          <div className="flex-1">
+            <BlockedBookingCard
+              locale={locale}
+              blockedUntil={blockedData.blockedUntil}
+              initialSeconds={blockedData.remainingSeconds}
+              cooldownHours={blockedData.cooldownHours}
+            />
+          </div>
+        )}
+
+        {(!isCheckingActive && activeBooking && !blockedData?.isBlocked) && (
+          <div className="flex-1">
+            <ReturningAppointmentCard
+              locale={locale}
+              booking={activeBooking}
+              dict={{
+                existingAppointmentTitle: dict.existingAppointmentTitle,
+                existingAppointmentDesc: dict.existingAppointmentDesc,
+                changeAppointment: dict.changeAppointment,
+                cancelAppointment: dict.cancelAppointment,
+                bookingRef: dict.bookingRef,
+                duration: "min",
+              }}
+              onRescheduleSuccess={() => checkActiveAppointment()}
+              onCancelSuccess={() => checkActiveAppointment()}
+            />
+          </div>
+        )}
+
+        {(!activeBooking && !blockedData?.isBlocked && currentStep === 1) && (
           <div className="flex-1 flex flex-col justify-between">
             <div>
               {/* Month & Year Title with Calendar Picker */}
@@ -796,7 +791,7 @@ export function BookingWizard({
         )}
 
         {/* ================= STEP 2: CHOOSE SERVICE & ADD-ONS ================= */}
-        {currentStep === 2 && (
+        {(!activeBooking && !blockedData?.isBlocked && currentStep === 2) && (
           <div className="flex-1 flex flex-col justify-between space-y-6">
             <div className="space-y-6">
               {/* Selected Date & Time Pill Header */}
@@ -947,7 +942,7 @@ export function BookingWizard({
         )}
 
         {/* ================= STEP 3: CLIENT DETAILS ================= */}
-        {currentStep === 3 && (
+        {(!activeBooking && !blockedData?.isBlocked && currentStep === 3) && (
           <div className="flex-1 flex flex-col justify-between space-y-6">
             <div className="space-y-6">
               {/* Detailed Summary Card */}
@@ -1064,7 +1059,7 @@ export function BookingWizard({
         )}
 
         {/* ================= STEP 4: SMS OTP VERIFICATION ================= */}
-        {currentStep === 4 && (
+        {(!activeBooking && !blockedData?.isBlocked && currentStep === 4) && (
           <div className="flex-1 flex flex-col justify-between space-y-6">
             <div className="space-y-6 text-center">
               <div className="w-14 h-14 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[#c5a880] mx-auto">
@@ -1142,7 +1137,7 @@ export function BookingWizard({
         )}
 
         {/* ================= STEP 5: CONFIRMATION SUCCESS ================= */}
-        {currentStep === 5 && (
+        {(!activeBooking && !blockedData?.isBlocked && currentStep === 5) && (
           <div className="flex-1 flex flex-col justify-between space-y-6 text-center">
             <div className="space-y-6">
               <div className="w-16 h-16 rounded-full bg-white text-black flex items-center justify-center mx-auto shadow-[0_0_40px_rgba(255,255,255,0.4)]">
