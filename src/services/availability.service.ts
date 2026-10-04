@@ -58,7 +58,7 @@ export class AvailabilityService {
       for (let d = 1; d <= daysInMonth; d++) {
         const dStr = `${monthPrefix}-${d.toString().padStart(2, '0')}`;
         if (!existingDates.has(dStr)) {
-          await this.bulkGenerateSlots(dStr, "10:00", "23:00", 15);
+          await this.bulkGenerateSlots(dStr, "10:00", "24:00", 15);
         }
       }
     }

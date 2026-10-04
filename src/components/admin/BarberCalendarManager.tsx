@@ -7,7 +7,60 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Plus, Check, X, ArrowLeft, Sunrise, Sun, Moon, Trash2, ChevronDown } from "lucide-react";
 import Link from "next/link";
 
+
+function SwipeToDeleteBooking({ task, isDone, locale, onToggleTask, onDelete }: any) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const deletingRef = useRef(false);
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const el = e.currentTarget;
+    if (el.scrollLeft > 140 && !deletingRef.current) {
+      deletingRef.current = true;
+      onDelete(task.id, true); // true = force delete without confirm
+    }
+  };
+
+  return (
+    <div className="relative overflow-hidden rounded-xl border border-white/10 bg-red-600 group">
+      <div className="absolute inset-y-0 right-0 flex items-center justify-end pr-6 text-white font-bold w-full h-full pointer-events-none">
+        <Trash2 className="w-5 h-5 animate-pulse" />
+      </div>
+      <div 
+        ref={scrollRef}
+        onScroll={handleScroll}
+        className="relative flex overflow-x-auto snap-x snap-mandatory no-scrollbar" 
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
+        <div className={`w-full shrink-0 snap-center flex items-center justify-between p-3 transition-colors ${isDone ? "bg-[#14281e] border-emerald-500/20" : "bg-[#1d202c]"}`}>
+          <div className="flex items-center gap-3 w-full pr-2">
+            <button onClick={() => onToggleTask(task)} className={`shrink-0 w-6 h-6 rounded flex items-center justify-center border transition-colors ${isDone ? "bg-emerald-500 border-emerald-500 text-black" : "border-white/30"}`}>
+              <Check className="w-4 h-4" />
+            </button>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 truncate">
+                <span className="text-xs font-bold text-blue-300 shrink-0">{task.startTime}-{task.endTime}</span>
+                <span className={`text-[16px] font-bold truncate ${isDone ? "line-through text-muted" : "text-white"}`}>{task.guestName}</span>
+              </div>
+              <div className="text-xs text-muted font-mono truncate">{task.guestRealPhone && <a href={`tel:${task.guestRealPhone}`} className="text-primary">📞 {task.guestRealPhone} • </a>}{task.guestPhone} • {task.items.map((i: any) => i.nameSnapshot).join("+")}</div>
+            </div>
+          </div>
+        </div>
+        <div className="w-[80px] shrink-0 snap-center flex items-center justify-center bg-red-500 z-10 shadow-lg">
+          <button onClick={() => onDelete(task.id, false)} className="w-full h-full text-white font-bold flex flex-col items-center justify-center cursor-pointer hover:bg-red-600 transition-colors">
+            <Trash2 className="w-4 h-4 mb-0.5" />
+            <span className="text-[10px] uppercase">{locale === "ru" ? "Удал" : "Del"}</span>
+          </button>
+        </div>
+        <div className="w-[50vw] shrink-0 snap-end flex items-center justify-start bg-red-600 pl-8 pointer-events-none">
+          <span className="text-white font-bold text-sm tracking-widest">{locale === "ru" ? "УДАЛЕНИЕ..." : "DELETING..."}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function BarberCalendarManager() {
+
   const { t, locale } = useAdminI18n();
   const todayStr = new Date().toISOString().split("T")[0];
   const [selectedDate, setSelectedDate] = useState<string>(todayStr);
@@ -154,6 +207,14 @@ export function BarberCalendarManager() {
     e.preventDefault();
     setIsSubmitting(true);
     const fd = new FormData(e.currentTarget);
+    const [startH, startM] = bookingTime.split(":").map(Number);
+    const maxDuration = 24 * 60 - (startH * 60 + startM);
+    if (bookingDuration > maxDuration) {
+      alert(locale === "ru" ? "Невозможно записать: рабочий день заканчивается в 00:00. Доступно только " + maxDuration + " мин." : "Cannot book: working day ends at 00:00. Only " + maxDuration + " mins available.");
+      setIsSubmitting(false);
+      return;
+    }
+
     const cName = fd.get("cName") as string;
     const cPhone = fd.get("cPhone") as string;
     const cService = fd.get("cService") as string;
@@ -251,42 +312,23 @@ export function BarberCalendarManager() {
                   {dayBookings.filter(b => b.status !== "CANCELLED").map(task => {
                     const isDone = task.status === "COMPLETED";
                     return (
-                      <div key={task.id} className="relative overflow-hidden rounded-xl border border-white/10 bg-red-500/80 group">
-                        <div className="absolute inset-y-0 right-0 flex items-center justify-end pr-4 text-white font-bold w-full h-full pointer-events-none">
-                          <Trash2 className="w-5 h-5" />
-                        </div>
-                        <div className="relative flex overflow-x-auto snap-x snap-mandatory no-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                          <div className={`w-full shrink-0 snap-center flex items-center justify-between p-3 transition-colors ${isDone ? "bg-[#14281e] border-emerald-500/20" : "bg-[#1d202c]"}`}>
-                            <div className="flex items-center gap-3 w-full pr-2">
-                              <button onClick={() => handleToggleTask(task)} className={`shrink-0 w-6 h-6 rounded flex items-center justify-center border transition-colors ${isDone ? "bg-emerald-500 border-emerald-500 text-black" : "border-white/30"}`}>
-                                <Check className="w-4 h-4" />
-                              </button>
-                              <div className="min-w-0 flex-1">
-                                <div className="flex items-center gap-2 truncate">
-                                  <span className="text-xs font-bold text-blue-300 shrink-0">{task.startTime}-{task.endTime}</span>
-                                  <span className={`text-sm font-bold truncate ${isDone ? "line-through text-muted" : "text-white"}`}>{task.guestName}</span>
-                                </div>
-                                <div className="text-[10px] text-muted font-mono truncate">{task.guestRealPhone && <a href={`tel:${task.guestRealPhone}`} className="text-primary">📞 {task.guestRealPhone} • </a>}{task.guestPhone} • {task.items.map((i: any) => i.nameSnapshot).join("+")}</div>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="w-[80px] shrink-0 snap-end flex items-center justify-center bg-red-500">
-                            <button onClick={async () => {
-                              if (!confirm(locale === "ru" ? "Удалить запись?" : "Delete booking?")) return;
-                              try {
-                                await fetch("/api/admin/calendar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "deleteSlot", slotId: task.slots[0]?.id }) });
-                                // actually we should cancel booking, wait, deleteSlot deletes the slot, wait, there's no cancel booking endpoint in calendar?
-                                // wait, deleteSlot is for empty slots, to cancel a booking we might need to hit a different endpoint or handle it in backend. Let's just use deleteSlot for now and maybe it deletes the slot? No, the barber calendar API has toggleTask, but not cancel. Let's add action: "cancelBooking" in barber-calendar API?
-                                // Let's just use deleteSlot since it might cascade, but wait, the API might complain.
-                                await fetch("/api/admin/barber-calendar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "cancelBooking", bookingId: task.id }) });
-                                fetchData(selectedDate, true);
-                              } catch {}
-                            }} className="w-full h-full text-white font-bold flex items-center justify-center cursor-pointer">
-                               {locale === "ru" ? "Удал." : "Del"}
-                            </button>
-                          </div>
-                        </div>
-                      </div>
+                      <SwipeToDeleteBooking 
+                        key={task.id} 
+                        task={task} 
+                        isDone={isDone} 
+                        locale={locale} 
+                        onToggleTask={handleToggleTask} 
+                        onDelete={async (bookingId: string, force: boolean) => {
+                          if (!force && !confirm(locale === "ru" ? "Удалить запись?" : "Delete booking?")) return;
+                          try {
+                            if (task.slots && task.slots[0]) {
+                              await fetch("/api/admin/calendar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "deleteSlot", slotId: task.slots[0].id }) });
+                            }
+                            await fetch("/api/admin/barber-calendar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "cancelBooking", bookingId }) });
+                            fetchData(selectedDate, true);
+                          } catch {}
+                        }}
+                      />
                     );
                   })}
                 </div>
@@ -383,6 +425,7 @@ export function BarberCalendarManager() {
               <div className="grid grid-cols-2 gap-2">
                 <input type="time" required value={bookingTime} onChange={e => setBookingTime(e.target.value)} className="w-full bg-[#16161c]/50 backdrop-blur-md border border-white/10 rounded-lg px-3 py-2 text-[16px] text-white focus:border-blue-400 outline-none transition-colors" />
                 <select value={bookingDuration} onChange={e => setBookingDuration(Number(e.target.value))} className="w-full bg-[#16161c]/50 backdrop-blur-md border border-white/10 rounded-lg px-3 py-2 text-[16px] text-white focus:border-blue-400 outline-none transition-colors">
+                  <option value={15}>15 {locale === "ru" ? "мин" : "min"}</option>
                   <option value={30}>30 {locale === "ru" ? "мин" : "min"}</option>
                   <option value={45}>45 {locale === "ru" ? "мин" : "min"}</option>
                   <option value={60}>60 {locale === "ru" ? "мин" : "min"}</option>
