@@ -44,9 +44,7 @@ export class BookingService {
     const existingBookings = await prisma.booking.findMany({
       where: {
         id: excludeBookingId ? { not: excludeBookingId } : undefined,
-        status: {
-          in: [BookingStatus.CONFIRMED, BookingStatus.PENDING_VERIFICATION],
-        },
+        status: BookingStatus.CONFIRMED,
         OR: [
           { guestPhone: phone },
           ...(userId ? [{ userId }] : []),
@@ -206,9 +204,7 @@ export class BookingService {
     return prisma.booking.findFirst({
       where: {
         sessionTokenHash: hashed,
-        status: {
-          in: [BookingStatus.CONFIRMED, BookingStatus.PENDING_VERIFICATION],
-        },
+        status: BookingStatus.CONFIRMED,
       },
       include: {
         items: true,

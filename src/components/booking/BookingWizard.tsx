@@ -80,7 +80,7 @@ export interface BookingWizardProps {
     addToCalendar: string;
     returnHome: string;
   };
-  currentUser?: { name: string; phone: string } | null;
+  currentUser?: { name: string; phone: string; email?: string } | null;
   onClose?: () => void;
 }
 

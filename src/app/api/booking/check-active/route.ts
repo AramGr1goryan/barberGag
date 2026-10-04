@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
       activeBooking = await prisma.booking.findFirst({
         where: {
           userId: session.userId,
-          status: { in: [BookingStatus.CONFIRMED, BookingStatus.PENDING_VERIFICATION] },
+          status: BookingStatus.CONFIRMED,
         },
         include: {
           items: true,
