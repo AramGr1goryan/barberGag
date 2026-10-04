@@ -32,11 +32,11 @@ export class EmailService {
       <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="color-scheme" content="light dark">
-        <meta name="supported-color-schemes" content="light dark">
+        <meta name="color-scheme" content="only light">
+        <meta name="supported-color-schemes" content="only light">
         <title>${title}</title>
         <style>
-          :root { color-scheme: light dark; supported-color-schemes: light dark; }
+          :root { color-scheme: only light; supported-color-schemes: only light; }
           body {
             margin: 0; padding: 0;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -61,6 +61,7 @@ export class EmailService {
           }
           .tile {
             background-color: #f8fafc;
+            background-image: linear-gradient(#f8fafc, #f8fafc);
             border: 1px solid rgba(15,23,42,0.08);
             border-radius: 18px;
           }
@@ -70,25 +71,7 @@ export class EmailService {
           .divider { height: 1px; background-image: linear-gradient(90deg, rgba(0,0,0,0), ${GOLD}, rgba(0,0,0,0)); }
           .btn { background-color: #1e3a5f; color: #ffffff !important; }
 
-          @media (prefers-color-scheme: dark) {
-            body, .bg { background-color: #0b1426 !important; color: #f8fafc !important; }
-            .bg {
-              background-image: radial-gradient(circle at 15% 0%, rgba(148,163,184,0.18) 0%, rgba(0,0,0,0) 45%),
-                                radial-gradient(circle at 90% 100%, rgba(148,163,184,0.10) 0%, rgba(0,0,0,0) 50%) !important;
-            }
-            .glass {
-              background-color: #111d35 !important;
-              background-image: linear-gradient(135deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 100%) !important;
-              border: 1px solid rgba(203,213,225,0.16) !important;
-            }
-            .tile { background-color: rgba(255,255,255,0.05) !important; border: 1px solid rgba(203,213,225,0.14) !important; }
-            .muted { color: #cbd5e1 !important; }
-            .accent { color: #e2e8f0 !important; border-color: #cbd5e1 !important; }
-            .divider { background-image: linear-gradient(90deg, rgba(0,0,0,0), #cbd5e1, rgba(0,0,0,0)) !important; }
-            .strong { color: #f8fafc !important; }
-            .line { border-bottom: 1px solid rgba(255,255,255,0.07) !important; }
-            .btn { background-color: #e2e8f0 !important; color: #0b1426 !important; }
-          }
+
           @media (max-width: 480px) {
             .pad { padding-left: 24px !important; padding-right: 24px !important; }
           }
