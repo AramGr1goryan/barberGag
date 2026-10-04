@@ -123,23 +123,23 @@ export function BlockedBookingCard({
         </span>
         <div className="flex items-center justify-center space-x-2 sm:space-x-3 font-mono">
           <div className="bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2 min-w-[56px]">
-            <span className="text-2xl sm:text-3xl font-bold text-accent">{pad(hours)}</span>
+            <span className="text-2xl sm:text-3xl font-bold text-slate-200">{pad(hours)}</span>
             <span className="block text-[9px] text-muted uppercase mt-0.5">h</span>
           </div>
           <span className="text-xl font-bold text-muted">:</span>
           <div className="bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2 min-w-[56px]">
-            <span className="text-2xl sm:text-3xl font-bold text-accent">{pad(minutes)}</span>
+            <span className="text-2xl sm:text-3xl font-bold text-slate-200">{pad(minutes)}</span>
             <span className="block text-[9px] text-muted uppercase mt-0.5">m</span>
           </div>
           <span className="text-xl font-bold text-muted">:</span>
           <div className="bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2 min-w-[56px]">
-            <span className="text-2xl sm:text-3xl font-bold text-accent">{pad(seconds)}</span>
+            <span className="text-2xl sm:text-3xl font-bold text-slate-200">{pad(seconds)}</span>
             <span className="block text-[9px] text-muted uppercase mt-0.5">s</span>
           </div>
         </div>
 
         <div className="pt-2 flex items-center justify-center space-x-1.5 text-xs text-muted font-mono">
-          <Clock className="w-3.5 h-3.5 text-accent" />
+          <Clock className="w-3.5 h-3.5 text-slate-200" />
           <span>{t.unlockAt}</span>
           <span className="text-foreground font-semibold">{formattedUnlockTime}</span>
         </div>

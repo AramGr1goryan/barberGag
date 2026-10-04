@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 
-const GOLD = "#c5a880";
+const GOLD = "#1e3a5f"; // navy accent (light); silver in dark mode
 
 export class EmailService {
   private transporter: any;
@@ -40,52 +40,54 @@ export class EmailService {
           body {
             margin: 0; padding: 0;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: #eeebe6;
+            background-color: #eef2f7;
             color: #18181b;
             -webkit-font-smoothing: antialiased;
           }
           .bg {
-            background-color: #eeebe6;
-            background-image: radial-gradient(circle at 15% 0%, rgba(197,168,128,0.35) 0%, rgba(197,168,128,0) 45%),
-                              radial-gradient(circle at 90% 100%, rgba(197,168,128,0.25) 0%, rgba(197,168,128,0) 50%);
+            background-color: #eef2f7;
+            background-image: radial-gradient(circle at 15% 0%, rgba(30,58,95,0.10) 0%, rgba(0,0,0,0) 45%),
+                              radial-gradient(circle at 90% 100%, rgba(30,58,95,0.08) 0%, rgba(0,0,0,0) 50%);
             padding: 48px 16px;
           }
           .glass {
             max-width: 520px; margin: 0 auto;
-            background-color: rgba(255,255,255,0.62);
-            background-image: linear-gradient(135deg, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.45) 100%);
-            border: 1px solid rgba(255,255,255,0.9);
+            background-color: #ffffff;
+            background-image: linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(248,250,252,0.94) 100%);
+            border: 1px solid rgba(15,23,42,0.08);
             border-radius: 28px;
             -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px);
             overflow: hidden;
           }
           .tile {
-            background-color: rgba(255,255,255,0.55);
-            border: 1px solid rgba(24,24,27,0.06);
+            background-color: #f8fafc;
+            border: 1px solid rgba(15,23,42,0.08);
             border-radius: 18px;
           }
-          .muted { color: #71717a; }
-          .strong { color: #18181b; }
+          .muted { color: #475569; }
+          .strong { color: #0f172a; }
           .line { border-bottom: 1px solid rgba(24,24,27,0.06); }
-          .divider { height: 1px; background-image: linear-gradient(90deg, rgba(197,168,128,0), ${GOLD}, rgba(197,168,128,0)); }
-          .btn { background-color: #18181b; color: #ffffff !important; }
+          .divider { height: 1px; background-image: linear-gradient(90deg, rgba(0,0,0,0), ${GOLD}, rgba(0,0,0,0)); }
+          .btn { background-color: #1e3a5f; color: #ffffff !important; }
 
           @media (prefers-color-scheme: dark) {
-            body, .bg { background-color: #09090b !important; color: #fafafa !important; }
+            body, .bg { background-color: #0b1426 !important; color: #f8fafc !important; }
             .bg {
-              background-image: radial-gradient(circle at 15% 0%, rgba(197,168,128,0.22) 0%, rgba(197,168,128,0) 45%),
-                                radial-gradient(circle at 90% 100%, rgba(197,168,128,0.14) 0%, rgba(197,168,128,0) 50%) !important;
+              background-image: radial-gradient(circle at 15% 0%, rgba(148,163,184,0.18) 0%, rgba(0,0,0,0) 45%),
+                                radial-gradient(circle at 90% 100%, rgba(148,163,184,0.10) 0%, rgba(0,0,0,0) 50%) !important;
             }
             .glass {
-              background-color: rgba(255,255,255,0.04) !important;
-              background-image: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%) !important;
-              border: 1px solid rgba(255,255,255,0.10) !important;
+              background-color: #111d35 !important;
+              background-image: linear-gradient(135deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 100%) !important;
+              border: 1px solid rgba(203,213,225,0.16) !important;
             }
-            .tile { background-color: rgba(255,255,255,0.04) !important; border: 1px solid rgba(255,255,255,0.08) !important; }
-            .muted { color: #a1a1aa !important; }
-            .strong { color: #fafafa !important; }
+            .tile { background-color: rgba(255,255,255,0.05) !important; border: 1px solid rgba(203,213,225,0.14) !important; }
+            .muted { color: #cbd5e1 !important; }
+            .accent { color: #e2e8f0 !important; border-color: #cbd5e1 !important; }
+            .divider { background-image: linear-gradient(90deg, rgba(0,0,0,0), #cbd5e1, rgba(0,0,0,0)) !important; }
+            .strong { color: #f8fafc !important; }
             .line { border-bottom: 1px solid rgba(255,255,255,0.07) !important; }
-            .btn { background-color: ${GOLD} !important; color: #09090b !important; }
+            .btn { background-color: #e2e8f0 !important; color: #0b1426 !important; }
           }
           @media (max-width: 480px) {
             .pad { padding-left: 24px !important; padding-right: 24px !important; }
@@ -97,8 +99,8 @@ export class EmailService {
           <table role="presentation" align="center" border="0" cellpadding="0" cellspacing="0" width="100%" class="glass">
             <tr>
               <td class="pad" style="padding: 44px 40px 8px 40px; text-align: center;">
-                <div style="display: inline-block; width: 46px; height: 46px; line-height: 46px; border-radius: 50%; border: 1px solid ${GOLD}; color: ${GOLD}; font-size: 18px; font-family: Georgia, 'Times New Roman', serif;">G</div>
-                <p style="margin: 16px 0 2px 0; color: ${GOLD}; font-size: 12px; letter-spacing: 6px; text-transform: uppercase; font-weight: 600;">Gagik Ghambaryan</p>
+                <div class="accent" style="display: inline-block; width: 46px; height: 46px; line-height: 46px; border-radius: 50%; border: 1px solid ${GOLD}; color: ${GOLD}; font-size: 18px; font-family: Georgia, 'Times New Roman', serif;">G</div>
+                <p class="accent" style="margin: 16px 0 2px 0; color: ${GOLD}; font-size: 12px; letter-spacing: 6px; text-transform: uppercase; font-weight: 600;">Gagik Ghambaryan</p>
                 <p class="muted" style="margin: 0; font-size: 10px; letter-spacing: 4px; text-transform: uppercase;">Bespoke Barber</p>
               </td>
             </tr>
@@ -132,7 +134,7 @@ export class EmailService {
       <tr>
         <td class="${opts.last ? "" : "line"}" style="padding: 14px 0;">
           <span class="muted" style="font-size: 10px; text-transform: uppercase; letter-spacing: 2px;">${label}</span><br>
-          <span class="${opts.accent ? "" : "strong"}" style="${valueStyle}">${value}</span>
+          <span class="${opts.accent ? "accent" : "strong"}" style="${valueStyle}">${value}</span>
         </td>
       </tr>`;
   }
@@ -184,7 +186,7 @@ export class EmailService {
         </table>
       </div>
       <div style="text-align: center; margin-top: 28px;">
-        <a href="${this.appUrl}" class="btn" style="display: inline-block; padding: 13px 32px; border-radius: 999px; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; text-decoration: none; font-weight: 600; background-color: #18181b; color: #ffffff;">${dict.cta}</a>
+        <a href="${this.appUrl}" class="btn" style="display: inline-block; padding: 13px 32px; border-radius: 999px; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; text-decoration: none; font-weight: 600; background-color: #1e3a5f; color: #ffffff;">${dict.cta}</a>
       </div>
     `;
 
@@ -232,7 +234,7 @@ export class EmailService {
 
     const contentHtml = `
       <div class="tile" style="padding: 24px; text-align: center;">
-        <p style="margin: 0 0 6px 0; font-size: 28px; font-weight: 600; color: ${GOLD}; letter-spacing: 2px;">${startTime}</p>
+        <p class="accent" style="margin: 0 0 6px 0; font-size: 28px; font-weight: 600; color: ${GOLD}; letter-spacing: 2px;">${startTime}</p>
         <p class="strong" style="margin: 0; font-size: 15px; line-height: 1.6;">${dict.text}</p>
       </div>
     `;
@@ -279,7 +281,7 @@ export class EmailService {
 
     const contentHtml = `
       <div class="tile" style="padding: 28px 20px; text-align: center;">
-        <span style="display: inline-block; font-size: 34px; font-weight: 600; color: ${GOLD}; letter-spacing: 14px; padding-left: 14px; font-family: 'SF Mono', Menlo, Consolas, monospace;">${code}</span>
+        <span class="accent" style="display: inline-block; font-size: 34px; font-weight: 600; color: ${GOLD}; letter-spacing: 14px; padding-left: 14px; font-family: 'SF Mono', Menlo, Consolas, monospace;">${code}</span>
       </div>
       <p class="muted" style="margin: 20px 0 0 0; font-size: 13px; line-height: 1.6; text-align: center;">${dict.text}</p>
     `;

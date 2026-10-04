@@ -168,8 +168,8 @@ export function LuxuryCalendarPicker({
         {/* Calendar Navigation Header */}
         <div className="flex items-center justify-between border-b border-white/10 pb-3">
           <div className="space-y-0.5">
-            <span className="text-[10px] font-mono tracking-widest text-accent uppercase font-semibold flex items-center gap-1">
-              <CalendarIcon className="w-3 h-3 text-accent" />
+            <span className="text-[10px] font-mono tracking-widest text-slate-200 uppercase font-semibold flex items-center gap-1">
+              <CalendarIcon className="w-3 h-3 text-slate-200" />
               {dict.selectDate}
             </span>
             <h3 className="font-display text-base sm:text-lg font-bold text-white tracking-wide">
@@ -207,7 +207,7 @@ export function LuxuryCalendarPicker({
         {/* Legend */}
         <div className="flex items-center space-x-4 text-[10px] font-mono text-muted">
           <div className="flex items-center space-x-1.5">
-            <span className="w-2 h-2 rounded-full bg-[#c5a880]" />
+            <span className="w-2 h-2 rounded-full bg-[#cbd5e1]" />
             <span>
               {locale === "hy"
                 ? "Հասանելի օրեր"
@@ -217,7 +217,7 @@ export function LuxuryCalendarPicker({
             </span>
           </div>
           <div className="flex items-center space-x-1.5">
-            <span className="w-2 h-2 rounded-full bg-accent shadow-[0_0_8px_rgba(197,168,128,0.6)]" />
+            <span className="w-2 h-2 rounded-full bg-slate-200 shadow-[0_0_8px_rgba(203,213,225,0.6)]" />
             <span>
               {locale === "hy"
                 ? "Ընտրված օր"
@@ -234,7 +234,7 @@ export function LuxuryCalendarPicker({
             <span
               key={idx}
               className={`text-[10px] font-mono uppercase tracking-wider py-0.5 font-semibold ${
-                idx >= 5 ? "text-[#c5a880]/80" : "text-muted/80"
+                idx >= 5 ? "text-[#cbd5e1]/80" : "text-muted/80"
               }`}
             >
               {day}
@@ -264,9 +264,9 @@ export function LuxuryCalendarPicker({
                 onClick={() => handleDayClick(dateStr)}
                 className={`group relative h-10 sm:h-11 rounded-xl flex flex-col items-center justify-center transition-all duration-150 border ${
                   isSelected
-                    ? "bg-accent text-slate-950 font-bold border-accent shadow-[0_0_15px_rgba(197,168,128,0.5)] scale-105 z-10"
+                    ? "bg-slate-200 text-slate-950 font-bold border-slate-300 shadow-[0_0_15px_rgba(203,213,225,0.5)] scale-105 z-10"
                     : isOpen
-                    ? "bg-white/[0.03] hover:bg-white/[0.08] border-[#c5a880]/25 hover:border-[#c5a880] text-white cursor-pointer"
+                    ? "bg-white/[0.03] hover:bg-white/[0.08] border-[#cbd5e1]/25 hover:border-[#cbd5e1] text-white cursor-pointer"
                     : "bg-surface/20 text-white/20 border-transparent cursor-not-allowed"
                 }`}
               >
@@ -280,7 +280,7 @@ export function LuxuryCalendarPicker({
                     className={`mt-0.5 rounded-full transition-all duration-150 ${
                       isSelected
                         ? "w-3 h-0.5 bg-slate-950/80"
-                        : "w-1.5 h-1.5 bg-[#c5a880] group-hover:w-2.5 group-hover:h-0.5"
+                        : "w-1.5 h-1.5 bg-[#cbd5e1] group-hover:w-2.5 group-hover:h-0.5"
                     }`}
                   />
                 )}
@@ -297,7 +297,7 @@ export function LuxuryCalendarPicker({
                 {locale === "hy" ? "Ընտրված է՝" : locale === "ru" ? "Выбрано:" : "Selected:"}
               </span>
               <span className="text-foreground font-bold">{selectedDate}</span>
-              <span className="text-accent font-bold">({selectedSlot.startTime} – {selectedSlot.endTime})</span>
+              <span className="text-slate-200 font-bold">({selectedSlot.startTime} – {selectedSlot.endTime})</span>
             </div>
 
             <Button
@@ -306,7 +306,7 @@ export function LuxuryCalendarPicker({
               onClick={() => setIsTimeModalOpen(true)}
               className="gap-1.5 py-1 px-3 text-[10px] font-mono rounded-xl"
             >
-              <Clock className="w-3 h-3 text-accent" />
+              <Clock className="w-3 h-3 text-slate-200" />
               <span>
                 {locale === "hy"
                   ? "Փոխել ժամը (Այֆոնի ոճով)"
@@ -342,7 +342,7 @@ export function LuxuryCalendarPicker({
               className="relative w-full max-w-xs sm:max-w-sm bg-[#121216]/98 backdrop-blur-2xl border border-white/15 rounded-3xl p-5 sm:p-6 shadow-[0_25px_70px_rgba(0,0,0,0.85)] z-10 overflow-hidden"
             >
               {/* Subtle gold ambient glow */}
-              <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-40 h-20 bg-accent/20 blur-3xl pointer-events-none rounded-full" />
+              <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-40 h-20 bg-slate-200/20 blur-3xl pointer-events-none rounded-full" />
 
               {/* Close Button */}
               <button
@@ -355,7 +355,7 @@ export function LuxuryCalendarPicker({
 
               {/* Modal Header */}
               <div className="text-center mb-4">
-                <span className="text-[10px] font-mono tracking-widest text-accent uppercase font-semibold block mb-0.5">
+                <span className="text-[10px] font-mono tracking-widest text-slate-200 uppercase font-semibold block mb-0.5">
                   {locale === "hy"
                     ? "Ընտրեք ազատ ժամը"
                     : locale === "ru"
@@ -370,7 +370,7 @@ export function LuxuryCalendarPicker({
               {/* Loading State */}
               {isLoadingSlots ? (
                 <div className="py-12 text-center flex flex-col items-center justify-center space-y-2">
-                  <div className="w-6 h-6 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+                  <div className="w-6 h-6 border-2 border-slate-300 border-t-transparent rounded-full animate-spin" />
                   <span className="text-xs font-mono text-muted">
                     {locale === "ru"
                       ? "Загрузка доступных часов..."
@@ -388,7 +388,7 @@ export function LuxuryCalendarPicker({
                   {/* IPHONE ALARM STYLE DRUM WHEEL CONTAINER */}
                   <div className="relative h-[176px] overflow-hidden rounded-2xl bg-[#09090d] border border-white/10 shadow-inner">
                     {/* Center Selection Lens / Glass highlight */}
-                    <div className="absolute top-1/2 -translate-y-1/2 left-2 right-2 h-11 rounded-xl bg-accent/[0.08] border border-accent/40 shadow-[0_0_15px_rgba(197,168,128,0.2)] pointer-events-none z-10" />
+                    <div className="absolute top-1/2 -translate-y-1/2 left-2 right-2 h-11 rounded-xl bg-slate-200/[0.08] border border-slate-300/40 shadow-[0_0_15px_rgba(203,213,225,0.2)] pointer-events-none z-10" />
 
                     {/* Top & Bottom gradient mask for 3D iOS depth fade */}
                     <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-[#09090d] via-[#09090d]/80 to-transparent pointer-events-none z-20" />
@@ -411,7 +411,7 @@ export function LuxuryCalendarPicker({
                             }}
                             className={`h-11 flex items-center justify-center snap-center cursor-pointer transition-all duration-150 font-mono ${
                               isSelected
-                                ? "text-accent font-bold text-xl scale-110 tracking-widest z-10"
+                                ? "text-slate-200 font-bold text-xl scale-110 tracking-widest z-10"
                                 : "text-muted/50 hover:text-foreground text-xs scale-95"
                             }`}
                           >

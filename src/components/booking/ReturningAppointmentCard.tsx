@@ -137,11 +137,11 @@ export function ReturningAppointmentCard({
     <div className="bg-surface/80 backdrop-blur-2xl border border-white/10 rounded-3xl p-8 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.6)] max-w-2xl mx-auto space-y-8">
       {/* Alert Header */}
       <div className="flex items-start space-x-4 border-b border-white/10 pb-6">
-        <div className="w-12 h-12 rounded-2xl border border-accent/30 bg-accent/10 flex items-center justify-center text-accent shrink-0 shadow-[0_0_20px_rgba(197,168,128,0.15)]">
+        <div className="w-12 h-12 rounded-2xl border border-slate-300/30 bg-slate-200/10 flex items-center justify-center text-slate-200 shrink-0 shadow-[0_0_20px_rgba(203,213,225,0.15)]">
           <AlertCircle className="w-6 h-6" />
         </div>
         <div>
-          <span className="text-[11px] font-mono tracking-widest text-accent uppercase font-semibold">
+          <span className="text-[11px] font-mono tracking-widest text-slate-200 uppercase font-semibold">
             {dict.bookingRef}: {booking.bookingNumber}
           </span>
           <h2 className="font-display text-xl sm:text-2xl font-bold text-foreground mt-1">
@@ -162,7 +162,7 @@ export function ReturningAppointmentCard({
 
         <div className="flex items-center justify-between border-b border-white/5 pb-3">
           <span className="text-muted uppercase">Ամսաթիվ և Ժամ</span>
-          <div className="flex items-center space-x-2 text-accent font-bold">
+          <div className="flex items-center space-x-2 text-slate-200 font-bold">
             <Calendar className="w-3.5 h-3.5" />
             <span>{booking.date}</span>
             <Clock className="w-3.5 h-3.5 ml-2" />
@@ -183,7 +183,7 @@ export function ReturningAppointmentCard({
 
         <div className="flex items-center justify-between pt-1">
           <span className="text-muted uppercase">Ընդհանուր Արժեք</span>
-          <span className="text-base font-bold text-accent">
+          <span className="text-base font-bold text-slate-200">
             {formatCurrency(booking.totalPriceMinorUnits, locale)}
           </span>
         </div>
@@ -196,7 +196,7 @@ export function ReturningAppointmentCard({
           onClick={() => setIsRescheduleOpen(true)}
           className="flex-1 gap-2 py-3.5"
         >
-          <RefreshCw className="w-4 h-4 text-accent" />
+          <RefreshCw className="w-4 h-4 text-slate-200" />
           <span>{dict.changeAppointment}</span>
         </Button>
 
@@ -227,7 +227,7 @@ export function ReturningAppointmentCard({
               value={newDate}
               min={new Date().toISOString().split("T")[0]}
               onChange={(e) => handleDateChange(e.target.value)}
-              className="w-full bg-[#16161c] border border-white/10 hover:border-[#c5a880]/50 focus:border-[#c5a880] focus:ring-1 focus:ring-[#c5a880]/30 rounded-2xl px-5 py-4 text-[16px] font-mono text-white transition-all duration-300 [color-scheme:dark] shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] cursor-pointer"
+              className="w-full bg-[#16161c] border border-white/10 hover:border-[#cbd5e1]/50 focus:border-[#cbd5e1] focus:ring-1 focus:ring-[#cbd5e1]/30 rounded-2xl px-5 py-4 text-[16px] font-mono text-white transition-all duration-300 [color-scheme:dark] shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] cursor-pointer"
             />
           </div>
 
@@ -248,8 +248,8 @@ export function ReturningAppointmentCard({
                       onClick={() => setSelectedNewSlotId(slot.id)}
                       className={`py-3.5 px-2 rounded-2xl text-[13px] font-mono font-medium transition-all duration-300 transform border shadow-sm ${
                         selectedNewSlotId === slot.id
-                          ? "bg-[#c5a880] text-black border-[#c5a880] shadow-[0_0_20px_rgba(197,168,128,0.4)] scale-[1.02]"
-                          : "bg-white/[0.03] text-white/90 border-white/10 hover:border-[#c5a880]/50 hover:bg-white/[0.06] hover:scale-[1.02]"
+                          ? "bg-[#cbd5e1] text-black border-[#cbd5e1] shadow-[0_0_20px_rgba(203,213,225,0.4)] scale-[1.02]"
+                          : "bg-white/[0.03] text-white/90 border-white/10 hover:border-[#cbd5e1]/50 hover:bg-white/[0.06] hover:scale-[1.02]"
                       }`}
                     >
                       {slot.startTime}
@@ -297,7 +297,7 @@ export function ReturningAppointmentCard({
               value={cancelReason}
               onChange={(e) => setCancelReason(e.target.value)}
               placeholder="Օրինակ՝ պլանների փոփոխություն..."
-              className="w-full bg-white/[0.04] border border-white/10 rounded-2xl p-3.5 text-xs text-foreground focus:outline-none focus:border-accent/60 transition-all"
+              className="w-full bg-white/[0.04] border border-white/10 rounded-2xl p-3.5 text-xs text-foreground focus:outline-none focus:border-slate-300/60 transition-all"
             />
           </div>
 

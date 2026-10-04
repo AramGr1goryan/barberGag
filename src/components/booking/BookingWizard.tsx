@@ -548,8 +548,8 @@ export function BookingWizard({
 
         {/* Desktop: centered branding at bottom */}
         <div className="hidden lg:flex absolute bottom-10 left-0 right-0 z-20 flex-col items-center gap-2">
-          <div className="w-16 h-px bg-gradient-to-r from-transparent via-[#c5a880]/50 to-transparent" />
-          <span className="text-[10px] font-mono tracking-[0.3em] text-[#c5a880]/60 uppercase">
+          <div className="w-16 h-px bg-gradient-to-r from-transparent via-[#cbd5e1]/50 to-transparent" />
+          <span className="text-[10px] font-mono tracking-[0.3em] text-[#cbd5e1]/60 uppercase">
             {locale === "ru" ? "Премиум бронирование" : locale === "hy" ? "Պրեմիում ամրագրում" : "Premium Booking"}
           </span>
         </div>
@@ -623,7 +623,7 @@ export function BookingWizard({
                 <button
                   type="button"
                   onClick={() => setShowMonthPicker((prev) => !prev)}
-                  className="p-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-[#c5a880] hover:bg-white/[0.08] active:scale-95 transition-all cursor-pointer flex items-center gap-1.5"
+                  className="p-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-[#cbd5e1] hover:bg-white/[0.08] active:scale-95 transition-all cursor-pointer flex items-center gap-1.5"
                   aria-label="Select month"
                 >
                   <CalendarIcon className="w-5 h-5" />
@@ -674,12 +674,12 @@ export function BookingWizard({
                         type="button"
                         onClick={() => setSelectedDate(item.dateStr)}
                         className={`min-w-[48px] h-[56px] rounded-[12px] flex flex-col items-center justify-center transition-all duration-200 shrink-0 select-none cursor-pointer border ${isSelected
-                            ? "bg-[#c5a880]/[0.12] text-white border-[#c5a880]/70 backdrop-blur-xl scale-[1.03]"
+                            ? "bg-[#cbd5e1]/[0.12] text-white border-[#cbd5e1]/70 backdrop-blur-xl scale-[1.03]"
                             : "bg-white/[0.04] backdrop-blur-xl text-white hover:bg-white/[0.08] border-white/[0.08]"
                           }`}
                       >
                         <span
-                          className={`text-lg font-bold font-sans tracking-tight leading-none ${isSelected ? "text-[#c5a880]" : "text-white"
+                          className={`text-lg font-bold font-sans tracking-tight leading-none ${isSelected ? "text-[#cbd5e1]" : "text-white"
                             }`}
                         >
                           {item.dayNum}
@@ -731,7 +731,7 @@ export function BookingWizard({
                           type="button"
                           onClick={() => setSelectedSlotId(slot.id)}
                           className={`w-full py-2 rounded-[10px] text-[13px] font-bold tracking-wider transition-all duration-200 select-none cursor-pointer flex items-center justify-center touch-manipulation border ${isSelected
-                              ? "bg-[#c5a880]/[0.12] text-white border-[#c5a880]/70 backdrop-blur-xl scale-[1.03] z-10"
+                              ? "bg-[#cbd5e1]/[0.12] text-white border-[#cbd5e1]/70 backdrop-blur-xl scale-[1.03] z-10"
                               : "bg-white/[0.04] backdrop-blur-xl text-white hover:bg-white/[0.08] border-white/[0.08]"
                             }`}
                         >
@@ -772,7 +772,7 @@ export function BookingWizard({
             <div className="space-y-6">
               {/* Selected Date & Time Pill Header */}
               <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-between text-xs font-mono">
-                <span className="text-[#c5a880] font-semibold">
+                <span className="text-[#cbd5e1] font-semibold">
                   📅 {selectedDate} • ⏰ {selectedSlot?.startTime}
                 </span>
                 <span className="text-neutral-400 truncate max-w-[140px]">
@@ -797,14 +797,14 @@ export function BookingWizard({
                         key={s.id}
                         onClick={() => setSelectedServiceId(s.id)}
                         className={`p-3 rounded-2xl transition-all duration-200 cursor-pointer flex flex-col justify-between select-none border ${isSelected
-                            ? "bg-[#c5a880]/[0.12] text-white border-[#c5a880]/70 backdrop-blur-xl"
+                            ? "bg-[#cbd5e1]/[0.12] text-white border-[#cbd5e1]/70 backdrop-blur-xl"
                             : "bg-white/[0.04] backdrop-blur-xl text-white hover:bg-white/[0.08] border-white/[0.08]"
                           }`}
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div>
                             <h4
-                              className={`font-serif font-bold text-sm sm:text-base ${isSelected ? "text-[#c5a880]" : "text-white"
+                              className={`font-serif font-bold text-sm sm:text-base ${isSelected ? "text-[#cbd5e1]" : "text-white"
                                 }`}
                             >
                               {getServiceName(s)}
@@ -817,7 +817,7 @@ export function BookingWizard({
                             </p>
                           </div>
                           {isSelected && (
-                            <div className="w-5 h-5 rounded-full bg-black text-[#c5a880] flex items-center justify-center shrink-0 mt-0.5">
+                            <div className="w-5 h-5 rounded-full bg-black text-[#cbd5e1] flex items-center justify-center shrink-0 mt-0.5">
                               <Check className="w-3.5 h-3.5 stroke-[3]" />
                             </div>
                           )}
@@ -828,7 +828,7 @@ export function BookingWizard({
                             {s.durationMinutes} {locale === "hy" ? "րոպե" : "мин"}
                           </span>
                           <span
-                            className={`font-bold ${"text-[#c5a880] text-sm"
+                            className={`font-bold ${"text-[#cbd5e1] text-sm"
                               }`}
                           >
                             {formatCurrency(s.priceMinorUnits, locale)}
@@ -858,14 +858,14 @@ export function BookingWizard({
                           key={a.id}
                           onClick={() => toggleAddon(a.id)}
                           className={`p-3 rounded-2xl border cursor-pointer transition-all flex items-center justify-between text-xs select-none ${isSelected
-                              ? "bg-[#c5a880]/[0.12] text-white border-[#c5a880]/70 backdrop-blur-xl"
+                              ? "bg-[#cbd5e1]/[0.12] text-white border-[#cbd5e1]/70 backdrop-blur-xl"
                               : "bg-white/[0.04] backdrop-blur-xl text-white hover:bg-white/[0.08] border-white/[0.08]"
                             }`}
                         >
                           <div className="flex items-center space-x-3">
                             <div
                               className={`w-5 h-5 rounded-lg border flex items-center justify-center transition-all ${isSelected
-                                  ? "bg-black border-black text-[#c5a880]"
+                                  ? "bg-black border-black text-[#cbd5e1]"
                                   : "border-white/20 bg-white/[0.03]"
                                 }`}
                             >
@@ -874,7 +874,7 @@ export function BookingWizard({
                             <span>{getAddonName(a)}</span>
                           </div>
                           <span
-                            className={`font-mono font-bold ${"text-[#c5a880]"}`}
+                            className={`font-mono font-bold ${"text-[#cbd5e1]"}`}
                           >
                             +{formatCurrency(a.priceMinorUnits, locale)}
                           </span>
@@ -893,7 +893,7 @@ export function BookingWizard({
                   {locale === "ru" ? "Итого:" : locale === "hy" ? "Ընդհանուր՝" : "Total:"} (
                   {totalDuration} {locale === "hy" ? "ր" : "min"})
                 </span>
-                <span className="text-[#c5a880] font-bold text-base">
+                <span className="text-[#cbd5e1] font-bold text-base">
                   {formatCurrency(totalPrice, locale)}
                 </span>
               </div>
@@ -934,7 +934,7 @@ export function BookingWizard({
                   <span className="text-neutral-400">
                     {locale === "ru" ? "Мастер:" : locale === "hy" ? "Վարպետ՝" : "Master:"}
                   </span>
-                  <span className="text-[#c5a880] font-semibold">{masterBarberName}</span>
+                  <span className="text-[#cbd5e1] font-semibold">{masterBarberName}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-neutral-400">
@@ -948,7 +948,7 @@ export function BookingWizard({
                   <span className="text-neutral-400">
                     {locale === "ru" ? "Итого к оплате:" : locale === "hy" ? "Գումար՝" : "Total Price:"}
                   </span>
-                  <span className="text-[#c5a880] font-bold text-sm">
+                  <span className="text-[#cbd5e1] font-bold text-sm">
                     {formatCurrency(totalPrice, locale)}
                   </span>
                 </div>
@@ -1012,7 +1012,7 @@ export function BookingWizard({
                     </div>
                   </div>
                   <p className="text-[11px] text-neutral-400 mt-1.5 flex items-center gap-1.5">
-                    <ShieldCheck className="w-3.5 h-3.5 text-[#c5a880]" />
+                    <ShieldCheck className="w-3.5 h-3.5 text-[#cbd5e1]" />
                     <span>
                       {locale === "ru"
                         ? "Код подтверждения будет отправлен на этот email"
@@ -1056,7 +1056,7 @@ export function BookingWizard({
         {(!activeBooking && !blockedData?.isBlocked && currentStep === 4) && (
           <div className="flex-1 flex flex-col justify-between space-y-6">
             <div className="space-y-6 text-center">
-              <div className="w-14 h-14 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[#c5a880] mx-auto">
+              <div className="w-14 h-14 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[#cbd5e1] mx-auto">
                 <ShieldCheck className="w-7 h-7" />
               </div>
 
@@ -1075,7 +1075,7 @@ export function BookingWizard({
                 <button
                   type="button"
                   onClick={() => setCurrentStep(3)}
-                  className="text-[#c5a880] text-xs font-mono font-medium underline underline-offset-2 mt-2 hover:text-white transition-colors"
+                  className="text-[#cbd5e1] text-xs font-mono font-medium underline underline-offset-2 mt-2 hover:text-white transition-colors"
                 >
                   {locale === "ru" ? "Изменить Email" : locale === "hy" ? "Փոխել Էլ․ փոստը" : "Change Email"}
                 </button>
@@ -1109,7 +1109,7 @@ export function BookingWizard({
                   <button
                     type="button"
                     onClick={handleResendSms}
-                    className="text-xs font-mono text-[#c5a880] hover:underline cursor-pointer"
+                    className="text-xs font-mono text-[#cbd5e1] hover:underline cursor-pointer"
                   >
                     {dict.resendCode}
                   </button>
@@ -1152,7 +1152,7 @@ export function BookingWizard({
                 </h3>
                 <p className="text-xs text-neutral-400 mt-1 font-mono">
                   {dict.bookingRef}:{" "}
-                  <span className="text-[#c5a880] font-bold">{createdBookingNumber}</span>
+                  <span className="text-[#cbd5e1] font-bold">{createdBookingNumber}</span>
                 </p>
               </div>
 
@@ -1176,7 +1176,7 @@ export function BookingWizard({
                 </div>
                 <div className="flex justify-between items-center pt-2 mt-2 border-t border-white/[0.06]">
                   <span className="text-neutral-400">{locale === "ru" ? "Итого" : locale === "hy" ? "Ընդհանուր" : "Total"}</span>
-                  <span className="text-[#c5a880] font-bold text-sm">{formatCurrency(totalPrice, locale)}</span>
+                  <span className="text-[#cbd5e1] font-bold text-sm">{formatCurrency(totalPrice, locale)}</span>
                 </div>
               </div>
             </div>
