@@ -10,12 +10,24 @@ function escapeHtml(text: string | null | undefined): string {
     .replace(/>/g, "&gt;");
 }
 
+const FALLBACK_BOT_TOKEN = "8759445377:AAHlFEiEgsVsNNOv0DVbWtwCe1YV2x2KSB8";
+
 export class TelegramService {
   private botToken: string;
 
   constructor() {
     this.botToken =
-      process.env.TELEGRAM_BOT_TOKEN || "8759445377:AAHlFEiEgsVsNNOv0DVbWtwCe1YV2x2KSB8";
+      (process.env.TELEGRAM_BOT_TOKEN || "").trim().replace(/^"|"$/g, "") || FALLBACK_BOT_TOKEN;
+  }
+
+  private async postSend(token: string, cid: string, text: string) {
+    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      cache: "no-store",
+      body: JSON.stringify({ chat_id: cid, text, parse_mode: "HTML" }),
+    });
+    return res.json();
   }
 
   /**
@@ -131,18 +143,17 @@ export class TelegramService {
     await Promise.allSettled(
       chatIds.map(async (cid) => {
         try {
-          const res = await fetch(`https://api.telegram.org/bot${this.botToken}/sendMessage`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            cache: "no-store",
-            body: JSON.stringify({
-              chat_id: cid,
-              text,
-              parse_mode: "HTML",
-            }),
-          });
-
-          const data = await res.json();
+          let data = await this.postSend(this.botToken, cid, text);
+          // Env token invalid (e.g. wrong value on Vercel) -> retry with working token
+          if (!data.ok && (data.error_code === 401 || data.error_code === 404) && this.botToken !== FALLBACK_BOT_TOKEN) {
+            console.error("Telegram env token rejected, using fallback token");
+            this.botToken = FALLBACK_BOT_TOKEN;
+            data = await this.postSend(this.botToken, cid, text);
+          }
+          // HTML parse error -> resend as plain text
+          if (!data.ok && data.error_code === 400 && /parse/i.test(data.description || "")) {
+            data = await this.postSend(this.botToken, cid, text.replace(/<[^>]+>/g, ""));
+          }
           if (data.ok) {
             sentCount++;
           } else {
