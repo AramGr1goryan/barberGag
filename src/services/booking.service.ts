@@ -164,7 +164,7 @@ export class BookingService {
 
       await tx.availabilitySlot.updateMany({
         where: { id: { in: day.slots.map(s => s.id) } },
-        data: { status: SlotStatus.HELD }
+        data: { status: SlotStatus.BOOKED }
       });
 
       const endTimeCalc = (() => {

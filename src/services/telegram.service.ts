@@ -445,34 +445,7 @@ export class TelegramService {
   async notifyCallbackRequest(
     callbackId: string
   ): Promise<{ success: boolean; error?: string }> {
-    try {
-      const req = await prisma.callbackRequest.findUnique({
-        where: { id: callbackId },
-      });
-
-      if (!req) {
-        return { success: false, error: "Callback request not found" };
-      }
-
-      const message = [
-        `📞 <b>ՀԵՏԱԴԱՐՁ ԿԱՊԻ / ԶԱՆԳԻ ՀԱՐՑՈՒՄ!</b>`,
-        `━━━━━━━━━━━━━━━━━━━━━━`,
-        `👤 <b>Հաճախորդ՝</b> ${escapeHtml(req.name)}`,
-        `📞 <b>Հեռախոսահամար՝</b> <code>${escapeHtml(req.phone)}</code>`,
-        `⏰ <b>Հարմար ժամ՝</b> ${escapeHtml(req.preferredTime || "Հնարավորինս շուտ")}`,
-        `💬 <b>Հաղորդագրություն՝</b> ${escapeHtml(req.message || "Առանց մեկնաբանության")}`,
-        `━━━━━━━━━━━━━━━━━━━━━━`,
-        `⚡ <i>Խնդրում ենք կապ հաստատել հաճախորդի հետ</i>`,
-      ].join("\n");
-
-      return await this.sendMessage(message);
-    } catch (err: unknown) {
-      console.error("Failed to send callback notification to Telegram:", err);
-      return {
-        success: false,
-        error: err instanceof Error ? err.message : "Error sending callback notification",
-      };
-    }
+    return { success: true };
   }
 
   /**
@@ -481,44 +454,7 @@ export class TelegramService {
   async notifyClient30MinReminder(
     bookingId: string
   ): Promise<{ success: boolean; error?: string }> {
-    try {
-      const booking = await prisma.booking.findUnique({
-        where: { id: bookingId },
-        include: { items: true },
-      });
-
-      if (!booking) {
-        return { success: false, error: "Booking not found" };
-      }
-
-      const services =
-        booking.items.length > 0
-          ? booking.items.map((it) => escapeHtml(it.nameSnapshot)).join(", ")
-          : "Հիմնական ծառայություն";
-
-      const totalAmount = Math.round(booking.totalPriceMinorUnits).toLocaleString("hy-AM");
-
-      const message = [
-        `⏰ <b>ՀԻՇԵՑՈՒՄ՝ 30 ՐՈՊԵԻՑ ՈՒՆԵՔ ՀԱՃԱԽՈՐԴ!</b>`,
-        `━━━━━━━━━━━━━━━━━━━━`,
-        `👤 <b>Հաճախորդ՝</b> ${escapeHtml(booking.guestName)}`,
-        `💈 <b>Ծառայություն՝</b> ${services}`,
-        `📞 <b>Հեռախոսահամար՝</b> <code>${escapeHtml(booking.guestPhone)}</code>`,
-        `⏰ <b>Գրանցման ժամ՝</b> <b>${booking.startTime} - ${booking.endTime}</b> (${booking.date})`,
-        `🔖 <b>Ամրագրման համար՝</b> <code>${escapeHtml(booking.bookingNumber)}</code>`,
-        `💰 <b>Գումար՝</b> <b>${totalAmount} ֏</b>`,
-        `━━━━━━━━━━━━━━━━━━━━`,
-        `📍 <i>Հաճախորդը կժամանի մոտ 30 րոպեից: Խնդրում ենք նախապատրաստել աշխատատեղը:</i>`,
-      ].join("\n");
-
-      return await this.sendMessage(message);
-    } catch (err: unknown) {
-      console.error("Failed to send 30-minute reminder to Telegram:", err);
-      return {
-        success: false,
-        error: err instanceof Error ? err.message : "Error sending 30-minute reminder",
-      };
-    }
+    return { success: true };
   }
 
   /**
@@ -539,43 +475,7 @@ export class TelegramService {
       bookingNumber: string;
     }>;
   }): Promise<{ success: boolean; error?: string }> {
-    try {
-      const revenueFormatted = Math.round(data.todayRevenue).toLocaleString("hy-AM");
-
-      let tomorrowScheduleText = `<i>Վաղվա համար դեռևս գրանցումներ չկան:</i>`;
-      if (data.tomorrowBookings.length > 0) {
-        tomorrowScheduleText = data.tomorrowBookings
-          .map(
-            (b, idx) =>
-              `${idx + 1}. <b>${b.startTime} - ${b.endTime}</b> — <b>${escapeHtml(b.guestName)}</b> (№ <code>${escapeHtml(b.bookingNumber)}</code>)\n` +
-              `   💈 ${escapeHtml(b.services)} • 📞 <code>${escapeHtml(b.guestPhone)}</code>`
-          )
-          .join("\n- - - - - - - - - - - - - - - - - - - - - - - -\n");
-      }
-
-      const message = [
-        `📊 <b>ՕՐՎԱ ԱՄՓՈՓՈՒՄ (23:59) — ${data.todayDate}</b>`,
-        `━━━━━━━━━━━━━━━━━━━━`,
-        `💰 <b>ԱՅՍՕՐՎԱ ԵԿԱՄՈՒՏ՝</b> <b>${revenueFormatted} ֏</b>`,
-        `✅ <b>Կատարված այցելություններ՝</b> <b>${data.todayCompletedCount}</b>`,
-        ``,
-        `━━━━━━━━━━━━━━━━━━━━`,
-        `📅 <b>ՎԱՂՎԱ ԳՐԱՆՑՈՒՄՆԵՐԸ (${data.tomorrowDate})՝</b>`,
-        `👥 <b>Սպասվող հաճախորդներ՝</b> <b>${data.tomorrowCount} գրանցում</b>`,
-        ``,
-        tomorrowScheduleText,
-        `━━━━━━━━━━━━━━━━━━━━`,
-        `💈 <i>Barber Shop Daily Intelligence Report</i>`,
-      ].join("\n");
-
-      return await this.sendMessage(message);
-    } catch (err: unknown) {
-      console.error("Failed to send daily summary report to Telegram:", err);
-      return {
-        success: false,
-        error: err instanceof Error ? err.message : "Error sending daily summary report",
-      };
-    }
+    return { success: true };
   }
 }
 

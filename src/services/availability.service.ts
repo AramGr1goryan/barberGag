@@ -106,14 +106,35 @@ export class AvailabilityService {
     if (existingDaysCount < daysInMonth) {
       const existingDays = await prisma.availabilityDay.findMany({
         where: { date: { startsWith: monthPrefix } },
-        select: { date: true }
+        select: { date: true, id: true }
       });
       const existingDates = new Set(existingDays.map(d => d.date));
       
+      const missingDaysToCreate = [];
       for (let d = 1; d <= daysInMonth; d++) {
         const dStr = `${monthPrefix}-${d.toString().padStart(2, '0')}`;
         if (!existingDates.has(dStr)) {
-          await this.bulkGenerateSlots(dStr, "10:00", "24:00", 15);
+          missingDaysToCreate.push({ date: dStr, isOpen: true });
+        }
+      }
+
+      if (missingDaysToCreate.length > 0) {
+        await prisma.availabilityDay.createMany({ data: missingDaysToCreate, skipDuplicates: true });
+      }
+
+      // Now fetch all days again to get their IDs
+      const allDays = await prisma.availabilityDay.findMany({
+        where: { date: { startsWith: monthPrefix } }
+      });
+
+      // Find which days need slots generated
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dStr = `${monthPrefix}-${d.toString().padStart(2, '0')}`;
+        if (!existingDates.has(dStr)) {
+          const day = allDays.find(day => day.date === dStr);
+          if (day) {
+            await this.bulkGenerateSlotsInternal(day, "10:00", "24:00", 15);
+          }
         }
       }
     }
@@ -305,7 +326,7 @@ export class AvailabilityService {
   async createSingleSlot(
     dateStr: string,
     startTime: string,
-    durationMinutes: number = 60
+    durationMinutes: number = 15
   ) {
     // Ensure the day is registered and open
     const day = await prisma.availabilityDay.upsert({
@@ -357,79 +378,82 @@ export class AvailabilityService {
     return { day, slot };
   }
 
-  /**
-   * Admin: Bulk generate time slots for a day.
-   */
   async bulkGenerateSlots(
     dateStr: string,
     startTime: string,
     endTime: string,
     slotDurationMinutes: number = 15
   ) {
-    // Ensure the day is registered and open
     const day = await prisma.availabilityDay.upsert({
       where: { date: dateStr },
       update: { isOpen: true },
       create: { date: dateStr, isOpen: true },
     });
 
+    return this.bulkGenerateSlotsInternal(day, startTime, endTime, slotDurationMinutes);
+  }
+
+  /**
+   * Internal optimized slot generator avoiding O(N) DB calls.
+   */
+  private async bulkGenerateSlotsInternal(
+    day: any,
+    startTime: string,
+    endTime: string,
+    slotDurationMinutes: number = 15
+  ) {
     const [startH, startM] = startTime.split(":").map(Number);
     const [endH, endM] = endTime.split(":").map(Number);
 
     let currentMinutes = startH * 60 + startM;
     const endMinutes = endH * 60 + endM;
 
-    const createdSlots = [];
+    const existingSlots = await prisma.availabilitySlot.findMany({
+      where: { availabilityDayId: day.id }
+    });
+    const existingMap = new Map(existingSlots.map(s => [s.startTime, s]));
+
+    const newSlotsData = [];
+    const slotsToUpdate = [];
 
     while (currentMinutes + slotDurationMinutes <= endMinutes) {
-      const slotStartH = Math.floor(currentMinutes / 60)
-        .toString()
-        .padStart(2, "0");
-      const slotStartM = (currentMinutes % 60).toString().padStart(2, "0");
-      const slotStart = `${slotStartH}:${slotStartM}`;
-
+      const slotStart = `${Math.floor(currentMinutes / 60).toString().padStart(2, "0")}:${(currentMinutes % 60).toString().padStart(2, "0")}`;
       const slotEndMinutes = currentMinutes + slotDurationMinutes;
-      const slotEndH = Math.floor(slotEndMinutes / 60)
-        .toString()
-        .padStart(2, "0");
-      const slotEndM = (slotEndMinutes % 60).toString().padStart(2, "0");
-      const slotEnd = `${slotEndH}:${slotEndM}`;
+      const slotEnd = `${Math.floor(slotEndMinutes / 60).toString().padStart(2, "0")}:${(slotEndMinutes % 60).toString().padStart(2, "0")}`;
 
-      const existingSlot = await prisma.availabilitySlot.findUnique({
-        where: {
-          availabilityDayId_startTime: {
-            availabilityDayId: day.id,
-            startTime: slotStart,
-          },
-        },
-      });
+      const existingSlot = existingMap.get(slotStart);
 
-      let slot;
       if (existingSlot) {
-        if (existingSlot.status === SlotStatus.AVAILABLE) {
-          slot = await prisma.availabilitySlot.update({
-            where: { id: existingSlot.id },
-            data: { endTime: slotEnd },
-          });
-        } else {
-          slot = existingSlot;
+        if (existingSlot.status === SlotStatus.AVAILABLE && existingSlot.endTime !== slotEnd) {
+          slotsToUpdate.push({ id: existingSlot.id, endTime: slotEnd });
         }
       } else {
-        slot = await prisma.availabilitySlot.create({
-          data: {
-            availabilityDayId: day.id,
-            startTime: slotStart,
-            endTime: slotEnd,
-            status: SlotStatus.AVAILABLE,
-          },
+        newSlotsData.push({
+          availabilityDayId: day.id,
+          startTime: slotStart,
+          endTime: slotEnd,
+          status: SlotStatus.AVAILABLE,
         });
       }
 
-      createdSlots.push(slot);
       currentMinutes += slotDurationMinutes;
     }
 
-    return createdSlots;
+    if (newSlotsData.length > 0) {
+      await prisma.availabilitySlot.createMany({ data: newSlotsData, skipDuplicates: true });
+    }
+
+    for (const update of slotsToUpdate) {
+      await prisma.availabilitySlot.update({
+        where: { id: update.id },
+        data: { endTime: update.endTime }
+      });
+    }
+
+    return prisma.availabilitySlot.findMany({
+      where: { availabilityDayId: day.id },
+      orderBy: { startTime: 'asc' }
+    });
   }
 
   /**
