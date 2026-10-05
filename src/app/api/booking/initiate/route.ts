@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
 
     const result = await bookingService.createBooking({
       ...validated,
-      userId: session?.userId,
+      userId: (session?.userId && session.userId !== "env-admin") ? session.userId : undefined,
       locale,
     });
 
