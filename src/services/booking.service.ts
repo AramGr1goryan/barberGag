@@ -224,6 +224,14 @@ export class BookingService {
       }).catch(e => console.error("Confirmation email error:", e));
     }
 
+    // Send Telegram notification since SMS is bypassed and booking is CONFIRMED immediately
+    const { telegramService } = await import("./telegram.service");
+    try {
+      await telegramService.notifyNewBooking(booking.id);
+    } catch (err) {
+      console.error("Failed to send telegram notification:", err);
+    }
+
     return {
       booking,
       sessionToken,
