@@ -1,1 +1,0 @@
-﻿import {prisma} from './src/lib/prisma'; (async()=>{const slots = await prisma.availabilitySlot.findMany({where:{startTime:'17:00', availabilityDay:{date:'2026-10-04'}}, include:{booking:true}}); console.dir(slots, {depth:null}); process.exit(0)})()

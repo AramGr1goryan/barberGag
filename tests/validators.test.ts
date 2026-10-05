@@ -22,29 +22,29 @@ describe("Validation Schemas & Normalization", () => {
 
   it("should validate booking schema with proper fields", () => {
     const validBooking = {
-      serviceId: "srv-123",
-      addonIds: ["add-1", "add-2"],
+      serviceIds: ["srv-123", "add-1"],
       date: "2026-09-20",
       slotId: "slt-456",
       guestName: "Aram Sargsyan",
-      guestPhone: "091123456",
+      guestPhone: "test@example.com",
+      guestRealPhone: "091123456",
     };
 
     const parsed = createBookingSchema.safeParse(validBooking);
     expect(parsed.success).toBe(true);
     if (parsed.success) {
-      expect(parsed.data.guestPhone).toBe("+37491123456");
+      expect(parsed.data.guestPhone).toBe("test@example.com");
     }
   });
 
   it("should reject invalid date format in booking schema", () => {
     const invalidBooking = {
-      serviceId: "srv-123",
-      addonIds: [],
+      serviceIds: ["srv-123"],
       date: "20-09-2026", // Wrong format
       slotId: "slt-456",
       guestName: "Aram",
-      guestPhone: "+37491123456",
+      guestPhone: "test@example.com",
+      guestRealPhone: "+37491123456",
     };
 
     const parsed = createBookingSchema.safeParse(invalidBooking);

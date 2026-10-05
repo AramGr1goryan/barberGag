@@ -1,1 +1,0 @@
-﻿import {prisma} from './src/lib/prisma'; (async()=>{const slots = await prisma.availabilityDay.findFirst({where:{date:'2026-10-04'}, include:{slots:true}}); console.dir(slots, {depth:null}); process.exit(0)})()

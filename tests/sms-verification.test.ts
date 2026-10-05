@@ -6,10 +6,10 @@ import {
 } from "../src/lib/crypto";
 
 describe("SMS Verification & Cryptography", () => {
-  it("should generate a 6-digit numeric verification code", () => {
+  it("should generate a 4-digit numeric verification code", () => {
     const code = generateVerificationCode();
-    expect(code).toHaveLength(6);
-    expect(/^\d{6}$/.test(code)).toBe(true);
+    expect(code).toHaveLength(4);
+    expect(/^\d{4}$/.test(code)).toBe(true);
   });
 
   it("should generate random unique salts", () => {

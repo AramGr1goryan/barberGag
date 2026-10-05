@@ -1,1 +1,0 @@
-﻿function getYerevanCurrentDateAndTime() { const d = new Date(); return { dateStr: new Intl.DateTimeFormat('en-CA', {timeZone: 'Asia/Yerevan'}).format(d), timeStr: new Intl.DateTimeFormat('en-GB', {timeZone: 'Asia/Yerevan', hour: '2-digit', minute: '2-digit', hour12: false}).format(d) } }; console.log(getYerevanCurrentDateAndTime());

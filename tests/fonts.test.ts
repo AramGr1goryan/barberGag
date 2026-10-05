@@ -11,6 +11,12 @@ vi.mock("../src/lib/prisma", () => ({
   },
 }));
 
+vi.mock("next/cache", () => ({
+  unstable_cache: (cb: any) => cb,
+  revalidateTag: vi.fn(),
+}));
+
+
 describe("Multi-Language Font Service", () => {
   let service: FontService;
 
