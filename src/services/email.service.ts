@@ -18,8 +18,14 @@ export class EmailService {
         pass: process.env.SMTP_PASS || "",
       },
     });
-    // Ensure the from address strictly matches the authenticated user to avoid Gmail spam flagging for spoofing
-    this.from = process.env.SMTP_FROM || `"Gagik Ghambaryan" <${userEmail}>`;
+    
+    let envFrom = process.env.SMTP_FROM;
+    // If they only wrote a name (e.g. "Gagik Ghambaryan") without an email, append the email properly
+    if (envFrom && !envFrom.includes("@")) {
+      envFrom = `"${envFrom.replace(/"/g, '')}" <${userEmail}>`;
+    }
+    
+    this.from = envFrom || `"Gagik Ghambaryan" <${userEmail}>`;
     this.appUrl = "https://barber-gag.vercel.app";
   }
 
