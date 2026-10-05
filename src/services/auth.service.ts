@@ -62,6 +62,29 @@ export class AuthService {
    * Authenticate user with email or phone + password
    */
   async login(identifier: string, password: string) {
+    // 1. Check environment variables first (super admin)
+    const envLogin = process.env.ADMIN_LOGIN;
+    const envPass = process.env.ADMIN_PASSWORD;
+
+    if (envLogin && envPass && identifier === envLogin && password === envPass) {
+      const token = await createAuthToken({
+        userId: "env-admin",
+        role: Role.ADMIN,
+        phone: envLogin,
+        name: "Super Admin",
+      });
+      return {
+        user: {
+          id: "env-admin",
+          name: "Super Admin",
+          phone: envLogin,
+          email: envLogin,
+          role: Role.ADMIN,
+        },
+        token,
+      };
+    }
+
     const user = await prisma.user.findFirst({
       where: {
         OR: [{ email: identifier }, { phone: identifier }],
@@ -76,6 +99,10 @@ export class AuthService {
     const isValid = await bcrypt.compare(password, user.passwordHash);
     if (!isValid) {
       throw new Error("INVALID_CREDENTIALS");
+    }
+
+    if (user.role === Role.ADMIN) {
+      throw new Error("INVALID_CREDENTIALS"); // Disable DB-based admin login
     }
 
     const token = await createAuthToken({
