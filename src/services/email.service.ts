@@ -8,16 +8,18 @@ export class EmailService {
   private appUrl: string;
 
   constructor() {
+    const userEmail = process.env.SMTP_USER || "barbergagik@gmail.com";
     this.transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST || "smtp.gmail.com",
       port: Number(process.env.SMTP_PORT) || 465,
       secure: process.env.SMTP_SECURE === "true" || true,
       auth: {
-        user: process.env.SMTP_USER || "barbergagik@gmail.com",
+        user: userEmail,
         pass: process.env.SMTP_PASS || "",
       },
     });
-    this.from = process.env.SMTP_FROM || '"Gagik Ghambaryan" <barbergagik@gmail.com>';
+    // Ensure the from address strictly matches the authenticated user to avoid Gmail spam flagging for spoofing
+    this.from = process.env.SMTP_FROM || `"Gagik Ghambaryan" <${userEmail}>`;
     this.appUrl = "https://barber-gag.vercel.app";
   }
 
@@ -178,10 +180,15 @@ export class EmailService {
     try {
       await this.transporter.sendMail({
         from: this.from,
+        replyTo: this.from,
         to,
         subject: dict.title + " | Gagik Ghambaryan",
         text: `${dict.title}\n\n${dict.subtitle}\n\n${dict.date}: ${date}\n${dict.time}: ${startTime} - ${endTime}\n${dict.service}: ${services}\n${dict.ref}: ${bookingNumber}`,
         html,
+        headers: {
+          'List-Unsubscribe': `<mailto:${this.from.match(/<(.+)>/)?.[1] || this.from}?subject=unsubscribe>`,
+          'Precedence': 'bulk'
+        }
       });
       return true;
     } catch (e) {
@@ -233,10 +240,15 @@ export class EmailService {
     try {
       await this.transporter.sendMail({
         from: this.from,
+        replyTo: this.from,
         to,
         subject: title + " | Gagik Ghambaryan",
         text: `${title}\n\n${subtitle}\n\n${text}`,
         html,
+        headers: {
+          'List-Unsubscribe': `<mailto:${this.from.match(/<(.+)>/)?.[1] || this.from}?subject=unsubscribe>`,
+          'Precedence': 'bulk'
+        }
       });
       return true;
     } catch (e) {
@@ -281,10 +293,15 @@ export class EmailService {
     try {
       await this.transporter.sendMail({
         from: this.from,
+        replyTo: this.from,
         to,
         subject: dict.title + " | Gagik Ghambaryan",
         text: `${dict.title}\n\n${dict.subtitle}\n\n${dict.text}\n\nCODE: ${code}`,
         html,
+        headers: {
+          'List-Unsubscribe': `<mailto:${this.from.match(/<(.+)>/)?.[1] || this.from}?subject=unsubscribe>`,
+          'Precedence': 'bulk'
+        }
       });
       return true;
     } catch (e) {
