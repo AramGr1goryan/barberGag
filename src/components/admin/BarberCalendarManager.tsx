@@ -13,7 +13,7 @@ function SwipeBooking({ task, isDone, locale, onToggleTask, onDelete, onEdit }: 
   const controls = useAnimation();
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [isEditing, setIsEditing] = React.useState(false);
-  const swipeThreshold = 40;
+  const swipeThreshold = 120;
 
   const handleDrag = (e: any, info: any) => {
     if (info.offset.x < -swipeThreshold) {
@@ -327,7 +327,22 @@ export function BarberCalendarManager() {
     }
   };
 
-  const availableSlots = daySlots.filter(s => s.status === "AVAILABLE");
+  const bookedSlots = daySlots.filter(s => s.status !== "AVAILABLE");
+  const timeToMin = (t: string) => {
+    const [h, m] = t.split(":").map(Number);
+    return h * 60 + m;
+  };
+  const availableSlots = daySlots.filter(s => {
+    if (s.status !== "AVAILABLE") return false;
+    const sStart = timeToMin(s.startTime);
+    const sEnd = timeToMin(s.endTime);
+    const hasOverlap = bookedSlots.some(b => {
+      const bStart = timeToMin(b.startTime);
+      const bEnd = timeToMin(b.endTime);
+      return bStart < sEnd && bEnd > sStart;
+    });
+    return !hasOverlap;
+  });
 
   const openFormForEdit = (task: any) => {
     setEditingBookingId(task.id);
