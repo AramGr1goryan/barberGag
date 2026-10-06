@@ -13,13 +13,15 @@ function SwipeBooking({ task, isDone, locale, onToggleTask, onDelete, onEdit }: 
   const controls = useAnimation();
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [isEditing, setIsEditing] = React.useState(false);
-  const swipeThreshold = 120;
+  
+  const getThreshold = () => typeof window !== "undefined" ? window.innerWidth * 0.7 : 250;
 
   const handleDrag = (e: any, info: any) => {
-    if (info.offset.x < -swipeThreshold) {
+    const threshold = getThreshold();
+    if (info.offset.x < -threshold) {
       setIsDeleting(true);
       setIsEditing(false);
-    } else if (info.offset.x > swipeThreshold) {
+    } else if (info.offset.x > threshold) {
       setIsEditing(true);
       setIsDeleting(false);
     } else {
@@ -29,13 +31,14 @@ function SwipeBooking({ task, isDone, locale, onToggleTask, onDelete, onEdit }: 
   };
 
   const handleDragEnd = async (e: any, info: any) => {
-    if (info.offset.x < -swipeThreshold) {
+    const threshold = getThreshold();
+    if (info.offset.x < -threshold) {
       if (confirm(locale === "ru" ? "Удалить запись?" : "Delete booking?")) {
         onDelete(task.id, true);
       } else {
         controls.start({ x: 0 });
       }
-    } else if (info.offset.x > swipeThreshold) {
+    } else if (info.offset.x > threshold) {
       onEdit(task);
       controls.start({ x: 0 });
     } else {
