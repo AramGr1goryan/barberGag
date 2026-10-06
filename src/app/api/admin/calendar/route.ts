@@ -107,11 +107,11 @@ export async function POST(req: NextRequest) {
         actorEmail: session.phone,
         action: "CREATE_SINGLE_SLOT",
         entity: "AvailabilitySlot",
-        entityId: slot.id,
+        entityId: slot?.id || "multiple-generated",
         metadata: {
           date,
           startTime,
-          endTime: slot.endTime,
+          endTime: slot?.endTime || "unknown",
           durationMinutes,
         },
       });
