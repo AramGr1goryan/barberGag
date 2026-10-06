@@ -291,7 +291,7 @@ export function BarberCalendarManager() {
         const srv = services.find(s => s.id === srvId);
         if (srv) {
           totalTime += srv.durationMinutes;
-          totalPrice += srv.priceMinorUnits / 100;
+          totalPrice += srv.priceMinorUnits;
         }
       });
       setBookingDuration(totalTime || 60);
@@ -591,12 +591,17 @@ export function BarberCalendarManager() {
                   <input type="time" required value={bookingTime} onChange={e => setBookingTime(e.target.value)} className="w-full bg-[#16161c]/50 backdrop-blur-md border border-white/10 rounded-lg px-3 py-2 text-[16px] text-white focus:border-blue-400 outline-none transition-colors" />
                 <select required value={bookingDuration} onChange={e => setBookingDuration(Number(e.target.value))} className="w-full bg-[#16161c]/50 backdrop-blur-md border border-white/10 rounded-lg px-3 py-2 text-[16px] text-white focus:border-blue-400 outline-none transition-colors">
                   <option value={0} disabled>{locale === "ru" ? "Длительность" : "Duration"}</option>
+                  <option value={10}>10 {locale === "ru" ? "мин" : "min"}</option>
                   <option value={15}>15 {locale === "ru" ? "мин" : "min"}</option>
+                  <option value={20}>20 {locale === "ru" ? "мин" : "min"}</option>
                   <option value={30}>30 {locale === "ru" ? "мин" : "min"}</option>
                   <option value={45}>45 {locale === "ru" ? "мин" : "min"}</option>
                   <option value={60}>60 {locale === "ru" ? "мин" : "min"}</option>
                   <option value={90}>90 {locale === "ru" ? "мин" : "min"}</option>
                   <option value={120}>120 {locale === "ru" ? "мин" : "min"}</option>
+                  {![0, 10, 15, 20, 30, 45, 60, 90, 120].includes(bookingDuration) && bookingDuration > 0 && (
+                    <option value={bookingDuration}>{bookingDuration} {locale === "ru" ? "мин" : "min"}</option>
+                  )}
                 </select>
               </div>
             </div>
