@@ -14,7 +14,8 @@ function SwipeBooking({ task, isDone, locale, onToggleTask, onDelete, onEdit }: 
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [isEditing, setIsEditing] = React.useState(false);
   
-  const getThreshold = () => typeof window !== "undefined" ? window.innerWidth * 0.7 : 250;
+  // 140 is a comfortable swipe distance that requires intention but is not impossible
+  const getThreshold = () => 140;
 
   const handleDrag = (e: any, info: any) => {
     const threshold = getThreshold();
@@ -60,7 +61,7 @@ function SwipeBooking({ task, isDone, locale, onToggleTask, onDelete, onEdit }: 
       <motion.div
         drag="x"
         dragConstraints={{ left: 0, right: 0 }}
-        dragElastic={0.2}
+        dragElastic={0.4}
         onDrag={handleDrag}
         onDragEnd={handleDragEnd}
         animate={controls}
@@ -75,9 +76,26 @@ function SwipeBooking({ task, isDone, locale, onToggleTask, onDelete, onEdit }: 
               <span className="text-xs font-bold text-blue-300 shrink-0">{task.startTime}-{task.endTime}</span>
               <span className={`text-[16px] font-bold truncate ${isDone ? "line-through text-muted" : "text-white"}`}>{task.guestName}</span>
             </div>
-            <div className="text-xs text-muted font-mono truncate">{task.guestRealPhone && <a href={`tel:${task.guestRealPhone}`} className="text-primary">📞 {task.guestRealPhone} • </a>}{task.guestPhone} • {task.items.map((i: any) => i.nameSnapshot).join("+")}</div>
+            
+            {/* Service name on a new line to be clearly visible */}
+            <div className={`text-sm font-semibold truncate mt-0.5 ${isDone ? "text-emerald-500/70" : "text-blue-100/90"}`}>
+              ✂ {task.items.map((i: any) => i.nameSnapshot).join(" + ")}
+            </div>
+
+            {/* Phone and Email */}
+            <div className="text-[11px] text-muted font-mono truncate mt-1 flex items-center gap-1.5">
+              {task.guestRealPhone ? (
+                <>
+                  <a href={`tel:${task.guestRealPhone}`} className="text-primary hover:underline">📞 {task.guestRealPhone}</a>
+                  {task.guestPhone && !task.guestPhone.startsWith("—") && <span className="opacity-50">• {task.guestPhone}</span>}
+                </>
+              ) : (
+                <a href={`tel:${task.guestPhone}`} className="text-primary hover:underline">📞 {task.guestPhone}</a>
+              )}
+            </div>
+
             {task.notes && (
-              <div className="text-[11px] text-zinc-400 mt-1 bg-white/5 rounded px-2 py-1 leading-tight border border-white/10 whitespace-pre-wrap">
+              <div className="text-[11px] text-zinc-400 mt-1.5 bg-white/5 rounded px-2 py-1 leading-tight border border-white/10 whitespace-pre-wrap">
                 📝 {task.notes}
               </div>
             )}
