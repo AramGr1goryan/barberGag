@@ -339,13 +339,15 @@ export class AvailabilityService {
     const startMinutes = startH * 60 + startM;
     const endMinutes = startMinutes + durationMinutes;
 
-    const endH = Math.floor(endMinutes / 60)
-      .toString()
-      .padStart(2, "0");
+    const endH = Math.floor(endMinutes / 60).toString().padStart(2, "0");
     const endM = (endMinutes % 60).toString().padStart(2, "0");
     const endTime = `${endH}:${endM}`;
 
-    const existingSlot = await prisma.availabilitySlot.findUnique({
+    // Generate 15-min chunks instead of 1 large slot to prevent overlap bugs
+    await this.bulkGenerateSlotsInternal(day, startTime, endTime, 15);
+
+    // Fetch the first slot to return (for backward compatibility if anyone uses the return value)
+    const slot = await prisma.availabilitySlot.findUnique({
       where: {
         availabilityDayId_startTime: {
           availabilityDayId: day.id,
@@ -353,27 +355,6 @@ export class AvailabilityService {
         },
       },
     });
-
-    let slot;
-    if (existingSlot) {
-      if (existingSlot.status === SlotStatus.AVAILABLE) {
-        slot = await prisma.availabilitySlot.update({
-          where: { id: existingSlot.id },
-          data: { endTime },
-        });
-      } else {
-        slot = existingSlot;
-      }
-    } else {
-      slot = await prisma.availabilitySlot.create({
-        data: {
-          availabilityDayId: day.id,
-          startTime,
-          endTime,
-          status: SlotStatus.AVAILABLE,
-        },
-      });
-    }
 
     return { day, slot };
   }
