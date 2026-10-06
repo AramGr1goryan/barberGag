@@ -207,7 +207,7 @@ export function ReturningAppointmentCard({
                     type="button"
                     onClick={() => handleDateChange(item.dateStr)}
                     className={`min-w-[48px] h-[56px] sm:min-w-[56px] sm:h-[64px] rounded-2xl flex flex-col items-center justify-center transition-all duration-200 shrink-0 select-none cursor-pointer border ${isSelected
-                        ? "bg-[#cbd5e1] border-[#cbd5e1] text-[#0f1115] shadow-[0_4px_20px_rgba(203,213,225,0.3)] scale-105"
+                        ? "bg-white border-white text-black scale-[1.02]"
                         : "bg-white/[0.02] border-white/10 text-[#94a3b8] hover:bg-white/[0.06] hover:border-white/20 hover:text-white"
                       }`}
                   >
@@ -233,7 +233,7 @@ export function ReturningAppointmentCard({
                   Այս օրվա համար ազատ ժամեր չկան:
                 </p>
               ) : (
-                <div className="space-y-2.5 max-h-[30dvh] overflow-y-auto pr-1 no-scrollbar pb-1">
+                <div className="space-y-2.5 max-h-[45dvh] overflow-y-auto pr-1 no-scrollbar pb-1">
                   {/* Morning */}
                   {availableSlots.some(s => s.startTime < "12:00") && (
                     <div className="border border-white/10 rounded-2xl bg-white/[0.02] overflow-hidden">
@@ -332,19 +332,17 @@ export function ReturningAppointmentCard({
             <p className="text-[10px] sm:text-[11px] text-red-400 font-medium bg-red-500/10 p-2.5 sm:p-3 rounded-xl border border-red-500/20">{errorMessage}</p>
           )}
 
-          <div className="pt-1">
-            <button
-              disabled={!selectedNewSlotId || isRescheduling}
-              onClick={handleConfirmReschedule}
-              className={`w-full py-3 sm:py-4 rounded-xl sm:rounded-2xl text-xs sm:text-[13px] font-bold tracking-wide transition-all ${
-                selectedNewSlotId 
-                  ? "bg-white text-black hover:bg-neutral-200 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.2)]" 
-                  : "bg-white/5 text-white/30 cursor-not-allowed"
-              }`}
-            >
-              {isRescheduling ? "Խնդրում ենք սպասել..." : "Հաստատել փոփոխությունը"}
-            </button>
-          </div>
+          {selectedNewSlotId && (
+            <div className="pt-1 animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <button
+                disabled={isRescheduling}
+                onClick={handleConfirmReschedule}
+                className="w-full py-3 sm:py-4 rounded-xl sm:rounded-2xl text-xs sm:text-[13px] font-bold tracking-wide transition-all bg-white text-black hover:bg-neutral-200 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.2)]"
+              >
+                {isRescheduling ? "Խնդրում ենք սպասել..." : "Հաստատել փոփոխությունը"}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     );
