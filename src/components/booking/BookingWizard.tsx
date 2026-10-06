@@ -668,7 +668,7 @@ export function BookingWizard({
         )}
 
         {(!isCheckingActive && activeBooking && !blockedData?.isBlocked) && (
-          <div className="flex-1">
+          <div className="flex-1 flex flex-col justify-center pb-24 lg:pb-0">
             <ReturningAppointmentCard
               locale={locale}
               booking={activeBooking}

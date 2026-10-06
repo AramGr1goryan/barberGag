@@ -58,6 +58,18 @@ export function ReturningAppointmentCard({
   const [errorMessage, setErrorMessage] = useState("");
 
   const [openDates, setOpenDates] = useState<string[]>([]);
+  const [expandedSection, setExpandedSection] = useState<"morning" | "afternoon" | "evening" | "none">("none");
+
+  // Automatically expand first available section
+  useEffect(() => {
+    if (availableSlots.length > 0) {
+      if (availableSlots.some(s => s.startTime < "12:00")) setExpandedSection("morning");
+      else if (availableSlots.some(s => s.startTime >= "12:00" && s.startTime < "17:00")) setExpandedSection("afternoon");
+      else if (availableSlots.some(s => s.startTime >= "17:00")) setExpandedSection("evening");
+    } else {
+      setExpandedSection("none");
+    }
+  }, [availableSlots]);
 
   useEffect(() => {
     const fetchOpenDates = async () => {
@@ -168,6 +180,220 @@ export function ReturningAppointmentCard({
       setIsCancelling(false);
     }
   };
+  if (isRescheduleOpen) {
+    return (
+      <div className="bg-surface/80 backdrop-blur-2xl border border-white/10 rounded-3xl p-6 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.6)] max-w-2xl mx-auto space-y-6">
+        <div className="flex items-center justify-between pb-4 border-b border-white/10">
+          <div>
+            <h3 className="text-lg font-bold text-white tracking-wide">Փոխել այցի ժամը</h3>
+            <p className="text-[11px] font-mono text-muted uppercase mt-1">Reschedule Appointment</p>
+          </div>
+          <button onClick={() => setIsRescheduleOpen(false)} className="text-muted hover:text-white p-2 transition-colors rounded-full hover:bg-white/5">
+            <XCircle className="w-6 h-6" />
+          </button>
+        </div>
+        
+        <div className="space-y-6">
+          <div>
+            <label className="block text-[10px] font-bold tracking-widest text-neutral-400 mb-2.5 uppercase">
+              Նոր Ամսաթիվ / Date
+            </label>
+            <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-none select-none -mx-2 px-2">
+              {datesList.map((item) => {
+                const isSelected = newDate === item.dateStr;
+                return (
+                  <button
+                    key={item.dateStr}
+                    type="button"
+                    onClick={() => handleDateChange(item.dateStr)}
+                    className={`min-w-[56px] h-[64px] rounded-2xl flex flex-col items-center justify-center transition-all duration-200 shrink-0 select-none cursor-pointer border ${isSelected
+                        ? "bg-[#cbd5e1] border-[#cbd5e1] text-[#0f1115] shadow-[0_4px_20px_rgba(203,213,225,0.3)] scale-105"
+                        : "bg-white/[0.02] border-white/10 text-[#94a3b8] hover:bg-white/[0.06] hover:border-white/20 hover:text-white"
+                      }`}
+                  >
+                    <span className={`text-[10px] font-mono tracking-wider font-semibold mb-1 ${isSelected ? "text-neutral-700" : "text-neutral-500"}`}>
+                      {item.dayName}
+                    </span>
+                    <span className={`text-xl font-display font-bold ${isSelected ? "text-black" : "text-white"}`}>
+                      {item.dayNum}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {newDate && (
+            <div>
+              <label className="block text-[10px] font-bold tracking-widest text-neutral-400 mb-2.5 uppercase">
+                Ազատ Ժամեր / Slots
+              </label>
+              {availableSlots.length === 0 ? (
+                <p className="text-xs text-muted-foreground p-4 rounded-2xl border border-white/10 bg-white/[0.02] text-center">
+                  Այս օրվա համար ազատ ժամեր չկան:
+                </p>
+              ) : (
+                <div className="space-y-3 max-h-[30dvh] overflow-y-auto pr-1 no-scrollbar pb-2">
+                  {/* Morning */}
+                  {availableSlots.some(s => s.startTime < "12:00") && (
+                    <div className="border border-white/10 rounded-2xl bg-white/[0.02] overflow-hidden">
+                      <button 
+                        onClick={() => setExpandedSection(expandedSection === "morning" ? "none" : "morning")}
+                        className="w-full flex items-center justify-between p-3.5 bg-white/[0.01] hover:bg-white/[0.03] transition-colors"
+                      >
+                        <span className="text-[11px] font-mono tracking-widest text-neutral-300 uppercase font-bold">{locale === "ru" ? "Утро" : locale === "hy" ? "Առավոտ" : "Morning"}</span>
+                        <span className="text-muted font-mono">{expandedSection === "morning" ? "-" : "+"}</span>
+                      </button>
+                      {expandedSection === "morning" && (
+                        <div className="grid grid-cols-3 gap-2 p-3 pt-0">
+                          {availableSlots.filter(s => s.startTime < "12:00").map((slot) => (
+                            <button
+                              key={slot.id}
+                              onClick={() => setSelectedNewSlotId(slot.id)}
+                              className={`py-3.5 px-2 rounded-xl text-[13px] font-mono font-medium transition-all duration-200 border ${
+                                selectedNewSlotId === slot.id
+                                  ? "bg-white text-black border-white shadow-md scale-105"
+                                  : "bg-black/20 text-white/80 border-white/10 hover:border-white/30 hover:bg-white/5"
+                              }`}
+                            >
+                              {slot.startTime}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Afternoon */}
+                  {availableSlots.some(s => s.startTime >= "12:00" && s.startTime < "17:00") && (
+                    <div className="border border-white/10 rounded-2xl bg-white/[0.02] overflow-hidden">
+                      <button 
+                        onClick={() => setExpandedSection(expandedSection === "afternoon" ? "none" : "afternoon")}
+                        className="w-full flex items-center justify-between p-3.5 bg-white/[0.01] hover:bg-white/[0.03] transition-colors"
+                      >
+                        <span className="text-[11px] font-mono tracking-widest text-neutral-300 uppercase font-bold">{locale === "ru" ? "День" : locale === "hy" ? "Կեսօր" : "Afternoon"}</span>
+                        <span className="text-muted font-mono">{expandedSection === "afternoon" ? "-" : "+"}</span>
+                      </button>
+                      {expandedSection === "afternoon" && (
+                        <div className="grid grid-cols-3 gap-2 p-3 pt-0">
+                          {availableSlots.filter(s => s.startTime >= "12:00" && s.startTime < "17:00").map((slot) => (
+                            <button
+                              key={slot.id}
+                              onClick={() => setSelectedNewSlotId(slot.id)}
+                              className={`py-3.5 px-2 rounded-xl text-[13px] font-mono font-medium transition-all duration-200 border ${
+                                selectedNewSlotId === slot.id
+                                  ? "bg-white text-black border-white shadow-md scale-105"
+                                  : "bg-black/20 text-white/80 border-white/10 hover:border-white/30 hover:bg-white/5"
+                              }`}
+                            >
+                              {slot.startTime}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Evening */}
+                  {availableSlots.some(s => s.startTime >= "17:00") && (
+                    <div className="border border-white/10 rounded-2xl bg-white/[0.02] overflow-hidden">
+                      <button 
+                        onClick={() => setExpandedSection(expandedSection === "evening" ? "none" : "evening")}
+                        className="w-full flex items-center justify-between p-3.5 bg-white/[0.01] hover:bg-white/[0.03] transition-colors"
+                      >
+                        <span className="text-[11px] font-mono tracking-widest text-neutral-300 uppercase font-bold">{locale === "ru" ? "Вечер" : locale === "hy" ? "Երեկո" : "Evening"}</span>
+                        <span className="text-muted font-mono">{expandedSection === "evening" ? "-" : "+"}</span>
+                      </button>
+                      {expandedSection === "evening" && (
+                        <div className="grid grid-cols-3 gap-2 p-3 pt-0">
+                          {availableSlots.filter(s => s.startTime >= "17:00").map((slot) => (
+                            <button
+                              key={slot.id}
+                              onClick={() => setSelectedNewSlotId(slot.id)}
+                              className={`py-3.5 px-2 rounded-xl text-[13px] font-mono font-medium transition-all duration-200 border ${
+                                selectedNewSlotId === slot.id
+                                  ? "bg-white text-black border-white shadow-md scale-105"
+                                  : "bg-black/20 text-white/80 border-white/10 hover:border-white/30 hover:bg-white/5"
+                              }`}
+                            >
+                              {slot.startTime}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {errorMessage && (
+            <p className="text-[11px] text-red-400 font-medium bg-red-500/10 p-3 rounded-xl border border-red-500/20">{errorMessage}</p>
+          )}
+
+          <div className="pt-2">
+            <button
+              disabled={!selectedNewSlotId || isRescheduling}
+              onClick={handleConfirmReschedule}
+              className={`w-full py-4 rounded-2xl text-[13px] font-bold tracking-wide transition-all ${
+                selectedNewSlotId 
+                  ? "bg-white text-black hover:bg-neutral-200 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.2)]" 
+                  : "bg-white/5 text-white/30 cursor-not-allowed"
+              }`}
+            >
+              {isRescheduling ? "Խնդրում ենք սպասել..." : "Հաստատել փոփոխությունը"}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isCancelOpen) {
+    return (
+      <div className="bg-surface/80 backdrop-blur-2xl border border-white/10 rounded-3xl p-6 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.6)] max-w-2xl mx-auto space-y-6">
+        <div className="flex items-center justify-between pb-4 border-b border-white/10">
+          <div>
+            <h3 className="text-lg font-bold text-white tracking-wide">Չեղարկել ամրագրումը</h3>
+            <p className="text-[11px] font-mono text-muted uppercase mt-1">Cancel Appointment</p>
+          </div>
+          <button onClick={() => setIsCancelOpen(false)} className="text-muted hover:text-white p-2 transition-colors rounded-full hover:bg-white/5">
+            <XCircle className="w-6 h-6" />
+          </button>
+        </div>
+        
+        <div className="space-y-6">
+          <div>
+            <label className="block text-[10px] font-bold tracking-widest text-neutral-400 mb-2.5 uppercase">
+              Չեղարկման պատճառ (ոչ պարտադիր)
+            </label>
+            <textarea
+              rows={3}
+              value={cancelReason}
+              onChange={(e) => setCancelReason(e.target.value)}
+              placeholder="Օրինակ՝ պլանների փոփոխություն..."
+              className="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-sm text-white focus:outline-none focus:border-white/30 transition-all placeholder:text-neutral-600"
+            />
+          </div>
+
+          {errorMessage && (
+            <p className="text-[11px] text-red-400 font-medium bg-red-500/10 p-3 rounded-xl border border-red-500/20">{errorMessage}</p>
+          )}
+
+          <div className="pt-2">
+            <button
+              disabled={isCancelling}
+              onClick={handleConfirmCancel}
+              className="w-full py-4 bg-red-500/10 text-red-400 border border-red-500/20 rounded-2xl text-[13px] font-bold tracking-wide transition-all hover:bg-red-500/20 active:scale-95"
+            >
+              {isCancelling ? "Խնդրում ենք սպասել..." : "Այո, չեղարկել"}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-surface/80 backdrop-blur-2xl border border-white/10 rounded-3xl p-8 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.6)] max-w-2xl mx-auto space-y-8">
@@ -241,190 +467,7 @@ export function ReturningAppointmentCard({
           <span>{dict.cancelAppointment}</span>
         </button>
       </div>
-
-      {/* Reschedule Modal */}
-      <Modal
-        isOpen={isRescheduleOpen}
-        onClose={() => setIsRescheduleOpen(false)}
-        title="Փոխել այցի ժամը / Reschedule Appointment"
-        description="Ընտրեք նոր ամսաթիվ և ազատ ժամ:"
-      >
-        <div className="space-y-4 py-2">
-          <div>
-            <label className="block text-xs font-mono text-muted mb-1.5 uppercase">
-              Նոր Ամսաթիվ (Date)
-            </label>
-            <div className="flex gap-2.5 overflow-x-auto pb-2 pt-1 scrollbar-none select-none -mx-1 px-1">
-              {datesList.map((item) => {
-                const isSelected = newDate === item.dateStr;
-                return (
-                  <button
-                    key={item.dateStr}
-                    type="button"
-                    onClick={() => handleDateChange(item.dateStr)}
-                    className={`min-w-[56px] h-[64px] rounded-[16px] flex flex-col items-center justify-center transition-all duration-200 shrink-0 select-none cursor-pointer border ${isSelected
-                        ? "bg-[#cbd5e1] border-[#cbd5e1] text-[#0f1115] shadow-[0_4px_20px_rgba(203,213,225,0.3)] scale-[1.02]"
-                        : "bg-white/[0.02] border-white/10 text-[#94a3b8] hover:bg-white/[0.06] hover:border-white/20 hover:text-white"
-                      }`}
-                  >
-                    <span className={`text-[10px] font-mono tracking-wider font-semibold mb-1 ${isSelected ? "text-neutral-700" : "text-neutral-500"}`}>
-                      {item.dayName}
-                    </span>
-                    <span className={`text-xl font-display font-bold ${isSelected ? "text-black" : "text-white"}`}>
-                      {item.dayNum}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {newDate && (
-            <div>
-              <label className="block text-xs font-mono text-muted mb-2 uppercase">
-                Ազատ Ժամեր (Available Slots)
-              </label>
-              {availableSlots.length === 0 ? (
-                <p className="text-xs text-muted-foreground p-3.5 rounded-2xl border border-white/10 bg-white/[0.02]">
-                  Այս օրվա համար ազատ ժամեր չկան կամ օրը փակ է:
-                </p>
-              ) : (
-                <div className="space-y-4 max-h-[250px] overflow-y-auto pr-2 no-scrollbar">
-                  {/* Morning */}
-                  {availableSlots.some(s => s.startTime < "12:00") && (
-                    <div className="space-y-2">
-                      <div className="text-[10px] font-mono tracking-widest text-neutral-500 uppercase">
-                        {locale === "ru" ? "Утро" : locale === "hy" ? "Առավոտ" : "Morning"}
-                      </div>
-                      <div className="grid grid-cols-3 gap-2">
-                        {availableSlots.filter(s => s.startTime < "12:00").map((slot) => (
-                          <button
-                            key={slot.id}
-                            onClick={() => setSelectedNewSlotId(slot.id)}
-                            className={`py-3.5 px-2 rounded-2xl text-[13px] font-mono font-medium transition-all duration-300 transform border shadow-sm ${
-                              selectedNewSlotId === slot.id
-                                ? "bg-[#cbd5e1] text-black border-[#cbd5e1] shadow-[0_0_20px_rgba(203,213,225,0.4)] scale-[1.02]"
-                                : "bg-white/[0.03] text-white/90 border-white/10 hover:border-[#cbd5e1]/50 hover:bg-white/[0.06] hover:scale-[1.02]"
-                            }`}
-                          >
-                            {slot.startTime}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Afternoon */}
-                  {availableSlots.some(s => s.startTime >= "12:00" && s.startTime < "17:00") && (
-                    <div className="space-y-2">
-                      <div className="text-[10px] font-mono tracking-widest text-neutral-500 uppercase">
-                        {locale === "ru" ? "День" : locale === "hy" ? "Կեսօր" : "Afternoon"}
-                      </div>
-                      <div className="grid grid-cols-3 gap-2">
-                        {availableSlots.filter(s => s.startTime >= "12:00" && s.startTime < "17:00").map((slot) => (
-                          <button
-                            key={slot.id}
-                            onClick={() => setSelectedNewSlotId(slot.id)}
-                            className={`py-3.5 px-2 rounded-2xl text-[13px] font-mono font-medium transition-all duration-300 transform border shadow-sm ${
-                              selectedNewSlotId === slot.id
-                                ? "bg-[#cbd5e1] text-black border-[#cbd5e1] shadow-[0_0_20px_rgba(203,213,225,0.4)] scale-[1.02]"
-                                : "bg-white/[0.03] text-white/90 border-white/10 hover:border-[#cbd5e1]/50 hover:bg-white/[0.06] hover:scale-[1.02]"
-                            }`}
-                          >
-                            {slot.startTime}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Evening */}
-                  {availableSlots.some(s => s.startTime >= "17:00") && (
-                    <div className="space-y-2">
-                      <div className="text-[10px] font-mono tracking-widest text-neutral-500 uppercase">
-                        {locale === "ru" ? "Вечер" : locale === "hy" ? "Երեկո" : "Evening"}
-                      </div>
-                      <div className="grid grid-cols-3 gap-2">
-                        {availableSlots.filter(s => s.startTime >= "17:00").map((slot) => (
-                          <button
-                            key={slot.id}
-                            onClick={() => setSelectedNewSlotId(slot.id)}
-                            className={`py-3.5 px-2 rounded-2xl text-[13px] font-mono font-medium transition-all duration-300 transform border shadow-sm ${
-                              selectedNewSlotId === slot.id
-                                ? "bg-[#cbd5e1] text-black border-[#cbd5e1] shadow-[0_0_20px_rgba(203,213,225,0.4)] scale-[1.02]"
-                                : "bg-white/[0.03] text-white/90 border-white/10 hover:border-[#cbd5e1]/50 hover:bg-white/[0.06] hover:scale-[1.02]"
-                            }`}
-                          >
-                            {slot.startTime}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-
-          {errorMessage && (
-            <p className="text-xs text-red-400 font-medium">{errorMessage}</p>
-          )}
-
-          <div className="pt-4 flex justify-end space-x-3">
-            <Button variant="ghost" onClick={() => setIsRescheduleOpen(false)}>
-              Փակել
-            </Button>
-            <Button
-              variant="primary"
-              disabled={!selectedNewSlotId}
-              isLoading={isRescheduling}
-              onClick={handleConfirmReschedule}
-            >
-              Հաստատել փոփոխությունը
-            </Button>
-          </div>
-        </div>
-      </Modal>
-
-      {/* Cancel Modal */}
-      <Modal
-        isOpen={isCancelOpen}
-        onClose={() => setIsCancelOpen(false)}
-        title="Չեղարկել ամրագրումը / Cancel Appointment"
-        description="Վստա՞հ եք, որ ցանկանում եք չեղարկել Ձեր ամրագրումը:"
-      >
-        <div className="space-y-4 py-2">
-          <div>
-            <label className="block text-xs font-mono text-muted mb-1.5 uppercase">
-              Չեղարկման պատճառ (ոչ պարտադիր)
-            </label>
-            <textarea
-              rows={2}
-              value={cancelReason}
-              onChange={(e) => setCancelReason(e.target.value)}
-              placeholder="Օրինակ՝ պլանների փոփոխություն..."
-              className="w-full bg-white/[0.04] border border-white/10 rounded-2xl p-3.5 text-xs text-foreground focus:outline-none focus:border-slate-300/60 transition-all"
-            />
-          </div>
-
-          {errorMessage && (
-            <p className="text-xs text-red-400 font-medium">{errorMessage}</p>
-          )}
-
-          <div className="pt-4 flex justify-end space-x-3">
-            <Button variant="ghost" onClick={() => setIsCancelOpen(false)}>
-              Հետ
-            </Button>
-            <Button
-              variant="danger"
-              isLoading={isCancelling}
-              onClick={handleConfirmCancel}
-            >
-              Այո, չեղարկել
-            </Button>
-          </div>
-        </div>
-      </Modal>
     </div>
   );
 }
+
