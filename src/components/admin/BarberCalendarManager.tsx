@@ -143,6 +143,7 @@ export function BarberCalendarManager() {
 
   const [isManualBookingOpen, setIsManualBookingOpen] = useState(false);
   const [editingBookingId, setEditingBookingId] = useState<string | null>(null);
+  const [bookingDate, setBookingDate] = useState("");
   const [guestName, setGuestName] = useState("");
   const [guestPhone, setGuestPhone] = useState("+374 ");
   const [customServiceName, setCustomServiceName] = useState("");
@@ -344,7 +345,7 @@ export function BarberCalendarManager() {
         body: JSON.stringify({
           action: editingBookingId ? "editManualBooking" : "createManualBooking",
           bookingId: editingBookingId,
-          date: selectedDate,
+          date: bookingDate,
           startTime: bookingTime,
           durationMinutes: bookingDuration,
           guestName,
@@ -389,6 +390,7 @@ export function BarberCalendarManager() {
 
   const openFormForEdit = (task: any) => {
     setEditingBookingId(task.id);
+    setBookingDate(selectedDate);
     setBookingTime(task.startTime);
     setBookingDuration(task.totalDurationMinutes);
     setGuestName(task.guestName);
@@ -413,6 +415,7 @@ export function BarberCalendarManager() {
 
   const openForm = (time: string = "") => {
     setEditingBookingId(null);
+    setBookingDate(selectedDate);
     setGuestName("");
     setGuestPhone("+374 ");
     setCustomServiceName("");
@@ -582,8 +585,10 @@ export function BarberCalendarManager() {
             <h3 className="text-lg font-bold text-white mb-4 pr-8">{t.barberCalendar.addClient || (locale === "ru" ? "Записать клиента" : "Book Client")}</h3>
 
             <form ref={formRef} onSubmit={onSubmitBooking} className="space-y-3">
-              <div className="grid grid-cols-2 gap-2">
-                <input type="time" required value={bookingTime} onChange={e => setBookingTime(e.target.value)} className="w-full bg-[#16161c]/50 backdrop-blur-md border border-white/10 rounded-lg px-3 py-2 text-[16px] text-white focus:border-blue-400 outline-none transition-colors" />
+              <div className="space-y-2">
+                <input type="date" required value={bookingDate} onChange={e => setBookingDate(e.target.value)} className="w-full bg-[#16161c]/50 backdrop-blur-md border border-white/10 rounded-lg px-3 py-2 text-[16px] text-white focus:border-blue-400 outline-none transition-colors" />
+                <div className="grid grid-cols-2 gap-2">
+                  <input type="time" required value={bookingTime} onChange={e => setBookingTime(e.target.value)} className="w-full bg-[#16161c]/50 backdrop-blur-md border border-white/10 rounded-lg px-3 py-2 text-[16px] text-white focus:border-blue-400 outline-none transition-colors" />
                 <select required value={bookingDuration} onChange={e => setBookingDuration(Number(e.target.value))} className="w-full bg-[#16161c]/50 backdrop-blur-md border border-white/10 rounded-lg px-3 py-2 text-[16px] text-white focus:border-blue-400 outline-none transition-colors">
                   <option value={0} disabled>{locale === "ru" ? "Длительность" : "Duration"}</option>
                   <option value={15}>15 {locale === "ru" ? "мин" : "min"}</option>
@@ -594,6 +599,7 @@ export function BarberCalendarManager() {
                   <option value={120}>120 {locale === "ru" ? "мин" : "min"}</option>
                 </select>
               </div>
+            </div>
 
               
               <div className="space-y-1.5 max-h-[200px] overflow-y-auto no-scrollbar border border-white/10 rounded-lg p-2 bg-[#16161c]/50">

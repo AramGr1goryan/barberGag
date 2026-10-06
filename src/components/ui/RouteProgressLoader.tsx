@@ -62,12 +62,12 @@ export function RouteProgressLoader() {
   return (
     <div className="fixed top-0 left-0 right-0 z-[100] pointer-events-none flex flex-col">
       {/* 1px glowing line container */}
-      <div className="h-[2px] w-full bg-accent/20 overflow-hidden relative">
+      <div className="h-[2px] w-full bg-zinc-500/20 overflow-hidden relative">
         {/* The shooting progress beam */}
-        <div className="absolute top-0 left-0 h-full w-[30%] bg-accent animate-[shimmer_1.5s_infinite] shadow-[0_0_20px_2px_rgba(197,168,128,1)] rounded-full" />
+        <div className="absolute top-0 left-0 h-full w-[30%] bg-zinc-300 animate-[shimmer_1.5s_infinite] shadow-[0_0_20px_2px_rgba(212,212,216,0.8)] rounded-full" />
       </div>
       {/* Subtle top screen glow when loading */}
-      <div className="h-20 w-full bg-gradient-to-b from-accent/10 to-transparent opacity-50 animate-pulse" />
+      <div className="h-20 w-full bg-gradient-to-b from-zinc-400/10 to-transparent opacity-50 animate-pulse" />
     </div>
   );
 }

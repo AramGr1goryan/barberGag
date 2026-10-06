@@ -57,6 +57,30 @@ export function ReturningAppointmentCard({
   const [selectedNewSlotId, setSelectedNewSlotId] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
+  const datesList = React.useMemo(() => {
+    const list = [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    for (let i = 0; i < 14; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() + i);
+
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const dayStr = String(d.getDate()).padStart(2, "0");
+      const dateStr = `${year}-${month}-${dayStr}`;
+      
+      const dayName = new Intl.DateTimeFormat(
+        locale === "hy" ? "hy-AM" : locale === "ru" ? "ru-RU" : "en-US",
+        { weekday: "short" }
+      ).format(d).replace(".", "").toUpperCase();
+      
+      list.push({ dateStr, dayNum: dayStr, dayName });
+    }
+    return list;
+  }, [locale]);
+
   const handleDateChange = async (dateStr: string) => {
     setNewDate(dateStr);
     setSelectedNewSlotId("");
@@ -192,18 +216,18 @@ export function ReturningAppointmentCard({
       {/* Action Buttons - Only Reschedule and Cancel */}
       <div className="flex flex-col sm:flex-row gap-4 pt-2">
         <Button
-          variant="secondary"
+          variant="outline"
           onClick={() => setIsRescheduleOpen(true)}
-          className="flex-1 gap-2 py-3.5"
+          className="flex-1 gap-2 py-3.5 border-zinc-500/30 text-zinc-200 hover:bg-zinc-800/50 rounded-2xl"
         >
-          <RefreshCw className="w-4 h-4 text-slate-200" />
+          <RefreshCw className="w-4 h-4" />
           <span>{dict.changeAppointment}</span>
         </Button>
 
         <Button
-          variant="danger"
+          variant="outline"
           onClick={() => setIsCancelOpen(true)}
-          className="flex-1 gap-2 py-3.5"
+          className="flex-1 gap-2 py-3.5 border-red-500/30 text-red-400 hover:bg-red-500/10 rounded-2xl"
         >
           <XCircle className="w-4 h-4" />
           <span>{dict.cancelAppointment}</span>
@@ -222,13 +246,29 @@ export function ReturningAppointmentCard({
             <label className="block text-xs font-mono text-muted mb-1.5 uppercase">
               Նոր Ամսաթիվ (Date)
             </label>
-            <input
-              type="date"
-              value={newDate}
-              min={new Date().toISOString().split("T")[0]}
-              onChange={(e) => handleDateChange(e.target.value)}
-              className="w-full bg-[#16161c] border border-white/10 hover:border-[#cbd5e1]/50 focus:border-[#cbd5e1] focus:ring-1 focus:ring-[#cbd5e1]/30 rounded-2xl px-5 py-4 text-[16px] font-mono text-white transition-all duration-300 [color-scheme:dark] shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)] cursor-pointer"
-            />
+            <div className="flex gap-2.5 overflow-x-auto pb-2 pt-1 scrollbar-none select-none -mx-1 px-1">
+              {datesList.map((item) => {
+                const isSelected = newDate === item.dateStr;
+                return (
+                  <button
+                    key={item.dateStr}
+                    type="button"
+                    onClick={() => handleDateChange(item.dateStr)}
+                    className={`min-w-[56px] h-[64px] rounded-[16px] flex flex-col items-center justify-center transition-all duration-200 shrink-0 select-none cursor-pointer border ${isSelected
+                        ? "bg-[#cbd5e1] border-[#cbd5e1] text-[#0f1115] shadow-[0_4px_20px_rgba(203,213,225,0.3)] scale-[1.02]"
+                        : "bg-white/[0.02] border-white/10 text-[#94a3b8] hover:bg-white/[0.06] hover:border-white/20 hover:text-white"
+                      }`}
+                  >
+                    <span className={`text-[10px] font-mono tracking-wider font-semibold mb-1 ${isSelected ? "text-neutral-700" : "text-neutral-500"}`}>
+                      {item.dayName}
+                    </span>
+                    <span className={`text-xl font-display font-bold ${isSelected ? "text-black" : "text-white"}`}>
+                      {item.dayNum}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {newDate && (
