@@ -12,63 +12,79 @@ import Link from "next/link";
 function SwipeBooking({ task, isDone, locale, onToggleTask, onDelete, onEdit }: any) {
   const controls = useAnimation();
   const [isDeleting, setIsDeleting] = React.useState(false);
-  const [isEditing, setIsEditing] = React.useState(false);
-  
-  // 140 is a comfortable swipe distance that requires intention but is not impossible
-  const getThreshold = () => 140;
+  const [isOpen, setIsOpen] = React.useState(false);
 
   const handleDrag = (e: any, info: any) => {
-    const threshold = getThreshold();
-    if (info.offset.x < -threshold) {
+    // Only care about swiping left (negative x)
+    if (info.offset.x < -140) {
       setIsDeleting(true);
-      setIsEditing(false);
-    } else if (info.offset.x > threshold) {
-      setIsEditing(true);
-      setIsDeleting(false);
     } else {
       setIsDeleting(false);
-      setIsEditing(false);
     }
   };
 
   const handleDragEnd = async (e: any, info: any) => {
-    const threshold = getThreshold();
-    if (info.offset.x < -threshold) {
+    if (info.offset.x < -140) {
+      // Long swipe -> direct confirm
       if (confirm(locale === "ru" ? "Удалить запись?" : "Delete booking?")) {
         onDelete(task.id, true);
       } else {
         controls.start({ x: 0 });
+        setIsOpen(false);
       }
-    } else if (info.offset.x > threshold) {
-      onEdit(task);
-      controls.start({ x: 0 });
+    } else if (info.offset.x < -50 || (isOpen && info.offset.x < 0)) {
+      // Short swipe -> snap open
+      controls.start({ x: -80 });
+      setIsOpen(true);
     } else {
+      // Snap closed
       controls.start({ x: 0 });
+      setIsOpen(false);
     }
     setIsDeleting(false);
-    setIsEditing(false);
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (confirm(locale === "ru" ? "Удалить запись?" : "Delete booking?")) {
+      onDelete(task.id, true);
+    } else {
+      controls.start({ x: 0 });
+      setIsOpen(false);
+    }
   };
 
   return (
     <div className="relative overflow-hidden rounded-xl border border-white/10 group bg-zinc-800">
-      <div className="absolute inset-y-0 left-0 flex items-center justify-start pl-6 text-white font-bold w-1/2 h-full bg-blue-600 pointer-events-none">
-        <Edit2 className={`w-5 h-5 ${isEditing ? 'animate-bounce' : ''}`} />
-      </div>
-      <div className="absolute inset-y-0 right-0 flex items-center justify-end pr-6 text-white font-bold w-1/2 h-full bg-red-600 pointer-events-none">
-        <Trash2 className={`w-5 h-5 ${isDeleting ? 'animate-pulse' : ''}`} />
+      <div 
+        className="absolute inset-y-0 right-0 flex items-center justify-end pr-6 text-white font-bold w-1/2 h-full bg-red-600 cursor-pointer"
+        onClick={handleDeleteClick}
+      >
+        <Trash2 className={`w-5 h-5 ${isDeleting ? 'animate-pulse scale-125 transition-transform' : 'transition-transform'}`} />
       </div>
 
       <motion.div
         drag="x"
         dragConstraints={{ left: 0, right: 0 }}
-        dragElastic={0.4}
+        dragElastic={0.2}
         onDrag={handleDrag}
         onDragEnd={handleDragEnd}
         animate={controls}
-        className={`relative z-10 w-full flex items-center justify-between p-3 transition-colors ${isDone ? "bg-[#14281e] border-emerald-500/20" : "bg-[#1d202c]"}`}
+        className={`relative z-10 w-full flex items-center justify-between p-3 transition-colors cursor-pointer ${isDone ? "bg-[#14281e] border-emerald-500/20" : "bg-[#1d202c]"}`}
+        onClick={(e) => {
+          // If we clicked exactly on the card (not dragging and not checkbox)
+          if (!isOpen) onEdit(task);
+          else {
+            controls.start({ x: 0 });
+            setIsOpen(false);
+          }
+        }}
       >
         <div className="flex items-center gap-3 w-full pr-2">
-          <button onClick={() => onToggleTask(task)} className={`shrink-0 w-6 h-6 rounded flex items-center justify-center border transition-colors ${isDone ? "bg-emerald-500 border-emerald-500 text-black" : "border-white/30"}`}>
+          <button 
+            onClick={(e) => { e.stopPropagation(); onToggleTask(task); }} 
+            className={`shrink-0 w-6 h-6 rounded flex items-center justify-center border transition-colors ${isDone ? "bg-emerald-500 border-emerald-500 text-black" : "border-white/30"}`}
+          >
             <Check className="w-4 h-4" />
           </button>
           <div className="min-w-0 flex-1">
@@ -77,13 +93,11 @@ function SwipeBooking({ task, isDone, locale, onToggleTask, onDelete, onEdit }: 
               <span className={`text-[16px] font-bold truncate ${isDone ? "line-through text-muted" : "text-white"}`}>{task.guestName}</span>
             </div>
             
-            {/* Service name on a new line to be clearly visible */}
             <div className={`text-sm font-semibold truncate mt-0.5 ${isDone ? "text-emerald-500/70" : "text-blue-100/90"}`}>
               ✂ {task.items.map((i: any) => i.nameSnapshot).join(" + ")}
             </div>
 
-            {/* Phone and Email */}
-            <div className="text-[11px] text-muted font-mono truncate mt-1 flex items-center gap-1.5">
+            <div className="text-[11px] text-muted font-mono truncate mt-1 flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
               {task.guestRealPhone ? (
                 <>
                   <a href={`tel:${task.guestRealPhone}`} className="text-primary hover:underline">📞 {task.guestRealPhone}</a>
