@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Locale } from "@/i18n/config";
 import { formatCurrency } from "@/lib/timezone";
 import { Button } from "@/components/ui/Button";
@@ -57,29 +57,41 @@ export function ReturningAppointmentCard({
   const [selectedNewSlotId, setSelectedNewSlotId] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
+  const [openDates, setOpenDates] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchOpenDates = async () => {
+      const today = new Date();
+      const end = new Date(today);
+      end.setDate(today.getDate() + 60);
+
+      const startStr = today.toISOString().split("T")[0];
+      const endStr = end.toISOString().split("T")[0];
+
+      try {
+        const res = await fetch(`/api/availability/dates?start=${startStr}&end=${endStr}&duration=${booking.totalDurationMinutes}`);
+        const data = await res.json();
+        if (data.openDates) {
+          setOpenDates(data.openDates);
+        }
+      } catch {}
+    };
+
+    fetchOpenDates();
+  }, [booking.totalDurationMinutes]);
+
   const datesList = React.useMemo(() => {
-    const list = [];
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    for (let i = 0; i < 14; i++) {
-      const d = new Date(today);
-      d.setDate(today.getDate() + i);
-
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, "0");
+    return openDates.map(dateStr => {
+      const d = new Date(dateStr);
       const dayStr = String(d.getDate()).padStart(2, "0");
-      const dateStr = `${year}-${month}-${dayStr}`;
-      
       const dayName = new Intl.DateTimeFormat(
         locale === "hy" ? "hy-AM" : locale === "ru" ? "ru-RU" : "en-US",
         { weekday: "short" }
       ).format(d).replace(".", "").toUpperCase();
       
-      list.push({ dateStr, dayNum: dayStr, dayName });
-    }
-    return list;
-  }, [locale]);
+      return { dateStr, dayNum: dayStr, dayName };
+    });
+  }, [openDates, locale]);
 
   const handleDateChange = async (dateStr: string) => {
     setNewDate(dateStr);
@@ -215,23 +227,19 @@ export function ReturningAppointmentCard({
 
       {/* Action Buttons - Only Reschedule and Cancel */}
       <div className="flex flex-col sm:flex-row gap-4 pt-2">
-        <Button
-          variant="outline"
+        <button
           onClick={() => setIsRescheduleOpen(true)}
-          className="flex-1 gap-2 py-3.5 border-zinc-500/30 text-zinc-200 hover:bg-zinc-800/50 rounded-2xl"
+          className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-zinc-100 text-zinc-900 rounded-2xl text-[13px] font-bold tracking-wide hover:bg-white active:scale-95 transition-all"
         >
-          <RefreshCw className="w-4 h-4" />
           <span>{dict.changeAppointment}</span>
-        </Button>
+        </button>
 
-        <Button
-          variant="outline"
+        <button
           onClick={() => setIsCancelOpen(true)}
-          className="flex-1 gap-2 py-3.5 border-red-500/30 text-red-400 hover:bg-red-500/10 rounded-2xl"
+          className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-zinc-900 text-zinc-300 border border-zinc-800 rounded-2xl text-[13px] font-bold tracking-wide hover:bg-zinc-800 hover:text-white active:scale-95 transition-all"
         >
-          <XCircle className="w-4 h-4" />
           <span>{dict.cancelAppointment}</span>
-        </Button>
+        </button>
       </div>
 
       {/* Reschedule Modal */}
@@ -281,20 +289,78 @@ export function ReturningAppointmentCard({
                   Այս օրվա համար ազատ ժամեր չկան կամ օրը փակ է:
                 </p>
               ) : (
-                <div className="grid grid-cols-3 gap-2">
-                  {availableSlots.map((slot) => (
-                    <button
-                      key={slot.id}
-                      onClick={() => setSelectedNewSlotId(slot.id)}
-                      className={`py-3.5 px-2 rounded-2xl text-[13px] font-mono font-medium transition-all duration-300 transform border shadow-sm ${
-                        selectedNewSlotId === slot.id
-                          ? "bg-[#cbd5e1] text-black border-[#cbd5e1] shadow-[0_0_20px_rgba(203,213,225,0.4)] scale-[1.02]"
-                          : "bg-white/[0.03] text-white/90 border-white/10 hover:border-[#cbd5e1]/50 hover:bg-white/[0.06] hover:scale-[1.02]"
-                      }`}
-                    >
-                      {slot.startTime}
-                    </button>
-                  ))}
+                <div className="space-y-4 max-h-[250px] overflow-y-auto pr-2 no-scrollbar">
+                  {/* Morning */}
+                  {availableSlots.some(s => s.startTime < "12:00") && (
+                    <div className="space-y-2">
+                      <div className="text-[10px] font-mono tracking-widest text-neutral-500 uppercase">
+                        {locale === "ru" ? "Утро" : locale === "hy" ? "Առավոտ" : "Morning"}
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        {availableSlots.filter(s => s.startTime < "12:00").map((slot) => (
+                          <button
+                            key={slot.id}
+                            onClick={() => setSelectedNewSlotId(slot.id)}
+                            className={`py-3.5 px-2 rounded-2xl text-[13px] font-mono font-medium transition-all duration-300 transform border shadow-sm ${
+                              selectedNewSlotId === slot.id
+                                ? "bg-[#cbd5e1] text-black border-[#cbd5e1] shadow-[0_0_20px_rgba(203,213,225,0.4)] scale-[1.02]"
+                                : "bg-white/[0.03] text-white/90 border-white/10 hover:border-[#cbd5e1]/50 hover:bg-white/[0.06] hover:scale-[1.02]"
+                            }`}
+                          >
+                            {slot.startTime}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Afternoon */}
+                  {availableSlots.some(s => s.startTime >= "12:00" && s.startTime < "17:00") && (
+                    <div className="space-y-2">
+                      <div className="text-[10px] font-mono tracking-widest text-neutral-500 uppercase">
+                        {locale === "ru" ? "День" : locale === "hy" ? "Կեսօր" : "Afternoon"}
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        {availableSlots.filter(s => s.startTime >= "12:00" && s.startTime < "17:00").map((slot) => (
+                          <button
+                            key={slot.id}
+                            onClick={() => setSelectedNewSlotId(slot.id)}
+                            className={`py-3.5 px-2 rounded-2xl text-[13px] font-mono font-medium transition-all duration-300 transform border shadow-sm ${
+                              selectedNewSlotId === slot.id
+                                ? "bg-[#cbd5e1] text-black border-[#cbd5e1] shadow-[0_0_20px_rgba(203,213,225,0.4)] scale-[1.02]"
+                                : "bg-white/[0.03] text-white/90 border-white/10 hover:border-[#cbd5e1]/50 hover:bg-white/[0.06] hover:scale-[1.02]"
+                            }`}
+                          >
+                            {slot.startTime}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Evening */}
+                  {availableSlots.some(s => s.startTime >= "17:00") && (
+                    <div className="space-y-2">
+                      <div className="text-[10px] font-mono tracking-widest text-neutral-500 uppercase">
+                        {locale === "ru" ? "Вечер" : locale === "hy" ? "Երեկո" : "Evening"}
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        {availableSlots.filter(s => s.startTime >= "17:00").map((slot) => (
+                          <button
+                            key={slot.id}
+                            onClick={() => setSelectedNewSlotId(slot.id)}
+                            className={`py-3.5 px-2 rounded-2xl text-[13px] font-mono font-medium transition-all duration-300 transform border shadow-sm ${
+                              selectedNewSlotId === slot.id
+                                ? "bg-[#cbd5e1] text-black border-[#cbd5e1] shadow-[0_0_20px_rgba(203,213,225,0.4)] scale-[1.02]"
+                                : "bg-white/[0.03] text-white/90 border-white/10 hover:border-[#cbd5e1]/50 hover:bg-white/[0.06] hover:scale-[1.02]"
+                            }`}
+                          >
+                            {slot.startTime}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
