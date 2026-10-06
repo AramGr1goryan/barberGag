@@ -289,8 +289,6 @@ export class TelegramService {
             ? "⏳ ՍՊԱՍՈՒՄ Է ՀԱՍՏԱՏՄԱՆ"
             : booking.status;
 
-      const daySchedule = await this.formatDaySchedule(booking.date, booking.id, "ՆՈՐ");
-
       const message = [
         `✂️ <b>ՆՈՐ ԱՄՐԱԳՐՈՒՄ!</b>`,
         `━━━━━━━━━━━━━━━━━━━━`,
@@ -307,7 +305,7 @@ export class TelegramService {
         ``,
         `⏱ <b>Ընդհանուր տևողություն՝</b> ${booking.totalDurationMinutes} րոպե`,
         `💰 <b>Ընդհանուր գումար՝</b> <b>${totalAmount} ֏</b>`,
-        ...(daySchedule ? [``, daySchedule] : [`━━━━━━━━━━━━━━━━━━━━`]),
+        `━━━━━━━━━━━━━━━━━━━━`,
         `📍 <i>Հասցե՝ Բագրատունյաց 19, Երևան</i>`,
       ].join("\n");
 
@@ -340,8 +338,6 @@ export class TelegramService {
 
       const totalAmount = (booking.totalPriceMinorUnits).toLocaleString("hy-AM");
 
-      const daySchedule = await this.formatDaySchedule(booking.date);
-
       const message = [
         `❌ <b>ԱՄՐԱԳՐՈՒՄԸ ՉԵՂԱՐԿՎԵԼ Է!</b>`,
         `━━━━━━━━━━━━━━━━━━━━`,
@@ -352,7 +348,7 @@ export class TelegramService {
         `🔖 <b>Ամրագրման համար՝</b> <code>${escapeHtml(booking.bookingNumber)}</code>`,
         `📝 <b>Պատճառ՝</b> ${escapeHtml(reason || "Նշված չէ")}`,
         `💰 <b>Գումար՝</b> ${totalAmount} ֏`,
-        ...(daySchedule ? [``, daySchedule] : [`━━━━━━━━━━━━━━━━━━━━`]),
+        `━━━━━━━━━━━━━━━━━━━━`,
         `📍 <i>Ժամը ազատվել է և կրկին հասանելի է գրանցման համար</i>`,
       ].join("\n");
 
@@ -393,24 +389,6 @@ export class TelegramService {
             .join("\n")
           : "  • Հիմնական ծառայություն";
 
-      const newDaySchedule = await this.formatDaySchedule(
-        booking.date,
-        booking.id,
-        "ՏԵՂԱՓՈԽՎԱԾ"
-      );
-
-      let scheduleSection = newDaySchedule;
-      if (oldDate && oldDate !== booking.date) {
-        const oldDaySchedule = await this.formatDaySchedule(oldDate);
-        scheduleSection = [
-          `📅 <b>ՆԱԽԿԻՆ ՕՐՎԱ ԹԱՐՄԱՑՎԱԾ ԳՐԱՖԻԿԸ (${oldDate})՝</b>`,
-          oldDaySchedule,
-          ``,
-          `📅 <b>ՆՈՐ ՕՐՎԱ ԳՐԱՖԻԿԸ (${booking.date})՝</b>`,
-          newDaySchedule,
-        ].join("\n");
-      }
-
       const message = [
         `🔄 <b>ԱՄՐԱԳՐՄԱՆ ԺԱՄԻ ՓՈՓՈԽՈՒԹՅՈՒՆ!</b>`,
         `━━━━━━━━━━━━━━━━━━━━`,
@@ -423,7 +401,7 @@ export class TelegramService {
         `💈 <b>Ծառայություններ՝</b>`,
         itemsList,
         `💰 <b>Ընդհանուր գումար՝</b> ${totalAmount} ֏`,
-        ...(scheduleSection ? [``, scheduleSection] : [`━━━━━━━━━━━━━━━━━━━━`]),
+        `━━━━━━━━━━━━━━━━━━━━`,
         `📍 <i>Վարպետի գրաֆիկը ավտոմատ թարմացվել է</i>`,
       ]
         .filter(Boolean)
