@@ -291,7 +291,15 @@ export function BarberCalendarManager() {
 
     const guestName = cName?.trim() || (locale === "ru" ? "Клиент" : "Client");
     const guestPhone = cPhone?.trim() || "—";
-    const serviceName = cService?.trim() || (locale === "ru" ? "Услуга" : "Service");
+    
+    let serviceName = cService?.trim() || (locale === "ru" ? "Услуга" : "Service");
+    if (!isCustomService && selectedServiceIds.length === 1) {
+      const selectedSrv = services.find(s => s.id === selectedServiceIds[0]);
+      if (selectedSrv) {
+        serviceName = locale === "ru" ? selectedSrv.nameRu : (locale === "hy" ? selectedSrv.nameHy : selectedSrv.nameEn);
+      }
+    }
+    
     const price = Number(cPrice) || 0;
 
     try {

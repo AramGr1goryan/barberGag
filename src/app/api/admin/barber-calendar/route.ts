@@ -396,8 +396,8 @@ export async function POST(req: NextRequest) {
       }
 
       await adminService.logAudit({
-        actorId: session.userId,
-        actorEmail: session.phone,
+        actorId: session.userId === "env-admin" ? undefined : session.userId,
+        actorEmail: session.phone || session.userId,
         action: "MANUAL_BOOKING_CREATED",
         entity: "Booking",
         entityId: booking.id,
