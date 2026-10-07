@@ -856,6 +856,9 @@ export function CalendarManager() {
                       <option value={45}>45 {locale === "ru" ? "мин" : "min"}</option>
                       <option value={60}>60 {locale === "ru" ? "мин" : "min"}</option>
                       <option value={90}>90 {locale === "ru" ? "мин" : "min"}</option>
+                      <option value={120}>120 {locale === "ru" ? "мин" : "min"}</option>
+                      <option value={150}>150 {locale === "ru" ? "мин" : "min"}</option>
+                      <option value={180}>180 {locale === "ru" ? "мин" : "min"}</option>
                     </select>
                     <Button
                       variant="primary"
@@ -1215,11 +1218,13 @@ export function CalendarManager() {
                 <option value={75}>75 мин (1.25ч)</option>
                 <option value={90}>90 мин (1.5ч)</option>
                 <option value={120}>120 мин (2.0ч)</option>
+                <option value={150}>150 мин (2.5ч)</option>
+                <option value={180}>180 мин (3.0ч)</option>
               </select>
 
               {/* Duration Quick Pills */}
               <div className="grid grid-cols-4 gap-1">
-                {[30, 45, 60, 90].map((mins) => (
+                {[30, 45, 60, 90, 120, 150, 180].map((mins) => (
                   <button
                     key={mins}
                     type="button"
@@ -1338,10 +1343,12 @@ export function CalendarManager() {
                 <option value={75}>75 мин (1.25ч)</option>
                 <option value={90}>90 мин (1.5ч)</option>
                 <option value={120}>120 мин (2.0ч)</option>
+                <option value={150}>150 мин (2.5ч)</option>
+                <option value={180}>180 мин (3.0ч)</option>
               </select>
 
-              <div className="grid grid-cols-5 gap-1">
-                {[15, 30, 45, 60, 90].map((mins) => (
+              <div className="grid grid-cols-4 gap-1">
+                {[15, 30, 45, 60, 90, 120, 150, 180].map((mins) => (
                   <button
                     key={mins}
                     type="button"
