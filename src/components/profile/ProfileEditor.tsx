@@ -455,7 +455,7 @@ export function ProfileEditor({
               {/* Service Selection Dropdown */}
               <div className="relative">
                 <select
-                  value={preferredHaircut}
+                  value={matchedService?.id || preferredHaircut}
                   onChange={(e) => setPreferredHaircut(e.target.value)}
                   className="w-full bg-[#12141c] border border-white/[0.12] rounded-xl px-4 py-3 text-sm text-foreground focus:outline-none focus:border-accent transition-colors appearance-none cursor-pointer"
                 >
