@@ -112,9 +112,6 @@ export function Footer({ locale, dict }: FooterProps) {
         <div className="mt-14 pt-8 border-t border-border/50 flex flex-col sm:flex-row items-center justify-between text-[11px] text-muted space-y-4 sm:space-y-0">
           <p>© {currentYear} Gagik Ghambaryan Barbershop. {dict.footer.rights}</p>
           <div className="flex space-x-6">
-            <Link href={`/${locale}/privacy`} className="hover:text-accent font-mono tracking-widest uppercase text-[10px]">
-              {locale === "ru" ? "Политика конфиденциальности" : locale === "hy" ? "Գաղտնիության քաղաքականություն" : "Privacy Policy"}
-            </Link>
             <Link href="/admin/login" className="hover:text-accent font-mono tracking-widest uppercase text-[10px]">
               Admin Portal
             </Link>

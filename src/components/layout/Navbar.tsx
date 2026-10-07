@@ -44,6 +44,7 @@ export function Navbar({ locale, dict, user }: NavbarProps) {
   const navLinks = [
     { href: `/${locale}?book=true`, label: dict.booking },
     { href: `/${locale}/contact`, label: dict.contact },
+    { href: `/${locale}/privacy`, label: locale === "ru" ? "Конфиденциальность" : locale === "hy" ? "Գաղտնիություն" : "Privacy" },
   ];
 
   return (
