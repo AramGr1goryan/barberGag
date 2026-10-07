@@ -18,10 +18,10 @@ export class ProfileService {
    */
   async updateProfile(userId: string, data: {
     name?: string;
-    preferredHaircut?: string;
-    hairColor?: string;
-    preferences?: string;
-    photoUrl?: string;
+    preferredHaircut?: string | null;
+    hairColor?: string | null;
+    preferences?: string | null;
+    photoUrl?: string | null;
   }) {
     const { name, ...profileData } = data;
 
