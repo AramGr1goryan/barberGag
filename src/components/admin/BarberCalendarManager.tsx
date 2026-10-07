@@ -599,7 +599,9 @@ export function BarberCalendarManager() {
                   <option value={60}>60 {locale === "ru" ? "мин" : "min"}</option>
                   <option value={90}>90 {locale === "ru" ? "мин" : "min"}</option>
                   <option value={120}>120 {locale === "ru" ? "мин" : "min"}</option>
-                  {![0, 10, 15, 20, 30, 45, 60, 90, 120].includes(bookingDuration) && bookingDuration > 0 && (
+                  <option value={150}>150 {locale === "ru" ? "мин" : "min"}</option>
+                  <option value={180}>180 {locale === "ru" ? "мин" : "min"}</option>
+                  {![0, 10, 15, 20, 30, 45, 60, 90, 120, 150, 180].includes(bookingDuration) && bookingDuration > 0 && (
                     <option value={bookingDuration}>{bookingDuration} {locale === "ru" ? "мин" : "min"}</option>
                   )}
                 </select>
