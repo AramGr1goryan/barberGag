@@ -114,7 +114,7 @@ export default async function PrivacyPolicyPage({
             </span>
           </div>
 
-          <h1 className="font-display text-4xl sm:text-5xl font-bold tracking-tight text-foreground uppercase">
+          <h1 className="font-display text-[26px] leading-tight sm:text-5xl font-bold tracking-tight text-foreground uppercase break-words">
             {title}
           </h1>
         </div>

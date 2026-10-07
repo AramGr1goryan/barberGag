@@ -24,7 +24,7 @@ export interface HeroSectionProps {
   services?: ServiceItem[];
   addons?: AddonItem[];
   bookingDict?: any;
-  currentUser?: { name: string; phone: string } | null;
+  currentUser?: { name: string; phone: string; email?: string } | null;
   initialServiceId?: string;
 }
 

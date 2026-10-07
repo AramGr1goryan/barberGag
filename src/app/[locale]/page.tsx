@@ -51,23 +51,27 @@ export default async function HomePage({
 
   // Check if user is logged in for Fast Booking and preferred service auto-selection
   const session = await authService.getSession();
-  const currentUser = session
-    ? { name: session.name, phone: session.phone }
+  let currentUser = session
+    ? { name: session.name, phone: session.phone, email: "" }
     : null;
 
   let userPreferredServiceId: string | undefined = undefined;
   if (session?.userId) {
     try {
-      const userProfile = await prisma.profile.findUnique({
-        where: { userId: session.userId },
+      const userProfile = await prisma.user.findUnique({
+        where: { id: session.userId },
+        include: { profile: true },
       });
-      if (userProfile?.preferredHaircut) {
+      if (userProfile?.email && currentUser) {
+        currentUser.email = userProfile.email;
+      }
+      if (userProfile?.profile?.preferredHaircut) {
         const matched = services.find(
           (s) =>
-            s.id === userProfile.preferredHaircut ||
-            s.nameHy === userProfile.preferredHaircut ||
-            s.nameRu === userProfile.preferredHaircut ||
-            s.nameEn === userProfile.preferredHaircut
+            s.id === userProfile.profile!.preferredHaircut ||
+            s.nameHy === userProfile.profile!.preferredHaircut ||
+            s.nameRu === userProfile.profile!.preferredHaircut ||
+            s.nameEn === userProfile.profile!.preferredHaircut
         );
         if (matched) {
           userPreferredServiceId = matched.id;

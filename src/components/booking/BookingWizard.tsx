@@ -140,8 +140,8 @@ export function BookingWizard({
   // User input
   const [guestName, setGuestName] = useState<string>(currentUser?.name || "");
   const [guestNotes, setGuestNotes] = useState<string>("");
-  const [guestPhone, setGuestPhone] = useState<string>("");
-  const [guestRealPhone, setGuestRealPhone] = useState<string>("");
+  const [guestPhone, setGuestPhone] = useState<string>(currentUser?.email || "");
+  const [guestRealPhone, setGuestRealPhone] = useState<string>(currentUser?.phone || "");
 
   // SMS verification & booking result
   const [createdBookingId, setCreatedBookingId] = useState<string>("");
