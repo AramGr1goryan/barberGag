@@ -162,10 +162,13 @@ export class BookingService {
           }
       }
 
-      await tx.availabilitySlot.updateMany({
-        where: { id: { in: day.slots.map(s => s.id) } },
+      const updatedCount = await tx.availabilitySlot.updateMany({
+        where: { id: { in: day.slots.map(s => s.id) }, status: SlotStatus.AVAILABLE },
         data: { status: SlotStatus.BOOKED }
       });
+      if (updatedCount.count !== slotsNeeded) {
+        throw new Error("SLOT_ALREADY_RESERVED");
+      }
 
       const endTimeCalc = (() => {
         const [h, m] = currentSlot.startTime.split(":").map(Number);
@@ -264,18 +267,19 @@ export class BookingService {
     bookingId: string,
     newSlotId: string,
     newDate: string,
-    sessionTokenOrUserId: string
+    options: { userId?: string; sessionToken?: string }
   ) {
-    const hashedToken = hashToken(sessionTokenOrUserId);
+    const OR_conditions: any[] = [];
+    if (options.sessionToken) OR_conditions.push({ sessionTokenHash: hashToken(options.sessionToken) });
+    if (options.userId) OR_conditions.push({ userId: options.userId });
+
+    if (OR_conditions.length === 0) throw new Error("UNAUTHORIZED");
 
     const booking = await prisma.booking.findFirst({
       where: {
         id: bookingId,
         status: BookingStatus.CONFIRMED,
-        OR: [
-          { sessionTokenHash: hashedToken },
-          { userId: sessionTokenOrUserId },
-        ],
+        OR: OR_conditions,
       },
       include: { slots: true },
     });
@@ -334,6 +338,15 @@ export class BookingService {
            }
       }
 
+      // Reserve new slots atomically
+      const updatedCount = await tx.availabilitySlot.updateMany({
+        where: { id: { in: day.slots.map(s => s.id) }, status: SlotStatus.AVAILABLE },
+        data: { status: SlotStatus.BOOKED },
+      });
+      if (updatedCount.count !== slotsNeeded) {
+        throw new Error("NEW_SLOT_UNAVAILABLE");
+      }
+
       // Release old slots
       if (booking.slots && booking.slots.length > 0) {
         await tx.availabilitySlot.updateMany({
@@ -341,12 +354,6 @@ export class BookingService {
           data: { status: SlotStatus.AVAILABLE },
         });
       }
-
-      // Reserve new slots
-      await tx.availabilitySlot.updateMany({
-        where: { id: { in: day.slots.map(s => s.id) } },
-        data: { status: SlotStatus.BOOKED },
-      });
 
       const newEndTime = day.slots[day.slots.length - 1].endTime;
 
@@ -373,17 +380,18 @@ export class BookingService {
   /**
    * Cancels a booking and releases the slot.
    */
-  async cancelBooking(bookingId: string, sessionTokenOrUserId: string, reason?: string) {
-    const hashedToken = hashToken(sessionTokenOrUserId);
+  async cancelBooking(bookingId: string, options: { userId?: string; sessionToken?: string }, reason?: string) {
+    const OR_conditions: any[] = [];
+    if (options.sessionToken) OR_conditions.push({ sessionTokenHash: hashToken(options.sessionToken) });
+    if (options.userId) OR_conditions.push({ userId: options.userId });
+
+    if (OR_conditions.length === 0) throw new Error("UNAUTHORIZED");
 
     const booking = await prisma.booking.findFirst({
       where: {
         id: bookingId,
         status: { in: [BookingStatus.CONFIRMED, BookingStatus.PENDING_VERIFICATION] },
-        OR: [
-          { sessionTokenHash: hashedToken },
-          { userId: sessionTokenOrUserId },
-        ],
+        OR: OR_conditions,
       },
       include: { slots: true },
     });

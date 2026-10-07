@@ -63,7 +63,9 @@ export async function createAuthToken(payload: UserSessionPayload): Promise<stri
  */
 export async function verifyAuthToken(token: string): Promise<UserSessionPayload | null> {
   try {
-    const { payload } = await jwtVerify(token, encodedSecret);
+    const { payload } = await jwtVerify(token, encodedSecret, {
+      algorithms: ["HS256"],
+    });
     return payload as unknown as UserSessionPayload;
   } catch {
     return null;

@@ -551,13 +551,16 @@ export class SmsService {
           },
         });
 
-        await tx.availabilitySlot.updateMany({
-          where: { id: { in: day.slots.map(s => s.id) } },
+        const updatedCount = await tx.availabilitySlot.updateMany({
+          where: { id: { in: day.slots.map(s => s.id) }, status: SlotStatus.AVAILABLE },
           data: { 
             status: SlotStatus.BOOKED,
             version: { increment: 1 },
           },
         });
+        if (updatedCount.count !== slotsNeeded) {
+          throw new Error("SLOT_TAKEN");
+        }
       });
     } catch (e) {
       if (e instanceof Error && e.message === "SLOT_TAKEN") {

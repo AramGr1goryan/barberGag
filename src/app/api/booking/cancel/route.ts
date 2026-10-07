@@ -19,7 +19,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized access" }, { status: 401 });
     }
 
-    await bookingService.cancelBooking(bookingId, authId, reason);
+    await bookingService.cancelBooking(bookingId, { 
+      userId: session?.userId || undefined, 
+      sessionToken: sessionToken || undefined 
+    }, reason);
 
     // Send Telegram cancellation notification
     const { telegramService } = await import("@/services/telegram.service");

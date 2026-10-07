@@ -26,7 +26,10 @@ export async function POST(req: NextRequest) {
       validated.bookingId,
       validated.newSlotId,
       validated.newDate,
-      authId
+      {
+        userId: session?.userId || undefined,
+        sessionToken: sessionToken || undefined
+      }
     );
 
     // Send Telegram reschedule notification
