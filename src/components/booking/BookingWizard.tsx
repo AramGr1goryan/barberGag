@@ -113,6 +113,7 @@ export function BookingWizard({
   const [currentStep, setCurrentStep] = useState<number>(1);
 
   const panelRef = useRef<HTMLDivElement>(null);
+  const hasManuallySelectedDate = useRef<boolean>(false);
 
 
   // Selection state
@@ -279,15 +280,25 @@ export function BookingWizard({
     return list;
   }, [locale, monthOffset]);
 
-  // Automatically select first date when month changes or on init
+    // Automatically select first date when month changes or on init
   useEffect(() => {
     if (datesList.length > 0) {
       const isSelectedDateInCurrentMonth = selectedDate && datesList.some((dl) => dl.dateStr === selectedDate);
+      const openDatesInMonth = openDates.filter((od) => datesList.some((dl) => dl.dateStr === od));
+      
       if (!isSelectedDateInCurrentMonth) {
-        const firstOpen = openDates.length > 0
-          ? openDates.find((od) => datesList.some((dl) => dl.dateStr === od)) || datesList[0].dateStr
+        hasManuallySelectedDate.current = false;
+      }
+      
+      const isSelectedDateOpen = selectedDate && openDates.includes(selectedDate);
+      
+      if (!isSelectedDateInCurrentMonth || (!isSelectedDateOpen && !hasManuallySelectedDate.current && openDatesInMonth.length > 0)) {
+        const firstOpen = openDatesInMonth.length > 0
+          ? openDatesInMonth[0]
           : datesList[0].dateStr;
-        setSelectedDate(firstOpen);
+        if (selectedDate !== firstOpen) {
+          setSelectedDate(firstOpen);
+        }
       }
     }
   }, [datesList, openDates, selectedDate]);
@@ -746,7 +757,10 @@ export function BookingWizard({
                       <button
                         key={item.dateStr}
                         type="button"
-                        onClick={() => setSelectedDate(item.dateStr)}
+                        onClick={() => {
+                          hasManuallySelectedDate.current = true;
+                          setSelectedDate(item.dateStr);
+                        }}
                         className={`min-w-[48px] h-[56px] rounded-[12px] flex flex-col items-center justify-center transition-all duration-200 shrink-0 select-none cursor-pointer border ${isSelected
                             ? "bg-[#cbd5e1]/[0.12] text-white border-[#cbd5e1]/70 backdrop-blur-xl scale-[1.03]"
                             : "bg-white/[0.04] backdrop-blur-xl text-white hover:bg-white/[0.08] border-white/[0.08]"
