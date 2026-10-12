@@ -182,7 +182,7 @@ export function ReturningAppointmentCard({
   };
   if (isRescheduleOpen) {
     return (
-      <div className="w-full bg-surface/80 backdrop-blur-2xl border border-white/10 rounded-[24px] p-4 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.6)] max-w-2xl mx-auto space-y-4 sm:space-y-6">
+      <div className="w-full bg-surface/80 border border-white/10 rounded-[24px] p-4 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.6)] max-w-2xl mx-auto space-y-4 sm:space-y-6">
         <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-white/10">
           <div>
             <h3 className="text-base sm:text-lg font-bold text-white tracking-wide">Փոխել այցի ժամը</h3>
@@ -350,7 +350,7 @@ export function ReturningAppointmentCard({
 
   if (isCancelOpen) {
     return (
-      <div className="w-full bg-surface/80 backdrop-blur-2xl border border-white/10 rounded-[24px] p-4 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.6)] max-w-2xl mx-auto space-y-4 sm:space-y-6">
+      <div className="w-full bg-surface/80 border border-white/10 rounded-[24px] p-4 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.6)] max-w-2xl mx-auto space-y-4 sm:space-y-6">
         <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-white/10">
           <div>
             <h3 className="text-base sm:text-lg font-bold text-white tracking-wide">Չեղարկել ամրագրումը</h3>
@@ -394,7 +394,7 @@ export function ReturningAppointmentCard({
   }
 
   return (
-    <div className="w-full bg-surface/80 backdrop-blur-2xl border border-white/10 rounded-[24px] p-5 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.6)] max-w-2xl mx-auto space-y-6 sm:space-y-8">
+    <div className="w-full bg-surface/80 border border-white/10 rounded-[24px] p-5 sm:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.6)] max-w-2xl mx-auto space-y-6 sm:space-y-8">
       {/* Alert Header */}
       <div className="flex items-start space-x-3 sm:space-x-4 border-b border-white/10 pb-5 sm:pb-6">
         <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl border border-slate-300/30 bg-slate-200/10 flex items-center justify-center text-slate-200 shrink-0 shadow-[0_0_20px_rgba(203,213,225,0.15)]">

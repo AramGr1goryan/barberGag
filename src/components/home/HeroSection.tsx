@@ -48,6 +48,22 @@ export function HeroSection({
     }
   }, [searchParams]);
 
+  // Lock page scroll while the booking overlay is open, so touch scroll doesn't chain
+  // to the page (parallax recalculation + mobile toolbar resize cause jank under the overlay)
+  useEffect(() => {
+    if (!isBookingOpen) return;
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtmlOverflow = html.style.overflow;
+    const prevBodyOverflow = body.style.overflow;
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    return () => {
+      html.style.overflow = prevHtmlOverflow;
+      body.style.overflow = prevBodyOverflow;
+    };
+  }, [isBookingOpen]);
+
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end start"],
@@ -61,7 +77,7 @@ export function HeroSection({
   return (
     <section
       ref={containerRef}
-      className="relative h-[100dvh] flex items-center justify-center overflow-hidden -mt-20 pt-20 perspective-[1000px]"
+      className="relative h-[100dvh] flex items-center justify-center overflow-hidden -mt-20 pt-20"
     >
       {/* 
         CINEMATIC BARBER PORTRAIT

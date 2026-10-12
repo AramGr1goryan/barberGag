@@ -93,7 +93,7 @@ export function BlockedBookingCard({
   };
 
   return (
-    <div className="max-w-xl mx-auto bg-surface/85 backdrop-blur-2xl border border-red-500/20 rounded-3xl shadow-[0_25px_60px_rgba(0,0,0,0.7)] p-8 sm:p-12 text-center space-y-8 animate-in fade-in duration-500">
+    <div className="max-w-xl mx-auto bg-surface/85 border border-red-500/20 rounded-3xl shadow-[0_25px_60px_rgba(0,0,0,0.7)] p-8 sm:p-12 text-center space-y-8 animate-in fade-in duration-500">
       {/* Icon Badge */}
       <div className="space-y-4">
         <div className="w-16 h-16 rounded-3xl bg-red-500/10 border border-red-500/30 text-red-400 flex items-center justify-center mx-auto shadow-[0_0_35px_rgba(239,68,68,0.25)]">

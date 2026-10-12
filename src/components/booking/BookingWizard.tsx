@@ -665,7 +665,7 @@ export function BookingWizard({
       {/* FLOATING BOTTOM SHEET — full width on mobile, right 55% on desktop */}
       <div
         ref={panelRef}
-        className={`will-change-transform transform-gpu relative z-30 rounded-t-[40px] lg:rounded-none bg-[#14151a]/85 backdrop-blur-2xl border-t lg:border-t-0 lg:border-l border-white/[0.08] shadow-[0_-10px_40px_rgba(0,0,0,0.45)] lg:shadow-none px-5 sm:px-6 lg:px-10 pt-6 lg:pt-24 pb-8 flex-1 flex flex-col justify-start lg:w-[55%] overflow-y-auto transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] mt-[calc(-20dvh+4.5rem)] lg:mt-0`}
+        className={`relative z-30 rounded-t-[40px] lg:rounded-none bg-[#14151a]/85 backdrop-blur-2xl border-t lg:border-t-0 lg:border-l border-white/[0.08] shadow-[0_-10px_40px_rgba(0,0,0,0.45)] lg:shadow-none px-5 sm:px-6 lg:px-10 pt-6 lg:pt-24 pb-8 flex-1 flex flex-col justify-start lg:w-[55%] overflow-y-auto overscroll-contain mt-[calc(-20dvh+4.5rem)] lg:mt-0`}
       >
         {(!isCheckingActive && blockedData?.isBlocked) && (
           <div className="flex-1">
@@ -761,9 +761,9 @@ export function BookingWizard({
                           hasManuallySelectedDate.current = true;
                           setSelectedDate(item.dateStr);
                         }}
-                        className={`min-w-[48px] h-[56px] rounded-[12px] flex flex-col items-center justify-center transition-all duration-200 shrink-0 select-none cursor-pointer border ${isSelected
-                            ? "bg-[#cbd5e1]/[0.12] text-white border-[#cbd5e1]/70 backdrop-blur-xl scale-[1.03]"
-                            : "bg-white/[0.04] backdrop-blur-xl text-white hover:bg-white/[0.08] border-white/[0.08]"
+                        className={`min-w-[48px] h-[56px] rounded-[12px] flex flex-col items-center justify-center transition-[background-color,border-color,transform] duration-200 shrink-0 select-none cursor-pointer border ${isSelected
+                            ? "bg-[#cbd5e1]/[0.12] text-white border-[#cbd5e1]/70 scale-[1.03]"
+                            : "bg-white/[0.04] text-white hover:bg-white/[0.08] border-white/[0.08]"
                           }`}
                       >
                         <span
@@ -800,7 +800,7 @@ export function BookingWizard({
                     ))}
                   </div>
                 ) : isDayClosed || availableSlots.length === 0 ? (
-                  <div className="py-4 px-4 rounded-2xl bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] text-center">
+                  <div className="py-4 px-4 rounded-2xl bg-white/[0.04] border border-white/[0.06] text-center">
                     <p className="text-xs text-neutral-300 font-medium">
                       {locale === "ru"
                         ? "На выбранную дату нет свободных часов. Выберите другой день."
@@ -823,7 +823,7 @@ export function BookingWizard({
                             {availableSlots.filter(s => s.startTime < "12:00").map(slot => {
                               const isSelected = selectedSlotId === slot.id;
                               return (
-                                <button key={slot.id} type="button" onClick={() => setSelectedSlotId(slot.id)} className={`w-full py-2 rounded-[10px] text-[13px] font-bold tracking-wider transition-all duration-200 flex items-center justify-center border ${isSelected ? "bg-[#cbd5e1]/[0.12] text-white border-[#cbd5e1]/70 backdrop-blur-xl scale-[1.03]" : "bg-white/[0.04] backdrop-blur-xl text-white hover:bg-white/[0.08] border-white/[0.08]"}`}>
+                                <button key={slot.id} type="button" onClick={() => setSelectedSlotId(slot.id)} className={`w-full py-2 rounded-[10px] text-[13px] font-bold tracking-wider transition-[background-color,border-color,transform] duration-200 flex items-center justify-center border ${isSelected ? "bg-[#cbd5e1]/[0.12] text-white border-[#cbd5e1]/70 scale-[1.03]" : "bg-white/[0.04] text-white hover:bg-white/[0.08] border-white/[0.08]"}`}>
                                   {slot.startTime}
                                 </button>
                               );
@@ -844,7 +844,7 @@ export function BookingWizard({
                             {availableSlots.filter(s => s.startTime >= "12:00" && s.startTime < "17:00").map(slot => {
                               const isSelected = selectedSlotId === slot.id;
                               return (
-                                <button key={slot.id} type="button" onClick={() => setSelectedSlotId(slot.id)} className={`w-full py-2 rounded-[10px] text-[13px] font-bold tracking-wider transition-all duration-200 flex items-center justify-center border ${isSelected ? "bg-[#cbd5e1]/[0.12] text-white border-[#cbd5e1]/70 backdrop-blur-xl scale-[1.03]" : "bg-white/[0.04] backdrop-blur-xl text-white hover:bg-white/[0.08] border-white/[0.08]"}`}>
+                                <button key={slot.id} type="button" onClick={() => setSelectedSlotId(slot.id)} className={`w-full py-2 rounded-[10px] text-[13px] font-bold tracking-wider transition-[background-color,border-color,transform] duration-200 flex items-center justify-center border ${isSelected ? "bg-[#cbd5e1]/[0.12] text-white border-[#cbd5e1]/70 scale-[1.03]" : "bg-white/[0.04] text-white hover:bg-white/[0.08] border-white/[0.08]"}`}>
                                   {slot.startTime}
                                 </button>
                               );
@@ -865,7 +865,7 @@ export function BookingWizard({
                             {availableSlots.filter(s => s.startTime >= "17:00").map(slot => {
                               const isSelected = selectedSlotId === slot.id;
                               return (
-                                <button key={slot.id} type="button" onClick={() => setSelectedSlotId(slot.id)} className={`w-full py-2 rounded-[10px] text-[13px] font-bold tracking-wider transition-all duration-200 flex items-center justify-center border ${isSelected ? "bg-[#cbd5e1]/[0.12] text-white border-[#cbd5e1]/70 backdrop-blur-xl scale-[1.03]" : "bg-white/[0.04] backdrop-blur-xl text-white hover:bg-white/[0.08] border-white/[0.08]"}`}>
+                                <button key={slot.id} type="button" onClick={() => setSelectedSlotId(slot.id)} className={`w-full py-2 rounded-[10px] text-[13px] font-bold tracking-wider transition-[background-color,border-color,transform] duration-200 flex items-center justify-center border ${isSelected ? "bg-[#cbd5e1]/[0.12] text-white border-[#cbd5e1]/70 scale-[1.03]" : "bg-white/[0.04] text-white hover:bg-white/[0.08] border-white/[0.08]"}`}>
                                   {slot.startTime}
                                 </button>
                               );
@@ -906,8 +906,8 @@ export function BookingWizard({
                         key={s.id}
                         onClick={() => toggleService(s.id)}
                         className={`p-3 rounded-2xl transition-all duration-200 cursor-pointer flex flex-col justify-between select-none border ${isSelected
-                            ? "bg-[#cbd5e1]/[0.12] text-white border-[#cbd5e1]/70 backdrop-blur-xl"
-                            : "bg-white/[0.04] backdrop-blur-xl text-white hover:bg-white/[0.08] border-white/[0.08]"
+                            ? "bg-[#cbd5e1]/[0.12] text-white border-[#cbd5e1]/70"
+                            : "bg-white/[0.04] text-white hover:bg-white/[0.08] border-white/[0.08]"
                           }`}
                       >
                         <div className="flex items-start justify-between gap-2">
@@ -960,7 +960,7 @@ export function BookingWizard({
           <div className="flex-1 flex flex-col justify-between space-y-6">
             <div className="space-y-6">
               {/* Detailed Summary Card */}
-              <div className="p-4 rounded-2xl bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] space-y-2.5 text-xs font-mono">
+              <div className="p-4 rounded-2xl bg-white/[0.04] border border-white/[0.06] space-y-2.5 text-xs font-mono">
                 <div className="flex justify-between">
                   <span className="text-neutral-400">
                     {locale === "ru" ? "Услуга:" : locale === "hy" ? "Ծառայություն՝" : "Service:"}
@@ -1006,7 +1006,7 @@ export function BookingWizard({
                       value={guestName}
                       onChange={(e) => setGuestName(e.target.value)}
                       placeholder="Արամ Սարգսյան"
-                      className="w-full bg-white/[0.04] backdrop-blur-xl border border-white/[0.08] focus:border-white focus:ring-1 focus:ring-white rounded-2xl px-4 py-3.5 text-[16px] text-white placeholder-neutral-500 focus:outline-none transition-all"
+                      className="w-full bg-white/[0.04] border border-white/[0.08] focus:border-white focus:ring-1 focus:ring-white rounded-2xl px-4 py-3.5 text-[16px] text-white placeholder-neutral-500 focus:outline-none transition-all"
                     />
                     <div className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none">
                       <User className="w-4 h-4" />
@@ -1025,7 +1025,7 @@ export function BookingWizard({
                       value={guestRealPhone}
                       onChange={(e) => setGuestRealPhone(e.target.value)}
                       placeholder="+374 99 000 000"
-                      className="w-full bg-white/[0.04] backdrop-blur-xl border border-white/[0.08] focus:border-white focus:ring-1 focus:ring-white rounded-2xl px-4 py-3.5 text-[16px] text-white placeholder-neutral-500 focus:outline-none transition-all"
+                      className="w-full bg-white/[0.04] border border-white/[0.08] focus:border-white focus:ring-1 focus:ring-white rounded-2xl px-4 py-3.5 text-[16px] text-white placeholder-neutral-500 focus:outline-none transition-all"
                     />
                     <div className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none">
                       <Phone className="w-4 h-4" />
@@ -1044,7 +1044,7 @@ export function BookingWizard({
                       value={guestPhone}
                       onChange={(e) => setGuestPhone(e.target.value)}
                       placeholder="aram@example.com"
-                      className="w-full bg-white/[0.04] backdrop-blur-xl border border-white/[0.08] focus:border-white focus:ring-1 focus:ring-white rounded-2xl px-4 py-3.5 text-[16px] text-white placeholder-neutral-500 focus:outline-none transition-all"
+                      className="w-full bg-white/[0.04] border border-white/[0.08] focus:border-white focus:ring-1 focus:ring-white rounded-2xl px-4 py-3.5 text-[16px] text-white placeholder-neutral-500 focus:outline-none transition-all"
                     />
                     <div className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none">
                       <span className="font-serif italic text-lg">@</span>
@@ -1072,13 +1072,13 @@ export function BookingWizard({
                     value={guestNotes}
                     onChange={(e) => setGuestNotes(e.target.value)}
                     placeholder="Քո ընկեր Սպայդեռմեն"
-                    className="w-full resize-none bg-white/[0.04] backdrop-blur-xl border border-white/[0.08] focus:border-white focus:ring-1 focus:ring-white rounded-2xl px-4 py-3 text-[16px] text-white placeholder-neutral-500 focus:outline-none transition-all"
+                    className="w-full resize-none bg-white/[0.04] border border-white/[0.08] focus:border-white focus:ring-1 focus:ring-white rounded-2xl px-4 py-3 text-[16px] text-white placeholder-neutral-500 focus:outline-none transition-all"
                   />
                 </div>
               </div>
 
               {errorMessage && (
-                <div className="p-3.5 rounded-2xl bg-white/[0.04] backdrop-blur-xl border border-red-400/25 text-xs text-red-300">
+                <div className="p-3.5 rounded-2xl bg-white/[0.04] border border-red-400/25 text-xs text-red-300">
                   {errorMessage}
                 </div>
               )}
@@ -1124,12 +1124,12 @@ export function BookingWizard({
                   value={smsCode}
                   onChange={(e) => setSmsCode(e.target.value.replace(/[^0-9]/g, ""))}
                   placeholder="••••"
-                  className="w-full text-center tracking-[0.8em] font-mono text-3xl py-3.5 rounded-2xl bg-white/[0.04] backdrop-blur-xl border border-white/10 focus:border-white focus:ring-1 focus:ring-white text-white focus:outline-none transition-all shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]"
+                  className="w-full text-center tracking-[0.8em] font-mono text-3xl py-3.5 rounded-2xl bg-white/[0.04] border border-white/10 focus:border-white focus:ring-1 focus:ring-white text-white focus:outline-none transition-all shadow-[inset_0_2px_10px_rgba(0,0,0,0.5)]"
                 />
               </div>
 
               {errorMessage && (
-                <div className="p-3.5 rounded-2xl bg-white/[0.04] backdrop-blur-xl border border-red-400/25 text-xs text-red-300">
+                <div className="p-3.5 rounded-2xl bg-white/[0.04] border border-red-400/25 text-xs text-red-300">
                   {errorMessage}
                 </div>
               )}
@@ -1158,7 +1158,7 @@ export function BookingWizard({
                 type="button"
                 disabled={isSubmitting || smsCode.length !== 4 || isRedirecting}
                 onClick={handleVerifySms}
-                className="mx-auto flex items-center justify-center gap-2 w-auto min-w-[160px] px-6 h-10 rounded-full bg-white/[0.85] text-black text-[12px] font-medium tracking-wide backdrop-blur-2xl shadow-[0_8px_30px_rgba(255,255,255,0.15)] border border-white/40 hover:bg-white active:scale-[0.97] transition-all duration-200 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+                className="mx-auto flex items-center justify-center gap-2 w-auto min-w-[160px] px-6 h-10 rounded-full bg-white/[0.85] text-black text-[12px] font-medium tracking-wide shadow-[0_8px_30px_rgba(255,255,255,0.15)] border border-white/40 hover:bg-white active:scale-[0.97] transition-all duration-200 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
               >
                 {isSubmitting ? (
                   <span>{dict.verifying}</span>
@@ -1192,7 +1192,7 @@ export function BookingWizard({
               </div>
 
               {/* Receipt card */}
-              <div className="p-5 rounded-2xl bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] space-y-2.5 text-xs font-mono text-left">
+              <div className="p-5 rounded-2xl bg-white/[0.04] border border-white/[0.06] space-y-2.5 text-xs font-mono text-left">
                 <div className="flex justify-between items-center">
                   <span className="text-neutral-400">{locale === "ru" ? "Гость" : locale === "hy" ? "Հյուր" : "Guest"}</span>
                   <span className="text-white">{guestName}</span>
@@ -1220,7 +1220,7 @@ export function BookingWizard({
               <button
                 type="button"
                 onClick={handleDownloadIcs}
-                className="mx-auto flex items-center justify-center gap-2 w-auto min-w-[160px] px-6 h-10 rounded-full bg-white/[0.85] text-black text-[12px] font-medium tracking-wide backdrop-blur-2xl shadow-[0_8px_30px_rgba(255,255,255,0.15)] border border-white/40 hover:bg-white active:scale-[0.97] transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
+                className="mx-auto flex items-center justify-center gap-2 w-auto min-w-[160px] px-6 h-10 rounded-full bg-white/[0.85] text-black text-[12px] font-medium tracking-wide shadow-[0_8px_30px_rgba(255,255,255,0.15)] border border-white/40 hover:bg-white active:scale-[0.97] transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Download className="w-4 h-4" />
                 <span>{dict.addToCalendar}</span>
@@ -1256,7 +1256,7 @@ export function BookingWizard({
             type="button"
             disabled={currentStep === 3 && (isSubmitting || !guestName.trim() || !guestPhone.trim() || !guestRealPhone.trim())}
             onClick={() => (currentStep === 1 ? setCurrentStep(2) : currentStep === 2 ? setCurrentStep(3) : handleInitiateBooking())}
-            className="pointer-events-auto mx-auto flex items-center justify-center gap-2 w-auto min-w-[140px] px-6 h-10 rounded-full bg-white/[0.85] text-black text-[12px] font-medium tracking-wide backdrop-blur-2xl shadow-[0_8px_30px_rgba(255,255,255,0.15)] border border-white/40 hover:bg-white active:scale-[0.97] transition-all duration-200 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
+            className="pointer-events-auto mx-auto flex items-center justify-center gap-2 w-auto min-w-[140px] px-6 h-10 rounded-full bg-white/[0.85] text-black text-[12px] font-medium tracking-wide shadow-[0_8px_30px_rgba(255,255,255,0.15)] border border-white/40 hover:bg-white active:scale-[0.97] transition-all duration-200 disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
           >
             <span>
               {currentStep === 3
