@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authService } from "@/services/auth.service";
 import { adminService } from "@/services/admin.service";
+import { handleApiError, apiSuccess } from "@/lib/api-response";
 
 export async function GET() {
   try {
@@ -11,8 +12,7 @@ export async function GET() {
     });
     return NextResponse.json({ items });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Error";
-    return NextResponse.json({ error: message }, { status: 403 });
+    return handleApiError(error, "Failed to load portfolio images", 403);
   }
 }
 
@@ -21,15 +21,19 @@ export async function POST(req: NextRequest) {
     const session = await authService.requireAdmin();
     const body = await req.json();
 
+    if (!body.url) {
+      return NextResponse.json({ error: "Image URL is required" }, { status: 400 });
+    }
+
     const item = await prisma.portfolioImage.create({
       data: {
         url: body.url,
-        titleHy: body.titleHy,
-        titleRu: body.titleRu,
-        titleEn: body.titleEn,
-        altHy: body.titleHy,
-        altRu: body.titleRu,
-        altEn: body.titleEn,
+        titleHy: body.titleHy || "",
+        titleRu: body.titleRu || "",
+        titleEn: body.titleEn || "",
+        altHy: body.titleHy || "",
+        altRu: body.titleRu || "",
+        altEn: body.titleEn || "",
         category: body.category || "classic",
       },
     });
@@ -42,10 +46,9 @@ export async function POST(req: NextRequest) {
       entityId: item.id,
     });
 
-    return NextResponse.json({ success: true, item });
+    return apiSuccess({ item }, 201);
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Error adding image";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return handleApiError(error, "Error adding portfolio image", 400);
   }
 }
 
@@ -69,9 +72,8 @@ export async function DELETE(req: NextRequest) {
       entityId: id,
     });
 
-    return NextResponse.json({ success: true });
+    return apiSuccess({ success: true });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Error deleting image";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return handleApiError(error, "Error deleting image", 400);
   }
 }

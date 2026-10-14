@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { authService } from "@/services/auth.service";
 import { adminService } from "@/services/admin.service";
 import { revalidateTag } from "next/cache";
+import { handleApiError, apiSuccess } from "@/lib/api-response";
+import { Prisma } from "@prisma/client";
 
 export async function GET() {
   try {
@@ -13,8 +15,7 @@ export async function GET() {
     ]);
     return NextResponse.json({ services, addons });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Error";
-    return NextResponse.json({ error: message }, { status: 403 });
+    return handleApiError(error, "Failed to load services and addons", 403);
   }
 }
 
@@ -24,19 +25,39 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { type, data } = body;
 
+    if (!data) {
+      return NextResponse.json({ error: "Missing item data" }, { status: 400 });
+    }
+
     if (type === "service") {
+      const nameHy = data.nameHy?.trim();
+      const nameRu = data.nameRu?.trim();
+      const nameEn = data.nameEn?.trim();
+
+      if (!nameHy || !nameRu || !nameEn) {
+        return NextResponse.json(
+          { error: "Names in Armenian, Russian, and English are all required" },
+          { status: 400 }
+        );
+      }
+
+      const durationMinutes = Math.max(1, Number(data.durationMinutes) || 45);
+      const priceMinorUnits = Math.max(0, Number(data.priceMinorUnits) || 0);
+      const sortOrder = !isNaN(Number(data.sortOrder)) ? Number(data.sortOrder) : 0;
+      const active = data.active !== undefined ? Boolean(data.active) : true;
+
       const service = await prisma.service.create({
         data: {
-          nameHy: data.nameHy,
-          nameRu: data.nameRu,
-          nameEn: data.nameEn,
-          descriptionHy: data.descriptionHy,
-          descriptionRu: data.descriptionRu,
-          descriptionEn: data.descriptionEn,
-          durationMinutes: Number(data.durationMinutes),
-          priceMinorUnits: Number(data.priceMinorUnits),
-          active: data.active ?? true,
-          sortOrder: Number(data.sortOrder || 0),
+          nameHy,
+          nameRu,
+          nameEn,
+          descriptionHy: data.descriptionHy?.trim() || "",
+          descriptionRu: data.descriptionRu?.trim() || "",
+          descriptionEn: data.descriptionEn?.trim() || "",
+          durationMinutes,
+          priceMinorUnits,
+          active,
+          sortOrder,
         },
       });
 
@@ -49,19 +70,35 @@ export async function POST(req: NextRequest) {
       });
 
       revalidateTag("active-services");
-      return NextResponse.json({ success: true, service });
+      return apiSuccess({ service }, 201);
     }
 
     if (type === "addon") {
+      const nameHy = data.nameHy?.trim();
+      const nameRu = data.nameRu?.trim();
+      const nameEn = data.nameEn?.trim();
+
+      if (!nameHy || !nameRu || !nameEn) {
+        return NextResponse.json(
+          { error: "Names in Armenian, Russian, and English are all required" },
+          { status: 400 }
+        );
+      }
+
+      const durationMinutes = Math.max(0, Number(data.durationMinutes) || 0);
+      const priceMinorUnits = Math.max(0, Number(data.priceMinorUnits) || 0);
+      const sortOrder = !isNaN(Number(data.sortOrder)) ? Number(data.sortOrder) : 0;
+      const active = data.active !== undefined ? Boolean(data.active) : true;
+
       const addon = await prisma.addon.create({
         data: {
-          nameHy: data.nameHy,
-          nameRu: data.nameRu,
-          nameEn: data.nameEn,
-          durationMinutes: Number(data.durationMinutes),
-          priceMinorUnits: Number(data.priceMinorUnits),
-          active: data.active ?? true,
-          sortOrder: Number(data.sortOrder || 0),
+          nameHy,
+          nameRu,
+          nameEn,
+          durationMinutes,
+          priceMinorUnits,
+          active,
+          sortOrder,
         },
       });
 
@@ -74,13 +111,12 @@ export async function POST(req: NextRequest) {
       });
 
       revalidateTag("active-addons");
-      return NextResponse.json({ success: true, addon });
+      return apiSuccess({ addon }, 201);
     }
 
-    return NextResponse.json({ error: "Invalid type" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid type. Must be 'service' or 'addon'" }, { status: 400 });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Error creating item";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return handleApiError(error, "Failed to create service/addon", 400);
   }
 }
 
@@ -90,21 +126,40 @@ export async function PUT(req: NextRequest) {
     const body = await req.json();
     const { type, id, data } = body;
 
+    if (!id) {
+      return NextResponse.json({ error: "Item ID is required" }, { status: 400 });
+    }
+
+    if (!data) {
+      return NextResponse.json({ error: "Missing update data" }, { status: 400 });
+    }
+
     if (type === "service") {
+      const updateData: Prisma.ServiceUpdateInput = {};
+
+      if (data.nameHy !== undefined) updateData.nameHy = data.nameHy.trim();
+      if (data.nameRu !== undefined) updateData.nameRu = data.nameRu.trim();
+      if (data.nameEn !== undefined) updateData.nameEn = data.nameEn.trim();
+      if (data.descriptionHy !== undefined) updateData.descriptionHy = data.descriptionHy.trim();
+      if (data.descriptionRu !== undefined) updateData.descriptionRu = data.descriptionRu.trim();
+      if (data.descriptionEn !== undefined) updateData.descriptionEn = data.descriptionEn.trim();
+
+      if (data.durationMinutes !== undefined && !isNaN(Number(data.durationMinutes))) {
+        updateData.durationMinutes = Math.max(1, Number(data.durationMinutes));
+      }
+      if (data.priceMinorUnits !== undefined && !isNaN(Number(data.priceMinorUnits))) {
+        updateData.priceMinorUnits = Math.max(0, Number(data.priceMinorUnits));
+      }
+      if (data.active !== undefined) {
+        updateData.active = Boolean(data.active);
+      }
+      if (data.sortOrder !== undefined && data.sortOrder !== null && !isNaN(Number(data.sortOrder))) {
+        updateData.sortOrder = Number(data.sortOrder);
+      }
+
       const updated = await prisma.service.update({
         where: { id },
-        data: {
-          nameHy: data.nameHy,
-          nameRu: data.nameRu,
-          nameEn: data.nameEn,
-          descriptionHy: data.descriptionHy,
-          descriptionRu: data.descriptionRu,
-          descriptionEn: data.descriptionEn,
-          durationMinutes: Number(data.durationMinutes),
-          priceMinorUnits: Number(data.priceMinorUnits),
-          active: data.active,
-          sortOrder: Number(data.sortOrder),
-        },
+        data: updateData,
       });
 
       await adminService.logAudit({
@@ -116,21 +171,32 @@ export async function PUT(req: NextRequest) {
       });
 
       revalidateTag("active-services");
-      return NextResponse.json({ success: true, updated });
+      return apiSuccess({ updated });
     }
 
     if (type === "addon") {
+      const updateData: Prisma.AddonUpdateInput = {};
+
+      if (data.nameHy !== undefined) updateData.nameHy = data.nameHy.trim();
+      if (data.nameRu !== undefined) updateData.nameRu = data.nameRu.trim();
+      if (data.nameEn !== undefined) updateData.nameEn = data.nameEn.trim();
+
+      if (data.durationMinutes !== undefined && !isNaN(Number(data.durationMinutes))) {
+        updateData.durationMinutes = Math.max(0, Number(data.durationMinutes));
+      }
+      if (data.priceMinorUnits !== undefined && !isNaN(Number(data.priceMinorUnits))) {
+        updateData.priceMinorUnits = Math.max(0, Number(data.priceMinorUnits));
+      }
+      if (data.active !== undefined) {
+        updateData.active = Boolean(data.active);
+      }
+      if (data.sortOrder !== undefined && data.sortOrder !== null && !isNaN(Number(data.sortOrder))) {
+        updateData.sortOrder = Number(data.sortOrder);
+      }
+
       const updated = await prisma.addon.update({
         where: { id },
-        data: {
-          nameHy: data.nameHy,
-          nameRu: data.nameRu,
-          nameEn: data.nameEn,
-          durationMinutes: Number(data.durationMinutes),
-          priceMinorUnits: Number(data.priceMinorUnits),
-          active: data.active,
-          sortOrder: Number(data.sortOrder),
-        },
+        data: updateData,
       });
 
       await adminService.logAudit({
@@ -142,13 +208,12 @@ export async function PUT(req: NextRequest) {
       });
 
       revalidateTag("active-addons");
-      return NextResponse.json({ success: true, updated });
+      return apiSuccess({ updated });
     }
 
-    return NextResponse.json({ error: "Invalid type" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid type. Must be 'service' or 'addon'" }, { status: 400 });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Error updating item";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return handleApiError(error, "Failed to update service/addon", 400);
   }
 }
 
@@ -160,13 +225,15 @@ export async function DELETE(req: NextRequest) {
     const id = searchParams.get("id");
 
     if (!id || !type) {
-      return NextResponse.json({ error: "ID and type required" }, { status: 400 });
+      return NextResponse.json({ error: "ID and type are required" }, { status: 400 });
     }
 
     if (type === "service") {
       await prisma.service.delete({ where: { id } });
     } else if (type === "addon") {
       await prisma.addon.delete({ where: { id } });
+    } else {
+      return NextResponse.json({ error: "Invalid type" }, { status: 400 });
     }
 
     await adminService.logAudit({
@@ -180,9 +247,8 @@ export async function DELETE(req: NextRequest) {
     if (type === "service") revalidateTag("active-services");
     else if (type === "addon") revalidateTag("active-addons");
 
-    return NextResponse.json({ success: true });
+    return apiSuccess({ success: true });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Error deleting item";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return handleApiError(error, "Failed to delete item", 400);
   }
 }

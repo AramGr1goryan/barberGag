@@ -8,6 +8,7 @@ import {
   bulkGenerateSlotsSchema,
   updateSlotStatusSchema,
 } from "@/validators/availability.schema";
+import { handleApiError } from "@/lib/api-response";
 
 export async function GET(req: NextRequest) {
   try {
@@ -45,8 +46,7 @@ export async function GET(req: NextRequest) {
     const dayDetails = await availabilityService.getAdminDayDetails(date);
     return NextResponse.json(dayDetails);
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Error fetching calendar";
-    return NextResponse.json({ error: message }, { status: 403 });
+    return handleApiError(error, "Error fetching calendar data", 403);
   }
 }
 
@@ -226,7 +226,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Error processing calendar action";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return handleApiError(error, "Error processing calendar action", 400);
   }
 }

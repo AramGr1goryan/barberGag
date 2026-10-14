@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useAdminI18n } from "@/context/AdminI18nContext";
+import { useToast } from "@/context/ToastContext";
 import { formatCurrency } from "@/lib/timezone";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -26,6 +27,7 @@ export interface BookingAdminItem {
 
 export function BookingsManager() {
   const { t, locale } = useAdminI18n();
+  const toast = useToast();
   const [bookings, setBookings] = useState<BookingAdminItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
@@ -195,9 +197,15 @@ export function BookingsManager() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ bookingId, status: targetStatus }),
       });
-      if (res.ok) fetchBookings();
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        toast.success(t.common.success);
+        fetchBookings();
+      } else {
+        toast.error(data.error || "Failed to update booking status");
+      }
     } catch {
-      // ignore
+      toast.error("Network error updating booking");
     } finally {
       setActionLoadingId("");
     }

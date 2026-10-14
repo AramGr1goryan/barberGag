@@ -4,6 +4,7 @@ import { bookingService } from "@/services/booking.service";
 import { createBookingSchema } from "@/validators/booking.schema";
 import { authService } from "@/services/auth.service";
 import { checkRateLimit } from "@/lib/rate-limiter";
+import { handleApiError } from "@/lib/api-response";
 
 export async function POST(req: NextRequest) {
   try {
@@ -91,29 +92,6 @@ export async function POST(req: NextRequest) {
 
     return response;
   } catch (error: unknown) {
-    if (error instanceof Error && (error.message === "ACTIVE_BOOKING_EXISTS" || error.message === "THREE_HOUR_RESTRICTION")) {
-      const errWithConf = error as unknown as { conflictingBooking: { bookingNumber: string; startTime: string } };
-      return NextResponse.json(
-        {
-          error: error.message,
-          message:
-            error.message === "ACTIVE_BOOKING_EXISTS"
-              ? "Դուք արդեն ունեք ակտիվ ամրագրում: Կարող եք միայն փոխել ժամը կամ չեղարկել այն:"
-              : "One person cannot book more than one appointment within a 3-hour period.",
-          conflictingBooking: errWithConf.conflictingBooking,
-        },
-        { status: 409 }
-      );
-    }
-
-    if (error instanceof Error && error.message === "SLOT_ALREADY_RESERVED") {
-      return NextResponse.json(
-        { error: "SLOT_ALREADY_RESERVED", message: "This time slot is no longer available." },
-        { status: 409 }
-      );
-    }
-
-    const message = error instanceof Error ? error.message : "Failed to initiate booking";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return handleApiError(error, "Failed to initiate booking", 400);
   }
 }

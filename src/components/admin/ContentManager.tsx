@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useAdminI18n } from "@/context/AdminI18nContext";
+import { useToast } from "@/context/ToastContext";
 import { Button } from "@/components/ui/Button";
 import { CheckCircle2, FileText } from "lucide-react";
 import { FormSkeleton } from "@/components/ui/Skeleton";
@@ -17,6 +18,7 @@ export interface ContentItem {
 
 export function ContentManager() {
   const { t } = useAdminI18n();
+  const toast = useToast();
   const [contents, setContents] = useState<ContentItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [savingKey, setSavingKey] = useState<string>("");
@@ -54,12 +56,16 @@ export function ContentManager() {
         }),
       });
 
+      const resData = await res.json().catch(() => ({}));
       if (res.ok) {
+        toast.success(`${t.content.contentSavedSuccess} (${item.key})`);
         setNotification(`${t.content.contentSavedSuccess} (${item.key})`);
         setTimeout(() => setNotification(""), 3000);
+      } else {
+        toast.error(resData.error || resData.message || "Failed to update content");
       }
     } catch {
-      // ignore
+      toast.error("Network error saving content");
     } finally {
       setSavingKey("");
     }

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useAdminI18n } from "@/context/AdminI18nContext";
+import { useToast } from "@/context/ToastContext";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { TableSkeleton } from "@/components/ui/Skeleton";
@@ -19,6 +20,7 @@ export interface CallbackItem {
 
 export function CallbacksManager() {
   const { t, locale } = useAdminI18n();
+  const toast = useToast();
   const [callbacks, setCallbacks] = useState<CallbackItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -27,7 +29,7 @@ export function CallbacksManager() {
     try {
       const res = await fetch("/api/admin/callbacks");
       const data = await res.json();
-      if (data.callbacks) setCallbacks(data.callbacks);
+      if (res.ok && data.callbacks) setCallbacks(data.callbacks);
     } catch {
       // ignore
     } finally {
@@ -46,9 +48,15 @@ export function CallbacksManager() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, status }),
       });
-      if (res.ok) fetchCallbacks();
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        toast.success(t.common.success);
+        fetchCallbacks();
+      } else {
+        toast.error(data.error || "Failed to update status");
+      }
     } catch {
-      // ignore
+      toast.error("Network error updating status");
     }
   };
 

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authService } from "@/services/auth.service";
 import { adminService } from "@/services/admin.service";
-import { prisma } from "@/lib/prisma";
+import { handleApiError, apiSuccess } from "@/lib/api-response";
 
 export async function GET() {
   try {
@@ -9,8 +9,7 @@ export async function GET() {
     const contents = await adminService.getSiteContent();
     return NextResponse.json({ contents });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Error";
-    return NextResponse.json({ error: message }, { status: 403 });
+    return handleApiError(error, "Failed to load site content", 403);
   }
 }
 
@@ -38,9 +37,8 @@ export async function POST(req: NextRequest) {
       entityId: key,
     });
 
-    return NextResponse.json({ success: true, content });
+    return apiSuccess({ content });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Error updating content";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return handleApiError(error, "Error updating site content", 400);
   }
 }

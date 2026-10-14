@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { bookingService } from "@/services/booking.service";
 import { authService } from "@/services/auth.service";
+import { handleApiError } from "@/lib/api-response";
 
 export async function POST(req: NextRequest) {
   try {
@@ -57,7 +58,6 @@ export async function POST(req: NextRequest) {
 
     return response;
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Failed to cancel booking";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return handleApiError(error, "Failed to cancel booking", 400);
   }
 }

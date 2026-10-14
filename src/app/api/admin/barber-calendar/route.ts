@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { authService } from "@/services/auth.service";
 import { adminService } from "@/services/admin.service";
 import { BookingStatus, SlotStatus } from "@prisma/client";
+import { handleApiError } from "@/lib/api-response";
 
 export async function GET(req: NextRequest) {
   try {
@@ -110,8 +111,7 @@ export async function GET(req: NextRequest) {
       selectedDayDetails,
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unauthorized or error";
-    return NextResponse.json({ error: message }, { status: 403 });
+    return handleApiError(error, "Failed to load calendar data", 403);
   }
 }
 
@@ -409,7 +409,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Error processing request";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return handleApiError(error, "Error processing calendar action", 400);
   }
 }

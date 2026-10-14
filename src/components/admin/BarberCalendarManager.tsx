@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useAdminI18n } from "@/context/AdminI18nContext";
+import { useToast } from "@/context/ToastContext";
 import { Button } from "@/components/ui/Button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Plus, Check, X, ArrowLeft, Sunrise, Sun, Moon, Trash2, ChevronDown, Edit2 } from "lucide-react";
@@ -123,6 +124,7 @@ function SwipeBooking({ task, isDone, locale, onToggleTask, onDelete, onEdit }: 
 export function BarberCalendarManager() {
 
   const { t, locale } = useAdminI18n();
+  const toast = useToast();
   
   const getTodayYerevanStr = () => {
     const d = new Date();
@@ -227,13 +229,13 @@ export function BarberCalendarManager() {
     const start = window.prompt(locale === "ru" ? "Время начала (например, 14:00):" : "Start time (e.g. 14:00):", "");
     if (!start) return;
     if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(start.trim())) {
-      alert(locale === "ru" ? "Неверный формат времени (нужно ЧЧ:ММ)" : "Invalid time format (HH:MM)");
+      toast.error(locale === "ru" ? "Неверный формат времени (нужно ЧЧ:ММ)" : "Invalid time format (HH:MM)");
       return;
     }
     const end = window.prompt(locale === "ru" ? "Время окончания (например, 16:00):" : "End time (e.g. 16:00):", "");
     if (!end) return;
     if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(end.trim())) {
-      alert(locale === "ru" ? "Неверный формат времени (нужно ЧЧ:ММ)" : "Invalid time format (HH:MM)");
+      toast.error(locale === "ru" ? "Неверный формат времени (нужно ЧЧ:ММ)" : "Invalid time format (HH:MM)");
       return;
     }
     try {
@@ -245,10 +247,13 @@ export function BarberCalendarManager() {
       });
       if (!res.ok) {
         const d = await res.json().catch(()=>({}));
-        alert(d.error || "Error");
+        toast.error(d.error || d.message || "Error blocking range");
+      } else {
+        toast.success(locale === "ru" ? "Промежуток заблокирован" : "Range blocked");
       }
       fetchData(selectedDate, true);
     } catch {
+      toast.error(locale === "ru" ? "Ошибка сети" : "Network error");
       fetchData(selectedDate, true);
     }
   };
@@ -257,7 +262,7 @@ export function BarberCalendarManager() {
     const time = window.prompt(locale === "ru" ? "Введите время (например, 14:00):" : "Enter time (e.g. 14:00):", "");
     if (!time) return;
     if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(time.trim())) {
-      alert(locale === "ru" ? "Неверный формат времени (нужно ЧЧ:ММ)" : "Invalid time format (HH:MM)");
+      toast.error(locale === "ru" ? "Неверный формат времени (нужно ЧЧ:ММ)" : "Invalid time format (HH:MM)");
       return;
     }
     try {
@@ -269,12 +274,13 @@ export function BarberCalendarManager() {
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        alert((locale === "ru" ? "Ошибка: " : "Error: ") + (err.error || "Failed"));
+        toast.error(err.error || err.message || "Failed to create slot");
       } else {
+        toast.success(locale === "ru" ? "Слот добавлен" : "Slot added");
         fetchData(selectedDate, true);
       }
     } catch {
-      alert(locale === "ru" ? "Ошибка сети" : "Network error");
+      toast.error(locale === "ru" ? "Ошибка сети" : "Network error");
     } finally {
       setIsLoading(false);
     }
@@ -315,7 +321,11 @@ export function BarberCalendarManager() {
     const [startH, startM] = bookingTime.split(":").map(Number);
     const maxDuration = 24 * 60 - (startH * 60 + startM);
     if (bookingDuration > maxDuration) {
-      alert(locale === "ru" ? "Невозможно записать: рабочий день заканчивается в 00:00. Доступно только " + maxDuration + " мин." : "Cannot book: working day ends at 00:00. Only " + maxDuration + " mins available.");
+      toast.error(
+        locale === "ru"
+          ? "Невозможно записать: рабочий день заканчивается в 00:00. Доступно только " + maxDuration + " мин."
+          : "Cannot book: working day ends at 00:00. Only " + maxDuration + " mins available."
+      );
       setIsSubmitting(false);
       return;
     }
@@ -358,14 +368,19 @@ export function BarberCalendarManager() {
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        alert((locale === "ru" ? "Ошибка: " : "Error: ") + (errData.error || "Failed to create booking"));
+        toast.error((locale === "ru" ? "Ошибка: " : "Error: ") + (errData.error || errData.message || "Failed to create booking"));
         return;
       }
 
+      toast.success(
+        editingBookingId
+          ? (locale === "ru" ? "Запись обновлена" : "Booking updated")
+          : (locale === "ru" ? "Запись успешно создана" : "Booking created")
+      );
       setIsManualBookingOpen(false);
       fetchData(selectedDate, true);
-    } catch (e) {
-      alert(locale === "ru" ? "Ошибка сети" : "Network error");
+    } catch {
+      toast.error(locale === "ru" ? "Ошибка сети" : "Network error");
     } finally {
       setIsSubmitting(false);
     }

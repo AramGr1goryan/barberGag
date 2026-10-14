@@ -3,12 +3,14 @@ import { clsx } from "clsx";
 
 export interface BadgeProps {
   children: React.ReactNode;
-  variant?: "gold" | "green" | "red" | "gray" | "outline";
+  variant?: "gold" | "green" | "red" | "gray" | "outline" | "success" | "neutral";
   size?: "sm" | "md";
   className?: string;
 }
 
 export function Badge({ children, variant = "gold", size = "sm", className }: BadgeProps) {
+  const normalizedVariant = variant === "success" ? "green" : variant === "neutral" ? "gray" : variant;
+
   const variantStyles = {
     gold: "bg-accent/10 text-accent border-accent/30 shadow-[0_0_12px_rgba(197,168,128,0.12)]",
     green: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 shadow-[0_0_12px_rgba(16,185,129,0.12)]",
@@ -26,7 +28,7 @@ export function Badge({ children, variant = "gold", size = "sm", className }: Ba
     <span
       className={clsx(
         "inline-flex items-center justify-center border font-mono rounded-full backdrop-blur-md transition-colors",
-        variantStyles[variant],
+        variantStyles[normalizedVariant],
         sizeStyles[size],
         className
       )}

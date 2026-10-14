@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authService } from "@/services/auth.service";
 import { adminService } from "@/services/admin.service";
 import { CallbackStatus } from "@prisma/client";
+import { handleApiError, apiSuccess } from "@/lib/api-response";
 
 export async function GET() {
   try {
@@ -9,8 +10,7 @@ export async function GET() {
     const callbacks = await adminService.getCallbackRequests();
     return NextResponse.json({ callbacks });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Error";
-    return NextResponse.json({ error: message }, { status: 403 });
+    return handleApiError(error, "Failed to load callback requests", 403);
   }
 }
 
@@ -19,6 +19,10 @@ export async function PUT(req: NextRequest) {
     const session = await authService.requireAdmin();
     const body = await req.json();
     const { id, status } = body;
+
+    if (!id || !status) {
+      return NextResponse.json({ error: "Callback ID and status required" }, { status: 400 });
+    }
 
     const updated = await adminService.updateCallbackStatus(id, status as CallbackStatus);
 
@@ -30,9 +34,8 @@ export async function PUT(req: NextRequest) {
       entityId: id,
     });
 
-    return NextResponse.json({ success: true, callback: updated });
+    return apiSuccess({ callback: updated });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Error updating callback";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return handleApiError(error, "Error updating callback", 400);
   }
 }

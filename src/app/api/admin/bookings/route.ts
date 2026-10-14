@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { authService } from "@/services/auth.service";
 import { adminService } from "@/services/admin.service";
 import { BookingStatus, SlotStatus } from "@prisma/client";
+import { handleApiError, apiSuccess } from "@/lib/api-response";
 
 export async function GET(req: NextRequest) {
   try {
@@ -33,8 +34,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ bookings });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unauthorized or error";
-    return NextResponse.json({ error: message }, { status: 403 });
+    return handleApiError(error, "Failed to load bookings", 403);
   }
 }
 
@@ -98,9 +98,8 @@ export async function PUT(req: NextRequest) {
       }
     }
 
-    return NextResponse.json({ success: true, booking: updated });
+    return apiSuccess({ booking: updated });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Error updating booking";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return handleApiError(error, "Error updating booking", 400);
   }
 }

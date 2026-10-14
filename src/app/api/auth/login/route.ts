@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authService, AUTH_COOKIE_NAME } from "@/services/auth.service";
 import { loginSchema } from "@/validators/auth.schema";
 import { checkRateLimit } from "@/lib/rate-limiter";
+import { handleApiError } from "@/lib/api-response";
 
 export async function POST(req: NextRequest) {
   try {
@@ -45,7 +46,6 @@ export async function POST(req: NextRequest) {
     if (error instanceof Error && error.message === "INVALID_CREDENTIALS") {
       return NextResponse.json({ error: "Invalid email/phone or password." }, { status: 401 });
     }
-    const message = error instanceof Error ? error.message : "Login failed";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return handleApiError(error, "Login failed", 400);
   }
 }

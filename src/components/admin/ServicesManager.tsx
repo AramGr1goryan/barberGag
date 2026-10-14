@@ -2,11 +2,13 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useAdminI18n } from "@/context/AdminI18nContext";
+import { useToast } from "@/context/ToastContext";
 import { formatCurrency } from "@/lib/timezone";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
-import { Plus, Trash2, Scissors, Sparkles, CheckCircle2 } from "lucide-react";
+import { Badge } from "@/components/ui/Badge";
+import { Plus, Trash2, Scissors, Sparkles, CheckCircle2, Pencil } from "lucide-react";
 
 export interface ServiceItem {
   id: string;
@@ -35,6 +37,7 @@ export interface AddonItem {
 
 export function ServicesManager() {
   const { t, locale } = useAdminI18n();
+  const toast = useToast();
   const [services, setServices] = useState<ServiceItem[]>([]);
   const [addons, setAddons] = useState<AddonItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -50,6 +53,8 @@ export function ServicesManager() {
   const [descEn, setDescEn] = useState("");
   const [duration, setDuration] = useState<string>("45");
   const [price, setPrice] = useState<string>("7000");
+  const [sortOrder, setSortOrder] = useState<string>("0");
+  const [isActive, setIsActive] = useState<boolean>(true);
   const [isSaving, setIsSaving] = useState(false);
   const [notification, setNotification] = useState("");
 
@@ -60,14 +65,18 @@ export function ServicesManager() {
     try {
       const res = await fetch("/api/admin/services");
       const data = await res.json();
-      if (data.services) setServices(data.services);
-      if (data.addons) setAddons(data.addons);
+      if (res.ok) {
+        if (data.services) setServices(data.services);
+        if (data.addons) setAddons(data.addons);
+      } else {
+        toast.error(data.error || "Не удалось загрузить услуги");
+      }
     } catch {
-      // ignore
+      toast.error(locale === "ru" ? "Ошибка сети при загрузке" : "Network error loading services");
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [toast, locale]);
 
   useEffect(() => {
     fetchData();
@@ -79,20 +88,32 @@ export function ServicesManager() {
     setNameHy(""); setNameRu(""); setNameEn("");
     setDescHy(""); setDescRu(""); setDescEn("");
     setDuration("45"); setPrice("");
+    const maxSort = (type === "service" ? services : addons).reduce(
+      (max, item) => Math.max(max, item.sortOrder || 0),
+      0
+    );
+    setSortOrder(String(maxSort + 1));
+    setIsActive(true);
     setIsModalOpen(true);
   };
 
-  const handleEdit = (type: "service" | "addon", item: any) => {
+  const handleEdit = (type: "service" | "addon", item: ServiceItem | AddonItem) => {
     setItemType(type);
     setEditingId(item.id);
-    setNameHy(item.nameHy);
-    setNameRu(item.nameRu);
-    setNameEn(item.nameEn);
-    setDescHy(item.descriptionHy || "");
-    setDescRu(item.descriptionRu || "");
-    setDescEn(item.descriptionEn || "");
-    setDuration(String(item.durationMinutes));
-    setPrice(String(item.priceMinorUnits));
+    setNameHy(item.nameHy || "");
+    setNameRu(item.nameRu || "");
+    setNameEn(item.nameEn || "");
+    if ("descriptionHy" in item) {
+      setDescHy(item.descriptionHy || "");
+      setDescRu(item.descriptionRu || "");
+      setDescEn(item.descriptionEn || "");
+    } else {
+      setDescHy(""); setDescRu(""); setDescEn("");
+    }
+    setDuration(String(item.durationMinutes ?? 45));
+    setPrice(String(item.priceMinorUnits ?? 0));
+    setSortOrder(String(item.sortOrder ?? 0));
+    setIsActive(item.active !== false);
     setIsModalOpen(true);
   };
 
@@ -101,18 +122,20 @@ export function ServicesManager() {
     setIsSaving(true);
     try {
       const payload = {
-        nameHy,
-        nameRu,
-        nameEn,
-        descriptionHy: descHy || "",
-        descriptionRu: descRu || "",
-        descriptionEn: descEn || "",
-        durationMinutes: Number(duration) || 0,
-        priceMinorUnits: Number(price) || 0,
+        nameHy: nameHy.trim(),
+        nameRu: nameRu.trim(),
+        nameEn: nameEn.trim(),
+        descriptionHy: descHy.trim(),
+        descriptionRu: descRu.trim(),
+        descriptionEn: descEn.trim(),
+        durationMinutes: Math.max(0, Number(duration) || 0),
+        priceMinorUnits: Math.max(0, Number(price) || 0),
+        sortOrder: Number(sortOrder) || 0,
+        active: isActive,
         category: "HAIRCUT",
       };
 
-      let res;
+      let res: Response;
       if (editingId) {
         res = await fetch("/api/admin/services", {
           method: "PUT",
@@ -127,37 +150,44 @@ export function ServicesManager() {
         });
       }
 
+      const resData = await res.json().catch(() => ({}));
+
       if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        alert(errorData.error || "Failed to save item");
+        const errorMsg = resData.error || resData.message || "Failed to save item";
+        toast.error(errorMsg);
         return;
       }
 
+      toast.success(editingId ? (locale === "ru" ? "Услуга обновлена" : "Service updated") : (locale === "ru" ? "Услуга добавлена" : "Service created"));
       setNotification(t.common.success);
-        setTimeout(() => setNotification(""), 3500);
-        setIsModalOpen(false);
-        setEditingId(null);
-        setNameHy(""); setNameRu(""); setNameEn("");
-        setDescHy(""); setDescRu(""); setDescEn("");
-        fetchData();
+      setTimeout(() => setNotification(""), 3500);
+      setIsModalOpen(false);
+      setEditingId(null);
+      setNameHy(""); setNameRu(""); setNameEn("");
+      setDescHy(""); setDescRu(""); setDescEn("");
+      fetchData();
     } catch {
-      // ignore
+      toast.error(locale === "ru" ? "Ошибка сети при сохранении" : "Network error saving item");
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleDelete = async (type: "service" | "addon", id: string) => {
-    if (!confirm(t.services.confirmDeleteService)) return;
+    if (!window.confirm(t.services.confirmDeleteService)) return;
     try {
       const res = await fetch(`/api/admin/services?id=${id}&type=${type}`, { method: "DELETE" });
+      const resData = await res.json().catch(() => ({}));
       if (res.ok) {
+        toast.success(t.common.success);
         setNotification(t.common.success);
         setTimeout(() => setNotification(""), 3500);
         fetchData();
+      } else {
+        toast.error(resData.error || "Failed to delete item");
       }
     } catch {
-      // ignore
+      toast.error(locale === "ru" ? "Ошибка сети при удалении" : "Network error deleting item");
     }
   };
 
@@ -166,6 +196,10 @@ export function ServicesManager() {
     if (locale === "en") return item.nameEn || item.nameHy;
     return item.nameHy;
   };
+
+  const modalTitle = editingId
+    ? (itemType === "service" ? t.services.editService : t.services.editAddon)
+    : (itemType === "service" ? t.services.addNewService : t.services.addNewAddon);
 
   return (
     <div className="space-y-10">
@@ -226,6 +260,8 @@ export function ServicesManager() {
             <thead>
               <tr className="border-b border-white/[0.06] text-zinc-400 uppercase text-[10px] tracking-wider">
                 <th className="py-3 px-4">{t.services.nameHy} / EN</th>
+                <th className="py-3 px-4">Порядок</th>
+                <th className="py-3 px-4">Статус</th>
                 <th className="py-3 px-4">{t.services.durationMinutes}</th>
                 <th className="py-3 px-4">{t.services.priceAmd}</th>
                 <th className="py-3 px-4 text-right">{t.common.actions}</th>
@@ -238,6 +274,12 @@ export function ServicesManager() {
                     <span className="font-sans font-bold text-foreground block">{getName(s)}</span>
                     <span className="text-[11px] text-zinc-400">{s.nameHy} • {s.nameEn}</span>
                   </td>
+                  <td className="py-4 px-4 text-zinc-400">#{s.sortOrder}</td>
+                  <td className="py-4 px-4">
+                    <Badge variant={s.active ? "green" : "gray"} size="sm">
+                      {s.active ? (locale === "ru" ? "Активна" : "Active") : (locale === "ru" ? "Скрыта" : "Hidden")}
+                    </Badge>
+                  </td>
                   <td className="py-4 px-4 text-zinc-300">{s.durationMinutes} min</td>
                   <td className="py-4 px-4 text-white font-bold">
                     {formatCurrency(s.priceMinorUnits, locale)}
@@ -249,7 +291,7 @@ export function ServicesManager() {
                         className="p-2 rounded-xl text-blue-300 hover:text-blue-100 hover:bg-blue-500/10 border border-transparent hover:border-blue-500/20 transition-all"
                         title={t.common.edit || "Edit"}
                       >
-                        <Plus className="w-4 h-4 rotate-45" /> {/* Just a placeholder icon for Edit if no Pencil imported */}
+                        <Pencil className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDelete("service", s.id)}
@@ -283,6 +325,8 @@ export function ServicesManager() {
             <thead>
               <tr className="border-b border-white/[0.06] text-zinc-400 uppercase text-[10px] tracking-wider">
                 <th className="py-3 px-4">{t.services.nameHy} / EN</th>
+                <th className="py-3 px-4">Порядок</th>
+                <th className="py-3 px-4">Статус</th>
                 <th className="py-3 px-4">{t.services.durationMinutes}</th>
                 <th className="py-3 px-4">{t.services.priceAmd}</th>
                 <th className="py-3 px-4 text-right">{t.common.actions}</th>
@@ -295,6 +339,12 @@ export function ServicesManager() {
                     <span className="font-sans font-bold text-foreground block">{getName(a)}</span>
                     <span className="text-[11px] text-muted">{a.nameHy} • {a.nameEn}</span>
                   </td>
+                  <td className="py-3.5 px-4 text-zinc-400">#{a.sortOrder}</td>
+                  <td className="py-3.5 px-4">
+                    <Badge variant={a.active ? "green" : "gray"} size="sm">
+                      {a.active ? (locale === "ru" ? "Активна" : "Active") : (locale === "ru" ? "Скрыта" : "Hidden")}
+                    </Badge>
+                  </td>
                   <td className="py-3.5 px-4 text-muted">{a.durationMinutes} min</td>
                   <td className="py-3.5 px-4 text-white font-bold">
                     {formatCurrency(a.priceMinorUnits, locale)}
@@ -303,14 +353,14 @@ export function ServicesManager() {
                     <div className="flex justify-end gap-2">
                       <button
                         onClick={() => handleEdit("addon", a)}
-                        className="p-1 text-blue-300 hover:text-blue-100 transition-colors"
+                        className="p-1.5 rounded-xl text-blue-300 hover:text-blue-100 hover:bg-blue-500/10 transition-colors"
                         title={t.common.edit || "Edit"}
                       >
-                        <Plus className="w-4 h-4 rotate-45" />
+                        <Pencil className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDelete("addon", a.id)}
-                        className="p-1 text-red-400 hover:text-red-300 transition-colors"
+                        className="p-1.5 rounded-xl text-red-400 hover:text-red-300 hover:bg-rose-500/10 transition-colors"
                         title={t.common.delete}
                       >
                         <Trash2 className="w-4 h-4" />
@@ -324,11 +374,11 @@ export function ServicesManager() {
         </div>
       </div>
 
-      {/* Create Modal */}
+      {/* Create / Edit Modal */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={itemType === "service" ? t.services.addNewService : t.services.addNewAddon}
+        title={modalTitle}
         description={t.services.subtitle}
       >
         <form onSubmit={handleSave} className="space-y-4 py-2">
@@ -385,6 +435,7 @@ export function ServicesManager() {
               label={t.services.durationMinutes}
               type="number"
               required
+              min={1}
               value={duration}
               onChange={(e) => setDuration(e.target.value)}
             />
@@ -393,9 +444,35 @@ export function ServicesManager() {
               label={t.services.priceAmd}
               type="number"
               required
+              min={0}
               value={price}
               onChange={(e) => setPrice(e.target.value)}
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 items-center pt-2">
+            <Input
+              label={locale === "ru" ? "Порядок показа" : "Sort Order"}
+              type="number"
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value)}
+              placeholder="0"
+            />
+
+            <div className="flex items-center gap-3 pt-5">
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isActive}
+                  onChange={(e) => setIsActive(e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                <span className="ml-3 text-xs font-medium text-white/80">
+                  {t.services.active || "Активно"}
+                </span>
+              </label>
+            </div>
           </div>
 
           <div className="pt-4 flex justify-end space-x-3">

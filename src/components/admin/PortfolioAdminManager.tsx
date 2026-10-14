@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { useAdminI18n } from "@/context/AdminI18nContext";
+import { useToast } from "@/context/ToastContext";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
@@ -22,6 +23,7 @@ export interface AdminPortfolioItem {
 
 export function PortfolioAdminManager() {
   const { t, locale } = useAdminI18n();
+  const toast = useToast();
   const [items, setItems] = useState<AdminPortfolioItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -67,12 +69,15 @@ export function PortfolioAdminManager() {
         body: formData,
       });
 
-      const data = await res.json();
-      if (data.url) {
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.url) {
         setImageUrl(data.url);
+        toast.success(locale === "ru" ? "Изображение загружено" : "Image uploaded");
+      } else {
+        toast.error(data.error || "Failed to upload image");
       }
     } catch {
-      // ignore
+      toast.error(locale === "ru" ? "Ошибка сети при загрузке фото" : "Network error uploading image");
     } finally {
       setIsUploading(false);
     }
@@ -80,7 +85,10 @@ export function PortfolioAdminManager() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!imageUrl) return;
+    if (!imageUrl) {
+      toast.error(locale === "ru" ? "Загрузите изображение" : "Please upload an image first");
+      return;
+    }
 
     setIsSaving(true);
     try {
@@ -96,7 +104,9 @@ export function PortfolioAdminManager() {
         }),
       });
 
+      const resData = await res.json().catch(() => ({}));
       if (res.ok) {
+        toast.success(t.common.success);
         setNotification(t.common.success);
         setTimeout(() => setNotification(""), 3500);
         setIsModalOpen(false);
@@ -105,28 +115,34 @@ export function PortfolioAdminManager() {
         setTitleRu("");
         setTitleEn("");
         fetchItems();
+      } else {
+        toast.error(resData.error || resData.message || "Failed to add image");
       }
     } catch {
-      // ignore
+      toast.error(locale === "ru" ? "Ошибка сети при сохранении" : "Network error saving portfolio image");
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm(t.portfolio.confirmDeleteImage)) return;
+    if (!window.confirm(t.portfolio.confirmDeleteImage)) return;
 
     try {
       const res = await fetch(`/api/admin/portfolio?id=${id}`, {
         method: "DELETE",
       });
+      const resData = await res.json().catch(() => ({}));
       if (res.ok) {
+        toast.success(t.common.success);
         setNotification(t.common.success);
         setTimeout(() => setNotification(""), 3500);
         fetchItems();
+      } else {
+        toast.error(resData.error || "Failed to delete image");
       }
     } catch {
-      // ignore
+      toast.error(locale === "ru" ? "Ошибка сети при удалении" : "Network error deleting image");
     }
   };
 
