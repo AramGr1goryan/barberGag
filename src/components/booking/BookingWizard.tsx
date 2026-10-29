@@ -196,11 +196,12 @@ export function BookingWizard({
   useEffect(() => {
     const fetchOpenDates = async () => {
       const today = new Date();
-      const end = new Date(today);
-      end.setDate(today.getDate() + 60);
+      const end = new Date(today.getFullYear(), today.getMonth() + 6, 0);
 
-      const startStr = today.toISOString().split("T")[0];
-      const endStr = end.toISOString().split("T")[0];
+      const formatDate = (date: Date) =>
+        `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+      const startStr = formatDate(today);
+      const endStr = formatDate(end);
 
       try {
         const res = await fetch(`/api/availability/dates?start=${startStr}&end=${endStr}&duration=${totalDuration}`);
