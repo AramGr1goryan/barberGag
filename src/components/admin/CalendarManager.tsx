@@ -1344,7 +1344,7 @@ export function CalendarManager() {
                 onChange={(e) => setBulkEnd(e.target.value)}
                 className="w-full bg-[#16161c] border border-white/25 hover:border-accent/60 focus:border-accent focus:ring-1 focus:ring-accent/30 text-white rounded-xl px-3 py-2 text-xs font-mono transition-all [color-scheme:dark]"
               >
-                {TIME_OPTIONS.map((tVal) => (
+                {[...TIME_OPTIONS, "00:00"].map((tVal) => (
                   <option key={tVal} value={tVal}>
                     ⏰ {tVal}
                   </option>

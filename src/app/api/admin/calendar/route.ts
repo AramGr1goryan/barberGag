@@ -137,7 +137,8 @@ export async function POST(req: NextRequest) {
         endTime: body.endTime,
         slotDurationMinutes: Number(body.slotDurationMinutes || body.slotDuration || 60),
       });
-      if (validated.startTime >= validated.endTime) {
+      const effectiveEndTime = validated.endTime === "00:00" ? "24:00" : validated.endTime;
+      if (validated.startTime >= effectiveEndTime) {
         return NextResponse.json({ error: "End time must be after start time" }, { status: 400 });
       }
 

@@ -387,7 +387,8 @@ export class AvailabilityService {
     const [endH, endM] = endTime.split(":").map(Number);
 
     let currentMinutes = startH * 60 + startM;
-    const endMinutes = endH * 60 + endM;
+    // 00:00 as end time means midnight (end of the day)
+    const endMinutes = endH * 60 + endM || 24 * 60;
 
     const existingSlots = await prisma.availabilitySlot.findMany({
       where: { availabilityDayId: day.id }
