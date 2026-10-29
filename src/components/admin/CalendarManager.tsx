@@ -94,6 +94,7 @@ export function CalendarManager() {
   const [bulkStart, setBulkStart] = useState("10:00");
   const [bulkEnd, setBulkEnd] = useState("20:00");
   const [bulkDuration, setBulkDuration] = useState(60);
+  const [bulkScope, setBulkScope] = useState<"day" | "month">("day");
   const [isGenerating, setIsGenerating] = useState(false);
 
   // Cooldown setting state
@@ -306,8 +307,12 @@ export function CalendarManager() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          action: "bulkGenerate",
-          date: selectedDate,
+          action: bulkScope === "month" ? "openMonth" : "bulkGenerate",
+          ...(bulkScope === "month"
+            ? {
+                month: `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, "0")}`,
+              }
+            : { date: selectedDate }),
           startTime: bulkStart,
           endTime: bulkEnd,
           slotDurationMinutes: Number(bulkDuration) || 60,
@@ -321,7 +326,13 @@ export function CalendarManager() {
 
       const count = data.count ?? data.createdCount ?? 0;
       showNotification(
-        locale === "ru"
+        bulkScope === "month"
+          ? locale === "ru"
+            ? `Месяц открыт для записи: ${data.daysOpened} дней`
+            : locale === "hy"
+            ? `Ամիսը բացված է գրանցումների համար՝ ${data.daysOpened} օր`
+            : `Month opened for booking: ${data.daysOpened} days`
+          : locale === "ru"
           ? `Создано ${count} слотов на ${selectedDate}`
           : `${t.common.success} (${count})`
       );
@@ -738,10 +749,21 @@ export function CalendarManager() {
                 </h2>
               </div>
 
-              <div className="flex items-center space-x-1.5">
+              <div className="flex flex-wrap items-center justify-end gap-1.5">
                 <button
                   type="button"
-                  onClick={handleTodayClick}
+                    onClick={() => {
+                      setBulkScope("month");
+                      setIsBulkModalOpen(true);
+                    }}
+                    className="px-2.5 py-1 rounded-xl bg-accent/15 border border-accent/30 text-[11px] font-mono text-accent hover:bg-accent/25 transition-all mr-1 inline-flex items-center gap-1.5"
+                  >
+                    <Unlock className="w-3.5 h-3.5" />
+                    {locale === "ru" ? "Открыть месяц" : locale === "hy" ? "Բացել ամիսը" : "Open month"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleTodayClick}
                   className="px-2.5 py-1 rounded-xl bg-white/[0.04] border border-white/10 text-[11px] font-mono text-muted hover:text-foreground transition-all mr-1"
                 >
                   {locale === "ru" ? "Сегодня" : locale === "hy" ? "Այսօր" : "Today"}
@@ -1280,8 +1302,20 @@ export function CalendarManager() {
       <Modal
         isOpen={isBulkModalOpen}
         onClose={() => setIsBulkModalOpen(false)}
-        title={t.calendar.generateSlots}
-        description={`${t.calendar.selectDate}: ${selectedDate}`}
+        title={
+          bulkScope === "month"
+            ? locale === "ru"
+              ? "Открыть месяц"
+              : locale === "hy"
+              ? "Բացել ամիսը"
+              : "Open month"
+            : t.calendar.generateSlots
+        }
+        description={
+          bulkScope === "month"
+            ? currentMonth.toLocaleDateString(localeFormatted, { year: "numeric", month: "long" })
+            : `${t.calendar.selectDate}: ${selectedDate}`
+        }
       >
         <form onSubmit={handleBulkGenerate} className="space-y-4 py-1">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1380,7 +1414,13 @@ export function CalendarManager() {
               isLoading={isGenerating}
               className="rounded-xl shadow-[0_2px_15px_rgba(197,168,128,0.25)]"
             >
-              {t.calendar.generateSlots}
+              {bulkScope === "month"
+                ? locale === "ru"
+                  ? "Открыть месяц"
+                  : locale === "hy"
+                  ? "Բացել ամիսը"
+                  : "Open month"
+                : t.calendar.generateSlots}
             </Button>
           </div>
         </form>

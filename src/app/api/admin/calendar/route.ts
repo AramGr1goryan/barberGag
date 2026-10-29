@@ -9,6 +9,7 @@ import {
   updateSlotStatusSchema,
 } from "@/validators/availability.schema";
 import { handleApiError } from "@/lib/api-response";
+import { getCurrentYerevanDateString } from "@/lib/timezone";
 
 export async function GET(req: NextRequest) {
   try {
@@ -117,6 +118,63 @@ export async function POST(req: NextRequest) {
       });
 
       return NextResponse.json({ success: true, day, slot });
+    }
+
+    if (action === "openMonth") {
+      const month = body.month;
+      if (typeof month !== "string" || !/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) {
+        return NextResponse.json({ error: "Invalid month format" }, { status: 400 });
+      }
+
+      const today = getCurrentYerevanDateString();
+      if (month < today.slice(0, 7)) {
+        return NextResponse.json({ error: "Cannot open a past month" }, { status: 400 });
+      }
+
+      const validated = bulkGenerateSlotsSchema.parse({
+        date: `${month}-01`,
+        startTime: body.startTime,
+        endTime: body.endTime,
+        slotDurationMinutes: Number(body.slotDurationMinutes || body.slotDuration || 60),
+      });
+      if (validated.startTime >= validated.endTime) {
+        return NextResponse.json({ error: "End time must be after start time" }, { status: 400 });
+      }
+
+      const [year, monthNumber] = month.split("-").map(Number);
+      const daysInMonth = new Date(Date.UTC(year, monthNumber, 0)).getUTCDate();
+      let daysOpened = 0;
+      let slotCount = 0;
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const date = `${month}-${String(day).padStart(2, "0")}`;
+        if (date < today) continue;
+
+        const slots = await availabilityService.bulkGenerateSlots(
+          date,
+          validated.startTime,
+          validated.endTime,
+          validated.slotDurationMinutes
+        );
+        daysOpened += 1;
+        slotCount += slots.length;
+      }
+
+      await adminService.logAudit({
+        actorId: session.userId,
+        actorEmail: session.phone,
+        action: "OPEN_MONTH",
+        entity: "AvailabilityDay",
+        metadata: {
+          month,
+          daysOpened,
+          slotCount,
+          timeRange: `${validated.startTime}-${validated.endTime}`,
+          slotDurationMinutes: validated.slotDurationMinutes,
+        },
+      });
+
+      return NextResponse.json({ success: true, daysOpened, count: slotCount });
     }
 
     if (action === "bulkGenerate" || action === "generateSlots") {
