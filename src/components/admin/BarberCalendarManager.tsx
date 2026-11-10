@@ -5,9 +5,24 @@ import { useAdminI18n } from "@/context/AdminI18nContext";
 import { useToast } from "@/context/ToastContext";
 import { Button } from "@/components/ui/Button";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { Plus, Check, X, ArrowLeft, Sunrise, Sun, Moon, Trash2, ChevronDown, Edit2 } from "lucide-react";
+import { Plus, Check, X, ArrowLeft, Sunrise, Sun, Moon, Trash2, ChevronDown, Edit2, Coffee, AlertTriangle } from "lucide-react";
 import { motion, useAnimation } from "framer-motion";
 import Link from "next/link";
+
+const BREAK_TIME_OPTIONS = Array.from({ length: 55 }, (_, i) => {
+  const totalMin = 10 * 60 + i * 15; // 10:00 to 23:30
+  const h = Math.floor(totalMin / 60).toString().padStart(2, "0");
+  const m = (totalMin % 60).toString().padStart(2, "0");
+  return `${h}:${m}`;
+});
+
+function addMinutesToTime(timeStr: string, addMin: number) {
+  const [h, m] = timeStr.split(":").map(Number);
+  const total = h * 60 + m + addMin;
+  const endH = Math.floor(total / 60).toString().padStart(2, "0");
+  const endM = (total % 60).toString().padStart(2, "0");
+  return `${endH}:${endM}`;
+}
 
 
 function SwipeBooking({ task, isDone, locale, onToggleTask, onDelete, onEdit }: any) {
@@ -159,6 +174,16 @@ export function BarberCalendarManager() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
+  const [breakTime, setBreakTime] = useState<string>("12:00");
+  const [isSavingBreak, setIsSavingBreak] = useState<boolean>(false);
+  const hasLoadedBreakTime = useRef(false);
+  const [breakConflictInfo, setBreakConflictInfo] = useState<{
+    breakStartTime: string;
+    breakEndTime: string;
+    conflicts: { date: string; guestName: string; startTime: string; endTime: string }[];
+    conflictingDates: string[];
+  } | null>(null);
+
   const fetchData = useCallback(async (date: string, forceFull = false) => {
     setIsLoading(true);
     try {
@@ -169,6 +194,11 @@ export function BarberCalendarManager() {
       });
       if (!res.ok) throw new Error("");
       const data = await res.json();
+
+      if (data.breakStartTime && !hasLoadedBreakTime.current) {
+        setBreakTime(data.breakStartTime);
+        hasLoadedBreakTime.current = true;
+      }
 
       if (data.openDays && data.openDays.length > 0) {
         setOpenDays(data.openDays);
@@ -188,12 +218,61 @@ export function BarberCalendarManager() {
 
   useEffect(() => { fetchData(selectedDate); }, [selectedDate, fetchData]);
 
+  const handleSaveBreak = async (force = false) => {
+    setIsSavingBreak(true);
+    try {
+      const res = await fetch("/api/admin/barber-calendar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "setBreakTime",
+          date: selectedDate,
+          breakStartTime: breakTime,
+          force,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast.error(
+          data.error ||
+            data.message ||
+            (locale === "ru" ? "Ошибка сохранения перерыва" : "Error saving break")
+        );
+        return;
+      }
+      if (data.requiresConfirmation) {
+        setBreakConflictInfo({
+          breakStartTime: data.breakStartTime || breakTime,
+          breakEndTime: data.breakEndTime || addMinutesToTime(breakTime, 30),
+          conflicts: data.conflicts || [],
+          conflictingDates: data.conflictingDates || [],
+        });
+        return;
+      }
+      setBreakConflictInfo(null);
+      const startStr = data.breakStartTime || breakTime;
+      const endStr = data.breakEndTime || addMinutesToTime(breakTime, 30);
+      toast.success(
+        locale === "ru"
+          ? `Перерыв ${startStr}–${endStr} сохранён`
+          : locale === "hy"
+          ? `Ընդմիջումը (${startStr}–${endStr}) պահպանված է`
+          : `Break ${startStr}–${endStr} saved`
+      );
+      fetchData(selectedDate, true);
+    } catch {
+      toast.error(locale === "ru" ? "Ошибка сети" : "Network error");
+    } finally {
+      setIsSavingBreak(false);
+    }
+  };
+
   const handleToggleDay = async (open: boolean) => {
     try {
       await fetch("/api/admin/calendar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "toggleDay", date: selectedDate, isOpen: open, duration: open ? 60 : undefined })
+        body: JSON.stringify({ action: "toggleDay", date: selectedDate, isOpen: open, duration: open ? 15 : undefined })
       });
       fetchData(selectedDate, true);
     } catch { }
@@ -480,6 +559,43 @@ export function BarberCalendarManager() {
             </div>
           </div>
 
+          {/* 30-Minute Break Selector */}
+          <div className="flex flex-wrap items-center justify-between gap-2 bg-[#141418] border border-white/10 rounded-xl p-2.5 mb-3 shrink-0">
+            <div className="flex items-center gap-2 text-xs font-semibold text-zinc-200">
+              <Coffee className="w-4 h-4 text-amber-400 shrink-0" />
+              <span>
+                {locale === "ru"
+                  ? "Перерыв (30 мин):"
+                  : locale === "hy"
+                  ? "Ընդմիջում (30 ր):"
+                  : "Break (30 min):"}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+              <select
+                value={breakTime}
+                onChange={(e) => setBreakTime(e.target.value)}
+                className="flex-1 sm:flex-initial bg-[#1d202c] border border-white/15 rounded-lg px-2.5 py-1.5 text-xs font-mono text-white focus:border-blue-400 outline-none"
+              >
+                {BREAK_TIME_OPTIONS.map((tOpt) => (
+                  <option key={tOpt} value={tOpt}>
+                    {tOpt} ({tOpt} – {addMinutesToTime(tOpt, 30)})
+                  </option>
+                ))}
+              </select>
+              <Button
+                variant="primary"
+                size="sm"
+                type="button"
+                onClick={() => handleSaveBreak(false)}
+                isLoading={isSavingBreak}
+                className="px-3.5 py-1.5 text-xs font-bold rounded-lg shrink-0"
+              >
+                {locale === "ru" ? "Сохранить" : locale === "hy" ? "Պահպանել" : "Save"}
+              </Button>
+            </div>
+          </div>
+
           <div className="flex-1">
             {isLoading ? <div className="py-10 flex justify-center"><LoadingSpinner size="sm" /></div> : (
               <div className="space-y-4">
@@ -663,6 +779,75 @@ export function BarberCalendarManager() {
             </form>
           </div>
         </div>
+
+        {/* Break Time Conflict Warning Modal */}
+        {breakConflictInfo && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+            <div className="relative w-full max-w-md bg-[#1d202c] border border-amber-500/30 rounded-2xl p-5 shadow-2xl space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="p-2 rounded-xl bg-amber-500/15 text-amber-400 shrink-0">
+                  <AlertTriangle className="w-5 h-5" />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-base font-bold text-white">
+                    {locale === "ru"
+                      ? "Внимание: есть запись"
+                      : locale === "hy"
+                      ? "Ուշադրություն՝ կա գրանցում"
+                      : "Warning: Existing Booking"}
+                  </h3>
+                  <p className="text-xs text-zinc-300 leading-relaxed">
+                    {locale === "ru"
+                      ? `На выбранное время перерыва (${breakConflictInfo.breakStartTime} – ${breakConflictInfo.breakEndTime}) уже есть регистрация:`
+                      : locale === "hy"
+                      ? `Ընտրված ընդմիջման ժամին (${breakConflictInfo.breakStartTime} – ${breakConflictInfo.breakEndTime}) արդեն կա գրանցում.`
+                      : `There is already a booking during the selected break time (${breakConflictInfo.breakStartTime} – ${breakConflictInfo.breakEndTime}):`}
+                  </p>
+                </div>
+              </div>
+
+              <div className="max-h-40 overflow-y-auto space-y-1.5 bg-[#141418] border border-white/10 rounded-xl p-2.5 text-xs font-mono">
+                {breakConflictInfo.conflicts.map((c, idx) => (
+                  <div key={`${c.date}-${idx}`} className="flex items-center justify-between text-amber-200/90 py-0.5">
+                    <span>📅 {c.date} ({c.startTime}–{c.endTime})</span>
+                    <span className="truncate ml-2 text-white font-sans font-medium">{c.guestName}</span>
+                  </div>
+                ))}
+              </div>
+
+              <p className="text-xs text-zinc-300 leading-relaxed">
+                {locale === "ru"
+                  ? "Продолжить и закрыть время перерыва в те дни, где нет записи?"
+                  : locale === "hy"
+                  ? "Շարունակե՞լ և փակել ընդմիջման ժամը այն օրերին, որտեղ գրանցում չկա:"
+                  : "Continue and close the break slots on the days without bookings?"}
+              </p>
+
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  type="button"
+                  onClick={() => setBreakConflictInfo(null)}
+                  disabled={isSavingBreak}
+                  className="px-4 py-2 text-xs font-bold border-white/20"
+                >
+                  {locale === "ru" ? "Нет" : locale === "hy" ? "Ոչ" : "No"}
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  type="button"
+                  onClick={() => handleSaveBreak(true)}
+                  isLoading={isSavingBreak}
+                  className="px-4 py-2 text-xs font-bold"
+                >
+                  {locale === "ru" ? "Продолжить" : locale === "hy" ? "Շարունակել" : "Continue"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

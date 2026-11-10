@@ -37,3 +37,47 @@ export async function setCancellationCooldownHours(hours: number): Promise<numbe
   });
   return safeHours;
 }
+
+export const DEFAULT_BREAK_START_TIME = "12:00";
+
+export async function getBreakStartTime(): Promise<string> {
+  try {
+    const setting = await prisma.siteContent.findUnique({
+      where: { key: "barber_break_start_time" },
+    });
+    if (
+      setting &&
+      setting.valueEn &&
+      /^([01]\d|2[0-3]):[0-5]\d$/.test(setting.valueEn.trim())
+    ) {
+      return setting.valueEn.trim();
+    }
+  } catch (err) {
+    console.error("Error reading barber_break_start_time:", err);
+  }
+  return DEFAULT_BREAK_START_TIME;
+}
+
+export async function setBreakStartTime(startTime: string): Promise<string> {
+  const trimmed = (startTime || "").trim();
+  const safeTime = /^([01]\d|2[0-3]):[0-5]\d$/.test(trimmed)
+    ? trimmed
+    : DEFAULT_BREAK_START_TIME;
+  await prisma.siteContent.upsert({
+    where: { key: "barber_break_start_time" },
+    update: {
+      valueHy: safeTime,
+      valueRu: safeTime,
+      valueEn: safeTime,
+      section: "booking_rules",
+    },
+    create: {
+      key: "barber_break_start_time",
+      valueHy: safeTime,
+      valueRu: safeTime,
+      valueEn: safeTime,
+      section: "booking_rules",
+    },
+  });
+  return safeTime;
+}

@@ -1,13 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { authService } from "@/services/auth.service";
 import { adminService } from "@/services/admin.service";
+import { availabilityService } from "@/services/availability.service";
+import { getBreakStartTime } from "@/lib/settings";
+import { getCurrentYerevanDateString } from "@/lib/timezone";
 import { BookingStatus, SlotStatus } from "@prisma/client";
 import { handleApiError } from "@/lib/api-response";
 
 export async function GET(req: NextRequest) {
   try {
     await authService.requireAdmin();
+    await availabilityService.ensureCurrentMonthInitialized();
     const { searchParams } = new URL(req.url);
     const dateParam = searchParams.get("date");
     const isLite = searchParams.get("lite") === "true";
@@ -105,10 +110,13 @@ export async function GET(req: NextRequest) {
       };
     }
 
+    const breakStartTime = await getBreakStartTime();
+
     return NextResponse.json({
       openDays,
       services,
       selectedDayDetails,
+      breakStartTime,
     });
   } catch (error: unknown) {
     return handleApiError(error, "Failed to load calendar data", 403);
@@ -405,6 +413,52 @@ export async function POST(req: NextRequest) {
       });
 
       return NextResponse.json({ success: true, booking });
+    }
+
+    if (action === "setBreakTime") {
+      const { date, breakStartTime, force } = body;
+      const validTime =
+        typeof breakStartTime === "string" && /^([01]\d|2[0-3]):[0-5]\d$/.test(breakStartTime.trim())
+          ? breakStartTime.trim()
+          : "12:00";
+      const fromDate =
+        typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date)
+          ? date
+          : getCurrentYerevanDateString();
+
+      const result = await availabilityService.applyBreakTime(
+        fromDate,
+        validTime,
+        Boolean(force)
+      );
+
+      if (result.applied) {
+        try {
+          revalidatePath("/api/availability/slots");
+          revalidatePath("/api/availability/dates");
+        } catch {
+          // ignore revalidation errors
+        }
+
+        await adminService.logAudit({
+          actorId: session.userId === "env-admin" ? undefined : session.userId,
+          actorEmail: session.phone || session.userId,
+          action: "SET_BARBER_BREAK_TIME",
+          entity: "AvailabilitySlot",
+          metadata: {
+            fromDate,
+            breakStartTime: result.breakStartTime,
+            breakEndTime: result.breakEndTime,
+            closedDaysCount: result.closedDaysCount,
+            skippedDates: result.skippedDates,
+          },
+        });
+      }
+
+      return NextResponse.json({
+        success: result.applied,
+        ...result,
+      });
     }
 
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
