@@ -926,11 +926,15 @@ export function BookingWizard({
                               {getServiceDesc(s)}
                             </p>
                           </div>
-                          {isSelected && (
-                            <div className="w-5 h-5 rounded bg-black text-[#cbd5e1] flex items-center justify-center shrink-0 mt-0.5">
-                              <Check className="w-3.5 h-3.5 stroke-[3]" />
-                            </div>
-                          )}
+                          <div
+                            className={`w-5 h-5 rounded flex items-center justify-center shrink-0 mt-0.5 border transition-colors ${
+                              isSelected
+                                ? "bg-black border-[#cbd5e1]/70 text-[#cbd5e1]"
+                                : "bg-white/[0.04] border-white/25 text-transparent"
+                            }`}
+                          >
+                            {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                          </div>
                         </div>
 
                         <div className="mt-3 pt-2.5 border-t border-black/10 flex items-center justify-between text-xs font-mono">
