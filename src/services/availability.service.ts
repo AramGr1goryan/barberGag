@@ -1,6 +1,12 @@
 import { prisma } from "@/lib/prisma";
 import { SlotStatus, BookingStatus } from "@prisma/client";
-import { getBreakStartTime, setBreakStartTime } from "@/lib/settings";
+import {
+  getBreakStartTime,
+  setBreakStartTime,
+  getBreakDayOverrides,
+  saveBreakDayOverrides,
+  getBreakStartTimeForDate,
+} from "@/lib/settings";
 
 export interface PublicDayAvailability {
   date: string;
@@ -408,7 +414,7 @@ export class AvailabilityService {
     let breakStartMin = -1;
     let breakEndMin = -1;
     if (respectBreak) {
-      const breakStart = await getBreakStartTime();
+      const { breakStartTime: breakStart } = await getBreakStartTimeForDate(day.date);
       if (breakStart && /^([01]\d|2[0-3]):[0-5]\d$/.test(breakStart)) {
         breakStartMin = timeToMin(breakStart);
         breakEndMin = breakStartMin + 30;
@@ -480,45 +486,25 @@ export class AvailabilityService {
     });
   }
 
-  /**
-   * Apply a 30-minute break starting at `breakStartTime` (e.g. "12:00" -> closes "12:00" and "12:15", leaves "12:30" open)
-   * across `fromDate` and all subsequent dates (`date >= fromDate`).
-   * If any date `>= fromDate` has an active booking overlapping `[breakStartTime, breakEndTime)`:
-   * - when `force` is false, returns `{ applied: false, requiresConfirmation: true, conflicts, ... }` without modifying slots.
-   * - when `force` is true, closes the break slots on all days `>= fromDate` that do NOT have a conflicting booking.
-   */
-  async applyBreakTime(fromDate: string, breakStartTime: string, force: boolean = false) {
-    await this.ensureCurrentMonthInitialized();
-
-    const breakStartMin = timeToMin(breakStartTime);
-    const breakEndMin = breakStartMin + 30;
-    const breakEndTime = minToTime(breakEndMin);
-
-    const [days, activeBookings] = await Promise.all([
-      prisma.availabilityDay.findMany({
-        where: { date: { gte: fromDate } },
-        include: {
-          slots: {
-            include: {
-              booking: {
-                select: { id: true, guestName: true, startTime: true, endTime: true, status: true },
-              },
-            },
-          },
-        },
-        orderBy: { date: "asc" },
-      }),
-      prisma.booking.findMany({
-        where: {
-          date: { gte: fromDate },
-          status: {
-            in: [BookingStatus.CONFIRMED, BookingStatus.PENDING_VERIFICATION, BookingStatus.COMPLETED],
-          },
-        },
-        orderBy: [{ date: "asc" }, { startTime: "asc" }],
-      }),
-    ]);
-
+  private findBreakConflictsForDays(
+    days: Array<{
+      date: string;
+      slots: Array<{
+        startTime: string;
+        endTime: string;
+        status: SlotStatus;
+        booking: { status: BookingStatus; guestName: string; startTime: string; endTime: string } | null;
+      }>;
+    }>,
+    activeBookings: Array<{
+      date: string;
+      guestName: string;
+      startTime: string;
+      endTime: string;
+    }>,
+    breakStartMin: number,
+    breakEndMin: number
+  ) {
     const conflicts: {
       date: string;
       guestName: string;
@@ -526,8 +512,10 @@ export class AvailabilityService {
       endTime: string;
     }[] = [];
     const conflictingDatesSet = new Set<string>();
+    const allowedDates = new Set(days.map((d) => d.date));
 
     for (const b of activeBookings) {
+      if (!allowedDates.has(b.date)) continue;
       const bStart = timeToMin(b.startTime);
       const bEnd = timeToMin(b.endTime);
       if (bStart < breakEndMin && bEnd > breakStartMin) {
@@ -562,10 +550,143 @@ export class AvailabilityService {
       }
     }
 
+    return { conflicts, conflictingDatesSet };
+  }
+
+  private buildRestoreSlotsForDay(
+    day: {
+      id: string;
+      date: string;
+      isOpen: boolean;
+      slots: Array<{
+        startTime: string;
+        endTime: string;
+        status: SlotStatus;
+        booking: { status: BookingStatus } | null;
+      }>;
+    },
+    activeBookings: Array<{ date: string; startTime: string; endTime: string }>,
+    prevStartMin: number,
+    prevEndMin: number
+  ) {
+    if (!day.isOpen && day.slots.length === 0) return [];
+    const slotsToRestore: {
+      availabilityDayId: string;
+      startTime: string;
+      endTime: string;
+      status: SlotStatus;
+    }[] = [];
+
+    for (let m = prevStartMin; m < prevEndMin; m += 15) {
+      if (m + 15 > 24 * 60) continue;
+      const chunkStart = m;
+      const chunkEnd = m + 15;
+
+      const hasBookingAtChunk = activeBookings.some(
+        (b) =>
+          b.date === day.date &&
+          timeToMin(b.startTime) < chunkEnd &&
+          timeToMin(b.endTime) > chunkStart
+      );
+      if (hasBookingAtChunk) continue;
+
+      const hasOccupiedSlotAtChunk = day.slots.some((s) => {
+        if (s.status !== SlotStatus.BOOKED && s.status !== SlotStatus.HELD) return false;
+        if (s.booking && s.booking.status === BookingStatus.CANCELLED) return false;
+        return timeToMin(s.startTime) < chunkEnd && timeToMin(s.endTime) > chunkStart;
+      });
+      if (hasOccupiedSlotAtChunk) continue;
+
+      slotsToRestore.push({
+        availabilityDayId: day.id,
+        startTime: minToTime(chunkStart),
+        endTime: minToTime(chunkEnd),
+        status: SlotStatus.AVAILABLE,
+      });
+    }
+
+    return slotsToRestore;
+  }
+
+  private collectAvailableSlotIdsInRange(
+    day: {
+      slots: Array<{
+        id: string;
+        startTime: string;
+        endTime: string;
+        status: SlotStatus;
+      }>;
+    },
+    rangeStartMin: number,
+    rangeEndMin: number
+  ) {
+    const ids: string[] = [];
+    for (const s of day.slots) {
+      if (s.status !== SlotStatus.AVAILABLE) continue;
+      const sStart = timeToMin(s.startTime);
+      const sEnd = timeToMin(s.endTime);
+      if (sStart < rangeEndMin && sEnd > rangeStartMin) {
+        ids.push(s.id);
+      }
+    }
+    return ids;
+  }
+
+  /**
+   * Apply a 30-minute break starting at `breakStartTime` (e.g. "12:00" -> closes "12:00" and "12:15", leaves "12:30" open)
+   * across `fromDate` and all subsequent dates (`date >= fromDate`).
+   * Preserves per-day overrides on subsequent dates (`date > fromDate`), while clearing any override on `fromDate` itself.
+   */
+  async applyBreakTime(fromDate: string, breakStartTime: string, force: boolean = false) {
+    await this.ensureCurrentMonthInitialized();
+
+    const breakStartMin = timeToMin(breakStartTime);
+    const breakEndMin = breakStartMin + 30;
+    const breakEndTime = minToTime(breakEndMin);
+
+    const [days, activeBookings, overrides] = await Promise.all([
+      prisma.availabilityDay.findMany({
+        where: { date: { gte: fromDate } },
+        include: {
+          slots: {
+            include: {
+              booking: {
+                select: { id: true, guestName: true, startTime: true, endTime: true, status: true },
+              },
+            },
+          },
+        },
+        orderBy: { date: "asc" },
+      }),
+      prisma.booking.findMany({
+        where: {
+          date: { gte: fromDate },
+          status: {
+            in: [BookingStatus.CONFIRMED, BookingStatus.PENDING_VERIFICATION, BookingStatus.COMPLETED],
+          },
+        },
+        orderBy: [{ date: "asc" }, { startTime: "asc" }],
+      }),
+      getBreakDayOverrides(),
+    ]);
+
+    // Days strictly after `fromDate` with their own per-day override stay on their custom break.
+    const daysToApply = days.filter(
+      (d) => d.date === fromDate || !overrides[d.date]
+    );
+
+    const { conflicts, conflictingDatesSet } = this.findBreakConflictsForDays(
+      daysToApply,
+      activeBookings,
+      breakStartMin,
+      breakEndMin
+    );
+
     if (conflictingDatesSet.size > 0 && !force) {
       return {
         applied: false,
         requiresConfirmation: true,
+        scope: "fromDate" as const,
         breakStartTime,
         breakEndTime,
         conflicts,
@@ -573,64 +694,51 @@ export class AvailabilityService {
       };
     }
 
-    const previousBreakStartTime = await getBreakStartTime();
+    const previousGlobalBreak = await getBreakStartTime();
     await setBreakStartTime(breakStartTime);
 
-    // If break time changed, reopen previous break slots on open days >= fromDate where there is no booking
-    if (previousBreakStartTime && previousBreakStartTime !== breakStartTime) {
-      const prevStartMin = timeToMin(previousBreakStartTime);
+    // If `fromDate` itself had a per-day override, clear it so `fromDate` follows the new global schedule
+    const hadFromDateOverride = Boolean(overrides[fromDate]);
+    if (hadFromDateOverride) {
+      const updatedOverrides = { ...overrides };
+      delete updatedOverrides[fromDate];
+      await saveBreakDayOverrides(updatedOverrides);
+    }
+
+    // Reopen previous break slots on non-overridden days >= fromDate where there is no booking
+    const slotsToRestore: {
+      availabilityDayId: string;
+      startTime: string;
+      endTime: string;
+      status: SlotStatus;
+    }[] = [];
+
+    for (const d of daysToApply) {
+      const prevForDay =
+        d.date === fromDate && hadFromDateOverride
+          ? overrides[fromDate]
+          : previousGlobalBreak;
+      if (!prevForDay || prevForDay === breakStartTime) continue;
+
+      const prevStartMin = timeToMin(prevForDay);
       const prevEndMin = prevStartMin + 30;
-      const slotsToRestore: {
-        availabilityDayId: string;
-        startTime: string;
-        endTime: string;
-        status: SlotStatus;
-      }[] = [];
-
-      for (const d of days) {
-        if (!d.isOpen && d.slots.length === 0) continue;
-        const hasBookingAtPrev = activeBookings.some(
-          (b) =>
-            b.date === d.date &&
-            timeToMin(b.startTime) < prevEndMin &&
-            timeToMin(b.endTime) > prevStartMin
-        );
-        if (hasBookingAtPrev) continue;
-
-        for (let m = prevStartMin; m < prevEndMin; m += 15) {
-          if (m + 15 <= 24 * 60) {
-            slotsToRestore.push({
-              availabilityDayId: d.id,
-              startTime: minToTime(m),
-              endTime: minToTime(m + 15),
-              status: SlotStatus.AVAILABLE,
-            });
-          }
-        }
-      }
-
-      if (slotsToRestore.length > 0) {
-        await prisma.availabilitySlot.createMany({
-          data: slotsToRestore,
-          skipDuplicates: true,
-        });
-      }
+      slotsToRestore.push(
+        ...this.buildRestoreSlotsForDay(d, activeBookings, prevStartMin, prevEndMin)
+      );
     }
 
-    // Close unoccupied slots in [breakStartMin, breakEndMin) on all non-conflicting days >= fromDate
-    const nonConflictingDays = days.filter((d) => !conflictingDatesSet.has(d.date));
-    const slotIdsToDelete: string[] = [];
-
-    for (const d of nonConflictingDays) {
-      for (const s of d.slots) {
-        if (s.status !== SlotStatus.AVAILABLE) continue;
-        const sStart = timeToMin(s.startTime);
-        const sEnd = timeToMin(s.endTime);
-        if (sStart < breakEndMin && sEnd > breakStartMin) {
-          slotIdsToDelete.push(s.id);
-        }
-      }
+    if (slotsToRestore.length > 0) {
+      await prisma.availabilitySlot.createMany({
+        data: slotsToRestore,
+        skipDuplicates: true,
+      });
     }
+
+    // Close unoccupied slots in [breakStartMin, breakEndMin) on all non-conflicting target days >= fromDate
+    const nonConflictingDays = daysToApply.filter((d) => !conflictingDatesSet.has(d.date));
+    const slotIdsToDelete = nonConflictingDays.flatMap((d) =>
+      this.collectAvailableSlotIdsInRange(d, breakStartMin, breakEndMin)
+    );
 
     if (slotIdsToDelete.length > 0) {
       await prisma.availabilitySlot.deleteMany({
@@ -644,12 +752,140 @@ export class AvailabilityService {
     return {
       applied: true,
       requiresConfirmation: false,
+      scope: "fromDate" as const,
       breakStartTime,
       breakEndTime,
       closedDaysCount: nonConflictingDays.length,
       closedSlotsCount: slotIdsToDelete.length,
       skippedDates: Array.from(conflictingDatesSet),
     };
+  }
+
+  /**
+   * Apply or reset a 30-minute break for a single specific date (`targetDate`) without modifying global or other days' schedules.
+   */
+  async applyBreakTimeForDay(
+    targetDate: string,
+    breakStartTime: string,
+    force: boolean = false
+  ) {
+    await this.ensureCurrentMonthInitialized();
+
+    const breakStartMin = timeToMin(breakStartTime);
+    const breakEndMin = breakStartMin + 30;
+    const breakEndTime = minToTime(breakEndMin);
+
+    const [day, activeBookings, globalBreak, overrides] = await Promise.all([
+      prisma.availabilityDay.findUnique({
+        where: { date: targetDate },
+        include: {
+          slots: {
+            include: {
+              booking: {
+                select: { id: true, guestName: true, startTime: true, endTime: true, status: true },
+              },
+            },
+          },
+        },
+      }),
+      prisma.booking.findMany({
+        where: {
+          date: targetDate,
+          status: {
+            in: [BookingStatus.CONFIRMED, BookingStatus.PENDING_VERIFICATION, BookingStatus.COMPLETED],
+          },
+        },
+        orderBy: [{ startTime: "asc" }],
+      }),
+      getBreakStartTime(),
+      getBreakDayOverrides(),
+    ]);
+
+    const { conflicts, conflictingDatesSet } = this.findBreakConflictsForDays(
+      day ? [day] : [],
+      activeBookings,
+      breakStartMin,
+      breakEndMin
+    );
+
+    if (conflictingDatesSet.size > 0 && !force) {
+      return {
+        applied: false,
+        requiresConfirmation: true,
+        scope: "single" as const,
+        targetDate,
+        breakStartTime,
+        breakEndTime,
+        conflicts,
+        conflictingDates: Array.from(conflictingDatesSet),
+      };
+    }
+
+    const previousDayBreak = overrides[targetDate] || globalBreak;
+    const updatedOverrides = { ...overrides };
+    if (breakStartTime === globalBreak) {
+      delete updatedOverrides[targetDate];
+    } else {
+      updatedOverrides[targetDate] = breakStartTime;
+    }
+    await saveBreakDayOverrides(updatedOverrides);
+
+    let closedSlotsCount = 0;
+
+    if (day) {
+      if (previousDayBreak && previousDayBreak !== breakStartTime) {
+        const prevStartMin = timeToMin(previousDayBreak);
+        const prevEndMin = prevStartMin + 30;
+        const slotsToRestore = this.buildRestoreSlotsForDay(
+          day,
+          activeBookings,
+          prevStartMin,
+          prevEndMin
+        );
+        if (slotsToRestore.length > 0) {
+          await prisma.availabilitySlot.createMany({
+            data: slotsToRestore,
+            skipDuplicates: true,
+          });
+        }
+      }
+
+      const slotIdsToDelete = this.collectAvailableSlotIdsInRange(
+        day,
+        breakStartMin,
+        breakEndMin
+      );
+      if (slotIdsToDelete.length > 0) {
+        await prisma.availabilitySlot.deleteMany({
+          where: {
+            id: { in: slotIdsToDelete },
+            status: SlotStatus.AVAILABLE,
+          },
+        });
+        closedSlotsCount = slotIdsToDelete.length;
+      }
+    }
+
+    return {
+      applied: true,
+      requiresConfirmation: false,
+      scope: "single" as const,
+      targetDate,
+      breakStartTime,
+      breakEndTime,
+      isDayBreakOverride: breakStartTime !== globalBreak,
+      closedDaysCount: day ? 1 : 0,
+      closedSlotsCount,
+      skippedDates: [],
+    };
+  }
+
+  /**
+   * Reset a single date's custom break back to the global default break time.
+   */
+  async resetBreakTimeForDay(targetDate: string, force: boolean = false) {
+    const globalBreak = await getBreakStartTime();
+    return this.applyBreakTimeForDay(targetDate, globalBreak, force);
   }
 
   /**

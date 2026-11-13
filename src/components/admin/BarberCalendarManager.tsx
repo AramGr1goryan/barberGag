@@ -175,9 +175,13 @@ export function BarberCalendarManager() {
   const formRef = useRef<HTMLFormElement>(null);
 
   const [breakTime, setBreakTime] = useState<string>("12:00");
+  const [globalBreakTime, setGlobalBreakTime] = useState<string>("12:00");
+  const [isDayBreakOverride, setIsDayBreakOverride] = useState<boolean>(false);
   const [isSavingBreak, setIsSavingBreak] = useState<boolean>(false);
-  const hasLoadedBreakTime = useRef(false);
+  const lastBreakSyncDate = useRef<string>("");
   const [breakConflictInfo, setBreakConflictInfo] = useState<{
+    scope: "single" | "fromDate";
+    isReset?: boolean;
     breakStartTime: string;
     breakEndTime: string;
     conflicts: { date: string; guestName: string; startTime: string; endTime: string }[];
@@ -195,9 +199,15 @@ export function BarberCalendarManager() {
       if (!res.ok) throw new Error("");
       const data = await res.json();
 
-      if (data.breakStartTime && !hasLoadedBreakTime.current) {
-        setBreakTime(data.breakStartTime);
-        hasLoadedBreakTime.current = true;
+      if (data.breakStartTime) {
+        setGlobalBreakTime(data.breakStartTime);
+      }
+      setIsDayBreakOverride(Boolean(data.isDayBreakOverride));
+
+      const effectiveBreak = data.dayBreakStartTime || data.breakStartTime;
+      if (effectiveBreak && (forceFull || lastBreakSyncDate.current !== date)) {
+        setBreakTime(effectiveBreak);
+        lastBreakSyncDate.current = date;
       }
 
       if (data.openDays && data.openDays.length > 0) {
@@ -218,7 +228,7 @@ export function BarberCalendarManager() {
 
   useEffect(() => { fetchData(selectedDate); }, [selectedDate, fetchData]);
 
-  const handleSaveBreak = async (force = false) => {
+  const handleSaveBreak = async (scope: "single" | "fromDate", force = false) => {
     setIsSavingBreak(true);
     try {
       const res = await fetch("/api/admin/barber-calendar", {
@@ -228,6 +238,7 @@ export function BarberCalendarManager() {
           action: "setBreakTime",
           date: selectedDate,
           breakStartTime: breakTime,
+          scope,
           force,
         }),
       });
@@ -242,6 +253,7 @@ export function BarberCalendarManager() {
       }
       if (data.requiresConfirmation) {
         setBreakConflictInfo({
+          scope,
           breakStartTime: data.breakStartTime || breakTime,
           breakEndTime: data.breakEndTime || addMinutesToTime(breakTime, 30),
           conflicts: data.conflicts || [],
@@ -253,11 +265,67 @@ export function BarberCalendarManager() {
       const startStr = data.breakStartTime || breakTime;
       const endStr = data.breakEndTime || addMinutesToTime(breakTime, 30);
       toast.success(
-        locale === "ru"
+        scope === "single"
+          ? locale === "ru"
+            ? `Перерыв на ${selectedDate}: ${startStr}–${endStr} сохранён`
+            : locale === "hy"
+            ? `${selectedDate} օրվա ընդմիջումը (${startStr}–${endStr}) պահպանված է`
+            : `Break for ${selectedDate} (${startStr}–${endStr}) saved`
+          : locale === "ru"
           ? `Перерыв ${startStr}–${endStr} сохранён`
           : locale === "hy"
           ? `Ընդմիջումը (${startStr}–${endStr}) պահպանված է`
           : `Break ${startStr}–${endStr} saved`
+      );
+      fetchData(selectedDate, true);
+    } catch {
+      toast.error(locale === "ru" ? "Ошибка сети" : "Network error");
+    } finally {
+      setIsSavingBreak(false);
+    }
+  };
+
+  const handleResetDayBreak = async (force = false) => {
+    setIsSavingBreak(true);
+    try {
+      const res = await fetch("/api/admin/barber-calendar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "resetDayBreakTime",
+          date: selectedDate,
+          force,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast.error(
+          data.error ||
+            data.message ||
+            (locale === "ru" ? "Ошибка сброса перерыва" : "Error resetting break")
+        );
+        return;
+      }
+      if (data.requiresConfirmation) {
+        setBreakConflictInfo({
+          scope: "single",
+          isReset: true,
+          breakStartTime: data.breakStartTime || globalBreakTime,
+          breakEndTime: data.breakEndTime || addMinutesToTime(globalBreakTime, 30),
+          conflicts: data.conflicts || [],
+          conflictingDates: data.conflictingDates || [],
+        });
+        return;
+      }
+      setBreakConflictInfo(null);
+      const startStr = data.breakStartTime || globalBreakTime;
+      const endStr = data.breakEndTime || addMinutesToTime(startStr, 30);
+      toast.success(
+        locale === "ru"
+          ? `Перерыв на ${selectedDate} сброшен (${startStr}–${endStr})`
+          : locale === "hy"
+          ? `${selectedDate} օրվա ընդմիջումը վերականգնված է (${startStr}–${endStr})`
+          : `Break for ${selectedDate} reset (${startStr}–${endStr})`
       );
       fetchData(selectedDate, true);
     } catch {
@@ -560,22 +628,48 @@ export function BarberCalendarManager() {
           </div>
 
           {/* 30-Minute Break Selector */}
-          <div className="flex flex-wrap items-center justify-between gap-2 bg-[#141418] border border-white/10 rounded-xl p-2.5 mb-3 shrink-0">
-            <div className="flex items-center gap-2 text-xs font-semibold text-zinc-200">
-              <Coffee className="w-4 h-4 text-amber-400 shrink-0" />
-              <span>
-                {locale === "ru"
-                  ? "Перерыв (30 мин):"
-                  : locale === "hy"
-                  ? "Ընդմիջում (30 ր):"
-                  : "Break (30 min):"}
-              </span>
+          <div className="flex flex-col gap-2.5 bg-[#141418] border border-white/10 rounded-xl p-3 mb-3 shrink-0">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-zinc-200">
+                <Coffee className="w-4 h-4 text-amber-400 shrink-0" />
+                <span>
+                  {locale === "ru"
+                    ? "Перерыв (30 мин):"
+                    : locale === "hy"
+                    ? "Ընդմիջում (30 ր):"
+                    : "Break (30 min):"}
+                </span>
+                {isDayBreakOverride && (
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                    {locale === "ru"
+                      ? `Только этот день (общий: ${globalBreakTime})`
+                      : locale === "hy"
+                      ? `Միայն այս օրը (ընդհ․՝ ${globalBreakTime})`
+                      : `This day only (default: ${globalBreakTime})`}
+                  </span>
+                )}
+              </div>
+              {isDayBreakOverride && (
+                <button
+                  type="button"
+                  onClick={() => handleResetDayBreak(false)}
+                  disabled={isSavingBreak}
+                  className="text-[11px] font-mono text-zinc-400 hover:text-white underline transition-colors"
+                >
+                  {locale === "ru"
+                    ? "Сбросить к общему"
+                    : locale === "hy"
+                    ? "Վերականգնել ընդհանուրը"
+                    : "Reset to default"}
+                </button>
+              )}
             </div>
-            <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
               <select
                 value={breakTime}
                 onChange={(e) => setBreakTime(e.target.value)}
-                className="flex-1 sm:flex-initial bg-[#1d202c] border border-white/15 rounded-lg px-2.5 py-1.5 text-xs font-mono text-white focus:border-blue-400 outline-none"
+                className="w-full sm:w-auto sm:min-w-[185px] bg-[#1d202c] border border-white/15 rounded-lg px-2.5 py-1.5 text-xs font-mono text-white focus:border-blue-400 outline-none"
               >
                 {BREAK_TIME_OPTIONS.map((tOpt) => (
                   <option key={tOpt} value={tOpt}>
@@ -583,16 +677,36 @@ export function BarberCalendarManager() {
                   </option>
                 ))}
               </select>
-              <Button
-                variant="primary"
-                size="sm"
-                type="button"
-                onClick={() => handleSaveBreak(false)}
-                isLoading={isSavingBreak}
-                className="px-3.5 py-1.5 text-xs font-bold rounded-lg shrink-0"
-              >
-                {locale === "ru" ? "Сохранить" : locale === "hy" ? "Պահպանել" : "Save"}
-              </Button>
+              <div className="grid grid-cols-2 sm:flex items-center gap-2 flex-1 sm:justify-end">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  type="button"
+                  onClick={() => handleSaveBreak("single", false)}
+                  isLoading={isSavingBreak}
+                  className="px-3 py-1.5 text-xs font-bold rounded-lg border-amber-500/40 text-amber-300 hover:bg-amber-500/10"
+                >
+                  {locale === "ru"
+                    ? "Только на этот день"
+                    : locale === "hy"
+                    ? "Միայն այս օրվա համար"
+                    : "This Day Only"}
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  type="button"
+                  onClick={() => handleSaveBreak("fromDate", false)}
+                  isLoading={isSavingBreak}
+                  className="px-3 py-1.5 text-xs font-bold rounded-lg"
+                >
+                  {locale === "ru"
+                    ? "С этого дня и далее"
+                    : locale === "hy"
+                    ? "Այս օրվանից հետո"
+                    : "From This Day"}
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -816,7 +930,13 @@ export function BarberCalendarManager() {
               </div>
 
               <p className="text-xs text-zinc-300 leading-relaxed">
-                {locale === "ru"
+                {breakConflictInfo.scope === "single"
+                  ? locale === "ru"
+                    ? "Продолжить? Свободные слоты в этом интервале будут закрыты, а существующие записи сохранятся."
+                    : locale === "hy"
+                    ? "Շարունակե՞լ: Այս միջակայքի ազատ սլոտները կփակվեն, իսկ առկա գրանցումները կպահպանվեն:"
+                    : "Continue? Free slots in this interval will be closed while existing bookings remain intact."
+                  : locale === "ru"
                   ? "Продолжить и закрыть время перерыва в те дни, где нет записи?"
                   : locale === "hy"
                   ? "Շարունակե՞լ և փակել ընդմիջման ժամը այն օրերին, որտեղ գրանցում չկա:"
@@ -838,7 +958,11 @@ export function BarberCalendarManager() {
                   variant="primary"
                   size="sm"
                   type="button"
-                  onClick={() => handleSaveBreak(true)}
+                  onClick={() =>
+                    breakConflictInfo.isReset
+                      ? handleResetDayBreak(true)
+                      : handleSaveBreak(breakConflictInfo.scope, true)
+                  }
                   isLoading={isSavingBreak}
                   className="px-4 py-2 text-xs font-bold"
                 >

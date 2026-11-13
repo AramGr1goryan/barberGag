@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { authService } from "@/services/auth.service";
 import { adminService } from "@/services/admin.service";
 import { availabilityService } from "@/services/availability.service";
-import { getBreakStartTime } from "@/lib/settings";
+import { getBreakStartTime, getBreakStartTimeForDate } from "@/lib/settings";
 import { getCurrentYerevanDateString } from "@/lib/timezone";
 import { BookingStatus, SlotStatus } from "@prisma/client";
 import { handleApiError } from "@/lib/api-response";
@@ -110,13 +110,21 @@ export async function GET(req: NextRequest) {
       };
     }
 
-    const breakStartTime = await getBreakStartTime();
+    const breakInfo = dateParam
+      ? await getBreakStartTimeForDate(dateParam)
+      : {
+          breakStartTime: await getBreakStartTime(),
+          globalBreakStartTime: await getBreakStartTime(),
+          isOverride: false,
+        };
 
     return NextResponse.json({
       openDays,
       services,
       selectedDayDetails,
-      breakStartTime,
+      breakStartTime: breakInfo.globalBreakStartTime,
+      dayBreakStartTime: breakInfo.breakStartTime,
+      isDayBreakOverride: breakInfo.isOverride,
     });
   } catch (error: unknown) {
     return handleApiError(error, "Failed to load calendar data", 403);
@@ -415,22 +423,33 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, booking });
     }
 
-    if (action === "setBreakTime") {
-      const { date, breakStartTime, force } = body;
+    if (action === "setBreakTime" || action === "resetDayBreakTime") {
+      const { date, breakStartTime, force, scope } = body;
       const validTime =
         typeof breakStartTime === "string" && /^([01]\d|2[0-3]):[0-5]\d$/.test(breakStartTime.trim())
           ? breakStartTime.trim()
           : "12:00";
-      const fromDate =
+      const targetDate =
         typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date)
           ? date
           : getCurrentYerevanDateString();
 
-      const result = await availabilityService.applyBreakTime(
-        fromDate,
-        validTime,
-        Boolean(force)
-      );
+      const isSingleDay = action === "resetDayBreakTime" || scope === "single";
+
+      const result =
+        action === "resetDayBreakTime"
+          ? await availabilityService.resetBreakTimeForDay(targetDate, Boolean(force))
+          : isSingleDay
+          ? await availabilityService.applyBreakTimeForDay(
+              targetDate,
+              validTime,
+              Boolean(force)
+            )
+          : await availabilityService.applyBreakTime(
+              targetDate,
+              validTime,
+              Boolean(force)
+            );
 
       if (result.applied) {
         try {
@@ -443,10 +462,16 @@ export async function POST(req: NextRequest) {
         await adminService.logAudit({
           actorId: session.userId === "env-admin" ? undefined : session.userId,
           actorEmail: session.phone || session.userId,
-          action: "SET_BARBER_BREAK_TIME",
+          action:
+            action === "resetDayBreakTime"
+              ? "RESET_BARBER_DAY_BREAK_TIME"
+              : isSingleDay
+              ? "SET_BARBER_DAY_BREAK_TIME"
+              : "SET_BARBER_BREAK_TIME",
           entity: "AvailabilitySlot",
           metadata: {
-            fromDate,
+            date: targetDate,
+            scope: isSingleDay ? "single" : "fromDate",
             breakStartTime: result.breakStartTime,
             breakEndTime: result.breakEndTime,
             closedDaysCount: result.closedDaysCount,
