@@ -30,18 +30,13 @@ export interface CreateBookingParams {
 }
 
 export class BookingService {
-  private lastAutoCompleteDate: string | null = null;
-
   /**
    * Automatically marks all past CONFIRMED bookings (date strictly before today in Asia/Yerevan)
    * as COMPLETED in case the barber forgot to check them off manually.
-   * Throttled per calendar day per runtime instance unless force=true.
+   * Uses the composite (status, date) index so it is fast even when called on every read.
    */
-  async autoCompletePastBookings(force: boolean = false): Promise<number> {
+  async autoCompletePastBookings(): Promise<number> {
     const todayStr = getCurrentYerevanDateString();
-    if (!force && this.lastAutoCompleteDate === todayStr) {
-      return 0;
-    }
 
     const result = await prisma.booking.updateMany({
       where: {
@@ -53,7 +48,6 @@ export class BookingService {
       },
     });
 
-    this.lastAutoCompleteDate = todayStr;
     return result.count;
   }
 

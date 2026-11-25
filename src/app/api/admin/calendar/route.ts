@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authService } from "@/services/auth.service";
 import { availabilityService } from "@/services/availability.service";
 import { adminService } from "@/services/admin.service";
+import { bookingService } from "@/services/booking.service";
 import {
   toggleDayStatusSchema,
   createSlotSchema,
@@ -14,6 +15,7 @@ import { getCurrentYerevanDateString } from "@/lib/timezone";
 export async function GET(req: NextRequest) {
   try {
     await authService.requireAdmin();
+    await bookingService.autoCompletePastBookings();
     const { searchParams } = new URL(req.url);
     const date = searchParams.get("date");
     const month = searchParams.get("month");

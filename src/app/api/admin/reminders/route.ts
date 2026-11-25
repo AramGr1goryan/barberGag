@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authService } from "@/services/auth.service";
 import { reminderService } from "@/services/reminder.service";
+import { bookingService } from "@/services/booking.service";
 
 export async function GET(req: NextRequest) {
   try {
     await authService.requireAdmin();
+    await bookingService.autoCompletePastBookings();
     const reminderResult = await reminderService.checkAndSend30MinReminders();
     const reportResult = await reminderService.checkAndSendDailySummaryReport();
     return NextResponse.json({

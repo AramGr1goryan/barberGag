@@ -374,7 +374,11 @@ export async function POST(req: NextRequest) {
 
       const finalServiceId = (serviceId && serviceId !== "CUSTOM") ? serviceId : null;
 
-      // 4. Create Booking
+      // 4. Create Booking (past dates auto-complete to COMPLETED immediately)
+      const todayYerevanStr = getCurrentYerevanDateString();
+      const initialStatus =
+        bookingDate < todayYerevanStr ? BookingStatus.COMPLETED : BookingStatus.CONFIRMED;
+
       const booking = await prisma.booking.create({
         data: {
           bookingNumber,
@@ -385,7 +389,7 @@ export async function POST(req: NextRequest) {
           endTime: calculatedEndTime,
           totalDurationMinutes: durMin,
           totalPriceMinorUnits: priceMinor,
-          status: BookingStatus.CONFIRMED,
+          status: initialStatus,
           slots: {
             connect: createdSlotIds.map(id => ({ id }))
           },

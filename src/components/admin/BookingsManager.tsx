@@ -175,7 +175,9 @@ export function BookingsManager() {
       if (dateFilter) params.append("date", dateFilter);
       if (searchFilter) params.append("search", searchFilter);
 
-      const res = await fetch(`/api/admin/bookings?${params.toString()}`);
+      const res = await fetch(`/api/admin/bookings?${params.toString()}`, {
+        cache: "no-store",
+      });
       const data = await res.json();
       if (data.bookings) setBookings(data.bookings);
     } catch {

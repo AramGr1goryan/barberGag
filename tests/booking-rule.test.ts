@@ -104,10 +104,10 @@ describe("BookingService.autoCompletePastBookings & canUserBook", () => {
       },
     });
 
-    // Second call on the same day should be throttled (no extra DB call)
+    // Second call on the same day should still run the indexed DB update (no stale daily cache)
     const secondCount = await service.autoCompletePastBookings();
-    expect(secondCount).toBe(0);
-    expect(updateManySpy).toHaveBeenCalledTimes(1);
+    expect(secondCount).toBe(3);
+    expect(updateManySpy).toHaveBeenCalledTimes(2);
   });
 
   it("should allow booking when only an already-ended booking from today exists", async () => {
