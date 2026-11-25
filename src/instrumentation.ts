@@ -1,12 +1,18 @@
 export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
-    const { reminderService } = await import("@/services/reminder.service");
+    const [{ reminderService }, { bookingService }] = await Promise.all([
+      import("@/services/reminder.service"),
+      import("@/services/booking.service"),
+    ]);
 
     // Background interval: checks every 60 seconds
     const CHECK_INTERVAL_MS = 60 * 1000;
 
     setInterval(async () => {
       try {
+        // 0. Auto-complete any unclosed CONFIRMED bookings from previous days
+        await bookingService.autoCompletePastBookings();
+
         // 1. Check 30-minute client arrival reminders
         await reminderService.checkAndSend30MinReminders();
 

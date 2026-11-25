@@ -2,12 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { authService } from "@/services/auth.service";
 import { adminService } from "@/services/admin.service";
+import { bookingService } from "@/services/booking.service";
 import { BookingStatus, SlotStatus } from "@prisma/client";
 import { handleApiError, apiSuccess } from "@/lib/api-response";
 
 export async function GET(req: NextRequest) {
   try {
     await authService.requireAdmin();
+    await bookingService.autoCompletePastBookings();
     const { searchParams } = new URL(req.url);
     const date = searchParams.get("date");
     const status = searchParams.get("status");

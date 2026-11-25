@@ -1,6 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import { BookingStatus, SlotStatus } from "@prisma/client";
-import { isWithinThreeHours } from "@/lib/timezone";
+import {
+  getCurrentYerevanDateString,
+  getCurrentYerevanTimeString,
+  isBookingStillActive,
+} from "@/lib/timezone";
 import { generateSessionToken, hashToken } from "@/lib/crypto";
 import { smsService } from "./sms.service";
 import { emailService } from "./email.service";
@@ -26,9 +30,36 @@ export interface CreateBookingParams {
 }
 
 export class BookingService {
+  private lastAutoCompleteDate: string | null = null;
+
   /**
-   * Enforces the 3-Hour Booking Rule server-side.
-   * One person cannot have more than one booking within a 3-hour window.
+   * Automatically marks all past CONFIRMED bookings (date strictly before today in Asia/Yerevan)
+   * as COMPLETED in case the barber forgot to check them off manually.
+   * Throttled per calendar day per runtime instance unless force=true.
+   */
+  async autoCompletePastBookings(force: boolean = false): Promise<number> {
+    const todayStr = getCurrentYerevanDateString();
+    if (!force && this.lastAutoCompleteDate === todayStr) {
+      return 0;
+    }
+
+    const result = await prisma.booking.updateMany({
+      where: {
+        date: { lt: todayStr },
+        status: BookingStatus.CONFIRMED,
+      },
+      data: {
+        status: BookingStatus.COMPLETED,
+      },
+    });
+
+    this.lastAutoCompleteDate = todayStr;
+    return result.count;
+  }
+
+  /**
+   * Checks whether the client already has an upcoming/ongoing active booking.
+   * Past bookings (already ended or from prior days) do not block new bookings.
    */
   async canUserBook(params: CanUserBookParams): Promise<{
     allowed: boolean;
@@ -40,15 +71,21 @@ export class BookingService {
       bookingNumber: string;
     };
   }> {
-    const { phone, userId, requestedDate, requestedStartTime, excludeBookingId } = params;
+    const { phone, userId, excludeBookingId } = params;
 
-    // Look for active bookings for this user or phone
+    await this.autoCompletePastBookings();
+
+    const todayStr = getCurrentYerevanDateString();
+    const currentTimeStr = getCurrentYerevanTimeString();
+
+    // Look for upcoming/today CONFIRMED bookings for this user or email/phone
     const existingBookings = await prisma.booking.findMany({
       where: {
         id: excludeBookingId ? { not: excludeBookingId } : undefined,
         status: BookingStatus.CONFIRMED,
+        date: { gte: todayStr },
         OR: [
-          { guestPhone: phone },
+          { guestPhone: { equals: phone, mode: "insensitive" } },
           ...(userId ? [{ userId }] : []),
         ],
       },
@@ -56,17 +93,28 @@ export class BookingService {
         id: true,
         date: true,
         startTime: true,
+        endTime: true,
         bookingNumber: true,
       },
     });
 
-    // If the user/phone already has ANY active booking, they cannot book another slot.
+    const activeBookings = existingBookings.filter((b) =>
+      isBookingStillActive(b.date, b.endTime || b.startTime, todayStr, currentTimeStr)
+    );
+
+    // If the user/phone already has ANY upcoming/ongoing active booking, they cannot book another slot.
     // They must cancel or reschedule their existing appointment.
-    if (existingBookings.length > 0) {
+    if (activeBookings.length > 0) {
+      const conflict = activeBookings[0];
       return {
         allowed: false,
         reason: "ACTIVE_BOOKING_EXISTS",
-        conflictingBooking: existingBookings[0],
+        conflictingBooking: {
+          id: conflict.id,
+          date: conflict.date,
+          startTime: conflict.startTime,
+          bookingNumber: conflict.bookingNumber,
+        },
       };
     }
 
@@ -243,21 +291,60 @@ export class BookingService {
   }
 
   /**
-   * Finds active booking by session token hash (for returning guest users).
+   * Finds active upcoming/ongoing booking by session token hash (for returning guest users).
    */
   async getActiveBookingBySessionToken(sessionToken: string) {
+    await this.autoCompletePastBookings();
+    const todayStr = getCurrentYerevanDateString();
+    const currentTimeStr = getCurrentYerevanTimeString();
     const hashed = hashToken(sessionToken);
-    return prisma.booking.findFirst({
+
+    const candidates = await prisma.booking.findMany({
       where: {
         sessionTokenHash: hashed,
         status: BookingStatus.CONFIRMED,
+        date: { gte: todayStr },
       },
       include: {
         items: true,
         slots: true,
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ date: "asc" }, { startTime: "asc" }],
     });
+
+    return (
+      candidates.find((b) =>
+        isBookingStillActive(b.date, b.endTime || b.startTime, todayStr, currentTimeStr)
+      ) || null
+    );
+  }
+
+  /**
+   * Finds active upcoming/ongoing booking by logged-in userId.
+   */
+  async getActiveBookingByUserId(userId: string) {
+    await this.autoCompletePastBookings();
+    const todayStr = getCurrentYerevanDateString();
+    const currentTimeStr = getCurrentYerevanTimeString();
+
+    const candidates = await prisma.booking.findMany({
+      where: {
+        userId,
+        status: BookingStatus.CONFIRMED,
+        date: { gte: todayStr },
+      },
+      include: {
+        items: true,
+        slots: true,
+      },
+      orderBy: [{ date: "asc" }, { startTime: "asc" }],
+    });
+
+    return (
+      candidates.find((b) =>
+        isBookingStillActive(b.date, b.endTime || b.startTime, todayStr, currentTimeStr)
+      ) || null
+    );
   }
 
   /**

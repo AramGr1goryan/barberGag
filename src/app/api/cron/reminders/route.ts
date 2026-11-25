@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { reminderService } from "@/services/reminder.service";
+import { bookingService } from "@/services/booking.service";
 
 export async function GET(req: NextRequest) {
   try {
@@ -11,8 +12,14 @@ export async function GET(req: NextRequest) {
       }
     }
 
+    const autoCompletedCount = await bookingService.autoCompletePastBookings();
     const result = await reminderService.checkAndSend30MinReminders();
-    return NextResponse.json({ success: true, timestamp: new Date().toISOString(), ...result });
+    return NextResponse.json({
+      success: true,
+      timestamp: new Date().toISOString(),
+      autoCompletedCount,
+      ...result,
+    });
   } catch (err: unknown) {
     console.error("Cron reminders error:", err);
     return NextResponse.json(

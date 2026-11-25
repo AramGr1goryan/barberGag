@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authService } from "@/services/auth.service";
+import { bookingService } from "@/services/booking.service";
 import { financialAnalyticsService } from "@/services/financial-analytics.service";
 import { DateRangeType } from "@/types/financial-analytics";
 
@@ -7,6 +8,7 @@ export async function GET(req: NextRequest) {
   try {
     // 1. Enforce strict Admin-only authorization
     await authService.requireAdmin();
+    await bookingService.autoCompletePastBookings();
 
     // 2. Parse query parameters
     const { searchParams } = new URL(req.url);

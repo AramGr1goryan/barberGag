@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { authService } from "@/services/auth.service";
 import { adminService } from "@/services/admin.service";
 import { availabilityService } from "@/services/availability.service";
+import { bookingService } from "@/services/booking.service";
 import { getBreakStartTime, getBreakStartTimeForDate } from "@/lib/settings";
 import { getCurrentYerevanDateString } from "@/lib/timezone";
 import { BookingStatus, SlotStatus } from "@prisma/client";
@@ -12,7 +13,10 @@ import { handleApiError } from "@/lib/api-response";
 export async function GET(req: NextRequest) {
   try {
     await authService.requireAdmin();
-    await availabilityService.ensureCurrentMonthInitialized();
+    await Promise.all([
+      availabilityService.ensureCurrentMonthInitialized(),
+      bookingService.autoCompletePastBookings(),
+    ]);
     const { searchParams } = new URL(req.url);
     const dateParam = searchParams.get("date");
     const isLite = searchParams.get("lite") === "true";

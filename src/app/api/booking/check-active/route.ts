@@ -9,20 +9,12 @@ export async function GET(req: NextRequest) {
     const session = await authService.getSession();
     const sessionToken = req.cookies.get("barber_session_token")?.value;
 
+    await bookingService.autoCompletePastBookings();
+
     let activeBooking = null;
 
     if (session?.userId) {
-      activeBooking = await prisma.booking.findFirst({
-        where: {
-          userId: session.userId,
-          status: BookingStatus.CONFIRMED,
-        },
-        include: {
-          items: true,
-          slots: true,
-        },
-        orderBy: { createdAt: "desc" },
-      });
+      activeBooking = await bookingService.getActiveBookingByUserId(session.userId);
     } else if (sessionToken) {
       activeBooking = await bookingService.getActiveBookingBySessionToken(sessionToken);
     }

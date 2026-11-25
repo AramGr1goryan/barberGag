@@ -17,6 +17,38 @@ export function getCurrentYerevanDateString(): string {
 }
 
 /**
+ * Returns current time string in HH:mm (24-hour) formatted for Asia/Yerevan.
+ */
+export function getCurrentYerevanTimeString(): string {
+  const formatter = new Intl.DateTimeFormat("en-GB", {
+    timeZone: BUSINESS_TIMEZONE,
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+  const formatted = formatter.format(new Date());
+  // Guard against environments that format midnight as "24:xx"
+  return formatted.startsWith("24:") ? `00:${formatted.slice(3)}` : formatted;
+}
+
+/**
+ * Determines whether a CONFIRMED booking is still active (its end time is in the future
+ * relative to Asia/Yerevan current date & time).
+ */
+export function isBookingStillActive(
+  bookingDate: string,
+  bookingEndTime: string,
+  referenceDateStr: string = getCurrentYerevanDateString(),
+  referenceTimeStr: string = getCurrentYerevanTimeString()
+): boolean {
+  if (!bookingDate) return false;
+  if (bookingDate < referenceDateStr) return false;
+  if (bookingDate > referenceDateStr) return true;
+  if (!bookingEndTime) return true;
+  return parseDateTimeToMinutes(bookingDate, bookingEndTime) > parseDateTimeToMinutes(referenceDateStr, referenceTimeStr);
+}
+
+/**
  * Parses "YYYY-MM-DD" and "HH:mm" into minutes since epoch or comparable integer minutes.
  */
 export function parseDateTimeToMinutes(dateStr: string, timeStr: string): number {
